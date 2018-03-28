@@ -86,7 +86,7 @@
     "no-new-wrappers": 2,
     "id-length": 2,
     "camelcase": 2,
-    "new-cap": 2,
+    // "new-cap": 2,
     "no-underscore-dangle": 2,
     "no-restricted-globals": 2,
     "semi": [

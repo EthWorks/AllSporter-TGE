@@ -1,3 +1,4 @@
 require('babel-node-modules')([
-  'zeppelin-solidity'
+  'zeppelin-solidity',
+  'ethworks-solidity'
 ]);

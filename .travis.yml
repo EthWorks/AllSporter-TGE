@@ -12,5 +12,6 @@ env:
 before_script:
   -
 script:
+  - yarn run dev:compile
   - yarn run dev:lint
-  - yarn run dev:test
+  - yarn run dev:testall

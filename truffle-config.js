@@ -1,5 +1,5 @@
 require("babel-register")({
-  ignore: /node_modules(?!\/zeppelin-solidity)/,
+  ignore: /node_modules\/(?!ethworks-solidity|zeppelin-solidity)/,
   presets: [
     ["env", {
       "targets" : {
@@ -7,7 +7,7 @@ require("babel-register")({
       }
     }]
   ],
-  retainLines: true,
+  retainLines: true
 });
 require("babel-polyfill");
 
