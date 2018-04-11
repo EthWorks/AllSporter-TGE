@@ -1,19 +1,19 @@
 import {createWeb3, deployContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
+import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
 
 const {expect} = chai;
-const web3 = createWeb3();
+const web3 = createWeb3(Web3);
 chai.use(bnChai(web3.utils.BN));
+const {BN} = web3.utils;
 
 describe('AllSporter Coin', () => {
-  const web3 = createWeb3();
-  const {BN} = web3.utils;
   let tokenOwner;
   let tokenContract;
   let accounts;
-  const tokenCap = new BN(500000000);
+  const tokenCap = new BN(web3.utils.toWei('260000000'));
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
@@ -22,8 +22,7 @@ describe('AllSporter Coin', () => {
 
   beforeEach(async () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
-      [tokenCap]);
-    // tokenContractAddress = tokenContract.options.address;
+      []);
   });
 
   it('should be properly created', async () => {

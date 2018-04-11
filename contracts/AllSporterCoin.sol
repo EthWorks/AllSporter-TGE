@@ -1,8 +1,8 @@
 pragma solidity ^0.4.19;
-import "ethworks-solidity/contracts/IcoToken.sol";
+import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 
-contract AllSporterCoin is IcoToken {
-    function AllSporterCoin(uint256 _cap) public 
-        IcoToken(_cap, "AllSporter Coin", "ASC", 18) {
+contract AllSporterCoin is CrowdfundableToken {
+    function AllSporterCoin() public 
+        CrowdfundableToken(260000000 * (10**18), "AllSporter Coin", "ASC", 18) {
     }
 }
