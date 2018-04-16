@@ -14,7 +14,16 @@ AllSporter coin and ICO
 
 ## AllSporter Crowdsale
 
-The Smart Contract for managing AllSporter Coin ICO.
+The Smart Contract for managing the AllSporter Coin Crowdsale. The Crowdsale consists of the following phases:
+
+* Presale
+* 2-tiered Pre-ICO
+* 6-tiered ICO phase
+
+The investments can come from 3 different sources:
+* External sales, e.g. BTC investments
+* Direct sales in ETH
+* Team & Advisors allocations
 
 ### Events
 
@@ -22,7 +31,7 @@ The Smart Contracts emit the following events on the blockchain:
 
 | Event  | Description |
 | ------------- | ------------- |
-|   |  |
+|  |  |
 
 ## Deploying
 
