@@ -6,8 +6,8 @@ import bnChai from 'bn-chai';
 
 const {expect} = chai;
 const web3 = createWeb3(Web3);
-chai.use(bnChai(web3.utils.BN));
 const {BN} = web3.utils;
+chai.use(bnChai(BN));
 
 describe('AllSporter Coin', () => {
   let tokenOwner;
