@@ -1,16 +1,15 @@
 pragma solidity ^0.4.19;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "ethworks-solidity/contracts/Whitelist.sol";
-import "./Minter.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract StateManager is Whitelist {
+contract StateManager is Ownable {
     using SafeMath for uint;
-    Minter public minter;
 
-    enum State {Presale, Preico1, Preico2, Break, Ico1, Ico2, Ico3, Ico4, Ico5, Ico6, Allocating, Airdropping, Finished}
+    uint constant public tokenUnit = 1e18;
+    enum State {Presale, Preico1, Preico2, Break, Ico1, Ico2, Ico3, Ico4, Ico5, Ico6, Allocating, Finished}
     State public currentState = State.Presale;
-    mapping(uint => uint) startTimes;
-    mapping(uint => uint) tokenCaps;
+    mapping(uint => uint) public startTimes;
+    mapping(uint => uint) public etherCaps;
 
     event StateChanged(uint from, uint to);
 
@@ -19,51 +18,26 @@ contract StateManager is Whitelist {
         _;
     }
 
-    // update current state based on:
-    // - timestamp
-    // - amount of tokens bought by investors (confirmed and not)
-    modifier updateState() {
-        if (now >= startTimes[uint(State.Allocating)]) advanceStateIfNewer(State.Allocating);
-        else if (now >= startTimes[uint(State.Ico6)]) advanceStateIfNewer(State.Ico6);
-        else if (now >= startTimes[uint(State.Ico5)]) advanceStateIfNewer(State.Ico5);
-        else if (now >= startTimes[uint(State.Ico4)]) advanceStateIfNewer(State.Ico4);
-        else if (now >= startTimes[uint(State.Ico3)]) advanceStateIfNewer(State.Ico3);
-        else if (now >= startTimes[uint(State.Ico2)]) advanceStateIfNewer(State.Ico2);
-        else if (now >= startTimes[uint(State.Break)]) advanceStateIfNewer(State.Break);
-        else if (now >= startTimes[uint(State.Preico2)]) advanceStateIfNewer(State.Preico2);
-        else if (now >= startTimes[uint(State.Preico1)]) advanceStateIfNewer(State.Preico1);
-
-        uint totalTokens = minter.soldTokens();
-        if (totalTokens >= tokenCaps[uint(State.Ico6)]) advanceStateIfNewer(State.Allocating);
-        else if (totalTokens >= tokenCaps[uint(State.Ico5)]) advanceStateIfNewer(State.Ico6);
-        else if (totalTokens >= tokenCaps[uint(State.Ico4)]) advanceStateIfNewer(State.Ico5);
-        else if (totalTokens >= tokenCaps[uint(State.Ico3)]) advanceStateIfNewer(State.Ico4);
-        else if (totalTokens >= tokenCaps[uint(State.Ico2)]) advanceStateIfNewer(State.Ico3);
-        else if (totalTokens >= tokenCaps[uint(State.Ico1)]) advanceStateIfNewer(State.Ico2);
-        else if (totalTokens >= tokenCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);
-        else if (totalTokens >= tokenCaps[uint(State.Preico1)]) advanceStateIfNewer(State.Preico2);
-        _;
-    }
-
-    function StateManager(Minter _minter, uint saleStartTime) public {
-        require(address(_minter) != 0x0);
+    function StateManager(uint saleStartTime, uint singleStateEtherCap) public {
         require(saleStartTime >= now);
-        minter = _minter;
-        initStates(saleStartTime);
+        require(singleStateEtherCap > 0);
+        initStates(saleStartTime, singleStateEtherCap);
     }
 
     // external
 
-    function startAirdropping() external updateState onlyWhitelisted onlyInState(State.Allocating) {
-        advanceStateIfNewer(State.Airdropping);
+    function updateState(uint totalEtherContributions) external onlyOwner {
+        updateStateBasedOnTime();
+        updateStateBasedOnContributions(totalEtherContributions);
     }
 
-    function finalize(address newTokenOwner) external updateState onlyWhitelisted onlyInState(State.Airdropping) {
+    function finalize() external onlyOwner onlyInState(State.Allocating) {
         advanceStateIfNewer(State.Finished);
-        minter.finishMinting(newTokenOwner);
     }
 
-    function isSellingState() external updateState returns(bool) {
+    // public
+
+    function isSellingState() public view returns(bool) {
         return(
             uint(currentState) >= uint(State.Preico1)
             && uint(currentState) <= uint(State.Ico6)
@@ -71,12 +45,12 @@ contract StateManager is Whitelist {
         );
     }
 
-    function icoEnded() external updateState returns(bool) {
+    function icoEnded() public view returns(bool) {
         return uint(currentState) > uint(State.Ico6);
     }
 
     // tokens sold for a given amount of ether based on state
-    function getCurrentTokensForEther(uint etherAmount) public updateState returns(uint) {
+    function getCurrentTokensForEther(uint etherAmount) public view returns(uint) {
         if (currentState == State.Preico1) return etherAmount.mul(3250);
         if (currentState == State.Preico2) return etherAmount.mul(30875).div(10);
         if (currentState == State.Ico1) return etherAmount.mul(2925);
@@ -98,7 +72,7 @@ contract StateManager is Whitelist {
     }
 
     // initialize states start times and caps
-    function initStates(uint saleStart) internal {
+    function initStates(uint saleStart, uint singleStateEtherCap) internal {
         startTimes[uint(State.Preico1)] = saleStart;
         setStateLength(State.Preico1, 5 days);
         setStateLength(State.Preico2, 5 days);
@@ -110,14 +84,14 @@ contract StateManager is Whitelist {
         setStateLength(State.Ico5, 10 days);
         setStateLength(State.Ico6, 10 days);
 
-        setTokenCap(State.Preico1, 23400000 * 1e18);
-        setTokenCap(State.Preico2, 23400000 * 1e18);
-        setTokenCap(State.Ico1, 23400000 * 1e18);
-        setTokenCap(State.Ico2, 23400000 * 1e18);
-        setTokenCap(State.Ico3, 23400000 * 1e18);
-        setTokenCap(State.Ico4, 23400000 * 1e18);
-        setTokenCap(State.Ico5, 23400000 * 1e18);
-        setTokenCap(State.Ico6, 23400000 * 1e18);
+        setEtherCap(State.Preico1, singleStateEtherCap);
+        setEtherCap(State.Preico2, singleStateEtherCap);
+        setEtherCap(State.Ico1, singleStateEtherCap);
+        setEtherCap(State.Ico2, singleStateEtherCap);
+        setEtherCap(State.Ico3, singleStateEtherCap);
+        setEtherCap(State.Ico4, singleStateEtherCap);
+        setEtherCap(State.Ico5, singleStateEtherCap);
+        setEtherCap(State.Ico6, singleStateEtherCap);
     }
 
     function setStateLength(State state, uint length) private {
@@ -125,8 +99,42 @@ contract StateManager is Whitelist {
         startTimes[uint(state)+1] = startTimes[uint(state)].add(length);
     }
 
-    function setTokenCap(State state, uint cap) private {
+    function setEtherCap(State state, uint cap) private {
         // accumulate cap from previous states
-        tokenCaps[uint(state)] = tokenCaps[uint(state)-1].add(cap);
+        etherCaps[uint(state)] = etherCaps[uint(state)-1].add(cap);
+    }
+
+    function updateStateBasedOnTime() private {
+        if (now >= startTimes[uint(State.Allocating)]) advanceStateIfNewer(State.Allocating);
+        else if (now >= startTimes[uint(State.Ico6)]) advanceStateIfNewer(State.Ico6);
+        else if (now >= startTimes[uint(State.Ico5)]) advanceStateIfNewer(State.Ico5);
+        else if (now >= startTimes[uint(State.Ico4)]) advanceStateIfNewer(State.Ico4);
+        else if (now >= startTimes[uint(State.Ico3)]) advanceStateIfNewer(State.Ico3);
+        else if (now >= startTimes[uint(State.Ico2)]) advanceStateIfNewer(State.Ico2);
+        else if (now >= startTimes[uint(State.Ico1)]) advanceStateIfNewer(State.Ico1);
+        else if (now >= startTimes[uint(State.Break)]) advanceStateIfNewer(State.Break);
+        else if (now >= startTimes[uint(State.Preico2)]) advanceStateIfNewer(State.Preico2);
+        else if (now >= startTimes[uint(State.Preico1)]) advanceStateIfNewer(State.Preico1);
+    }
+
+    function updateStateBasedOnContributions(uint totalEtherContributions) private {
+        if (!isSellingState()) {
+            return;
+        }
+
+        if (int(currentState) < int(State.Break)) {
+            // before the break
+            if (totalEtherContributions >= etherCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);
+            else if (totalEtherContributions >= etherCaps[uint(State.Preico1)]) advanceStateIfNewer(State.Preico2);
+        }
+        else {
+            // after the break
+            if (totalEtherContributions >= etherCaps[uint(State.Ico6)]) advanceStateIfNewer(State.Allocating);
+            else if (totalEtherContributions >= etherCaps[uint(State.Ico5)]) advanceStateIfNewer(State.Ico6);
+            else if (totalEtherContributions >= etherCaps[uint(State.Ico4)]) advanceStateIfNewer(State.Ico5);
+            else if (totalEtherContributions >= etherCaps[uint(State.Ico3)]) advanceStateIfNewer(State.Ico4);
+            else if (totalEtherContributions >= etherCaps[uint(State.Ico2)]) advanceStateIfNewer(State.Ico3);
+            else if (totalEtherContributions >= etherCaps[uint(State.Ico1)]) advanceStateIfNewer(State.Ico2);
+        }
     }
 }

@@ -4,7 +4,6 @@ import minterJson from '../../build/contracts/Minter.json';
 import stateManagerJson from '../../build/contracts/StateManager.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import kycJson from '../../build/contracts/Kyc.json';
-import allocatorJson from '../../build/contracts/Allocator.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -24,18 +23,18 @@ describe('Crowdsale', () => {
   let stateContractOwner;
   let kycContract;
   let kycOwner;
-  let allocatorContract;
-  let allocatorOwner;
   let crowdsaleContract;
   let crowdsaleOwner;
   let treasury;
   const saleStartTime = 1577840461;
   const unlockTime = 1640998861;
+  const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
+  const saleTokenCap = new BN(web3.utils.toWei('156000000'));
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, minterOwner,
-      stateContractOwner, kycOwner, allocatorOwner, crowdsaleOwner,
+      stateContractOwner, kycOwner, crowdsaleOwner,
       treasury] = accounts;
   });
 
@@ -44,29 +43,29 @@ describe('Crowdsale', () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner, []);
 
     // minter
-    minterContract = await deployContract(web3, minterJson, minterOwner, [tokenContract.options.address]);
+    minterContract = await deployContract(web3, minterJson, minterOwner, [
+      tokenContract.options.address,
+      saleTokenCap
+    ]);
     await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
 
     // state manager
-    stateContract = await deployContract(web3, stateManagerJson, stateContractOwner, [minterContract.options.address, saleStartTime]);
+    stateContract = await deployContract(web3, stateManagerJson, stateContractOwner, [
+      saleStartTime,
+      singleStateEtherCap
+    ]);
     await minterContract.methods.add(stateContract.options.address).send({from: minterOwner});
 
     // kyc
     kycContract = await deployContract(web3, kycJson, kycOwner, [minterContract.options.address]);
     await minterContract.methods.add(kycContract.options.address).send({from: minterOwner});
 
-    // allocator
-    allocatorContract = await deployContract(web3, allocatorJson, allocatorOwner, [
-      minterContract.options.address,
-      unlockTime
-    ]);
-    await minterContract.methods.add(allocatorContract.options.address).send({from: minterOwner});
-
     // crowdsale
     crowdsaleContract = await deployContract(web3, crowdsaleJson, crowdsaleOwner, [
+      minterContract.options.address,
       stateContract.options.address,
       kycContract.options.address,
-      allocatorContract.options.address,
+      unlockTime,
       treasury
     ]);
   });

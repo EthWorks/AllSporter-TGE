@@ -7,96 +7,84 @@ import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 contract Minter is Whitelist {
     using SafeMath for uint;
     CrowdfundableToken public token;
-    uint public confirmedEtherContributions;
-    uint public reservedEtherContributions;
-    uint constant public saleTokenCap = 156000000 * 1e18;
-    uint public soldTokens; // tokens bought - both already minted and reserved
-    uint public allocatedTokens; // tokens allocated
-    mapping(address => uint) public reservedEther;
-    mapping(address => uint) public reservedTokens;
-    
-    event ReservedContribution(address investor, uint etherAmount, uint tokenAmount);
-    event UnreservedContribution(address investor, uint etherAmount, uint tokenAmount);
-    event MintedReserved(address investor, uint etherAmount, uint tokenAmount);
-    event MintedAllocation(address beneficiary, uint tokenAmount);
-    event FinishedMinting();
+    uint public saleTokenCap;
+    uint public totalLockedTokens;
+    uint public totalConfirmedTokens;
+    uint public totalAllocatedTokens;
+    mapping(address => uint) public lockedTokens;
 
-    // tokens bought by investors (confirmed or not) plus tokens allocated should not exceed token cap
+    event LockedContribution(address indexed investor, uint tokenAmount);
+    event RejectedContribution(address indexed investor, uint tokenAmount);
+    event ConfirmedContribution(address indexed investor, uint tokenAmount);
+    event MintedAllocation(address indexed beneficiary, uint tokenAmount);
+
+    // all minted and locked tokens
     modifier notExceedingTokenCap(uint tokensToAdd) {
-        require(soldTokens.add(allocatedTokens).add(tokensToAdd) <= token.cap());
+        uint total = totalLockedTokens.add(totalConfirmedTokens).add(totalAllocatedTokens);
+        require(total.add(tokensToAdd) <= token.cap());
         _;
     }
 
-    // tokens bought by investors (confirmed and not) should not exceed sale cap
+    // all tokens except allocated
     modifier notExceedingSaleCap(uint tokensToAdd) {
-        require(soldTokens.add(tokensToAdd) <= saleTokenCap);
+        uint saleTotal = totalLockedTokens.add(totalConfirmedTokens);
+        require(saleTotal.add(tokensToAdd) <= saleTokenCap);
         _;
     }
 
-    function Minter(CrowdfundableToken _token) public {
+    modifier noOutstandingLockedTokens() {
+        require(totalLockedTokens == 0);
+        _;
+    }
+
+    function Minter(CrowdfundableToken _token, uint _saleTokenCap) public {
         require(address(_token) != 0x0);
+        require(_saleTokenCap > 0);
         token = _token;
+        saleTokenCap = _saleTokenCap;
     }
 
     // external
 
     // reserve tokens for a pending investment
-    function reserveContribution(address investor, uint etherAmount, uint tokenAmount)
+    function lockContribution(address investor, uint tokenAmount)
         external
-        onlyWhitelisted
+        onlyWhitelistedReferral
         notExceedingTokenCap(tokenAmount)
         notExceedingSaleCap(tokenAmount)
     {
-        reservedEtherContributions = reservedEtherContributions.add(etherAmount);
-        soldTokens = soldTokens.add(tokenAmount);
-        reservedEther[investor] = reservedEther[investor].add(etherAmount);
-        reservedTokens[investor] = reservedTokens[investor].add(tokenAmount);
-        
-        emit ReservedContribution(investor, etherAmount, tokenAmount);
+        totalLockedTokens = totalLockedTokens.add(tokenAmount);
+        lockedTokens[investor] = lockedTokens[investor].add(tokenAmount);
+        emit LockedContribution(investor, tokenAmount);
     }
 
     // unreserve tokens of pending investment
-    function unreserveContribution(address investor) external onlyWhitelisted {
-        reservedEtherContributions = reservedEtherContributions.sub(reservedEther[investor]);
-        soldTokens = soldTokens.sub(reservedTokens[investor]);
-
-        emit UnreservedContribution(investor, reservedEther[investor], reservedTokens[investor]);
-        clearReserved(investor);
+    function rejectContribution(address investor) external onlyWhitelistedReferral {
+        totalLockedTokens = totalLockedTokens.sub(lockedTokens[investor]);
+        emit RejectedContribution(investor, lockedTokens[investor]);
+        lockedTokens[investor] = 0;
     }
 
     // mint reserved tokens of pending investment
-    function mintReserved(address investor) external onlyWhitelisted {
-        reservedEtherContributions = reservedEtherContributions.sub(reservedEther[investor]);
-        confirmedEtherContributions = confirmedEtherContributions.add(reservedEther[investor]);
-        token.mint(investor, reservedTokens[investor]);
-
-        emit MintedReserved(investor, reservedEther[investor], reservedTokens[investor]);
-        clearReserved(investor);
+    function confirmContribution(address investor) external onlyWhitelistedReferral {
+        totalLockedTokens = totalLockedTokens.sub(lockedTokens[investor]);
+        totalConfirmedTokens = totalConfirmedTokens.add(lockedTokens[investor]);
+        token.mint(investor, lockedTokens[investor]);
+        emit ConfirmedContribution(investor, lockedTokens[investor]);
+        lockedTokens[investor] = 0;
     }
 
     // mint team & advisors allocation
-    function mintAllocation(address beneficiary, uint tokenAmount) external onlyWhitelisted notExceedingTokenCap(tokenAmount)
+    function mintAllocation(address beneficiary, uint tokenAmount) external onlyWhitelistedReferral notExceedingTokenCap(tokenAmount)
     {
-        allocatedTokens = allocatedTokens.add(tokenAmount);
+        totalAllocatedTokens = totalAllocatedTokens.add(tokenAmount);
         token.mint(beneficiary, tokenAmount);
-
         emit MintedAllocation(beneficiary, tokenAmount);
     }
 
     // finish minting and give up token ownership
-    function finishMinting(address newTokenOwner) external onlyWhitelisted {
-        require(reservedEtherContributions == 0);
-
+    function finishMinting(address newTokenOwner) external onlyWhitelistedReferral noOutstandingLockedTokens {
         token.finishMinting();
         token.transferOwnership(newTokenOwner);
-
-        emit FinishedMinting();
-    }
-
-    // internal
-
-    function clearReserved(address investor) internal {
-        reservedEther[investor] = 0;
-        reservedTokens[investor] = 0;
     }
 }
