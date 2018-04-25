@@ -26,6 +26,8 @@ describe('Minter', () => {
   const tokenAmount2 = new BN('7777777');
   const saleTokenCap = new BN(web3.utils.toWei('156000000'));
   const tokenCap = new BN(web3.utils.toWei('260000000'));
+  const allocationTokenCap = tokenCap.sub(saleTokenCap);
+
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
@@ -114,9 +116,9 @@ describe('Minter', () => {
       await testShouldNotLockContribution(investor1, saleTokenCap + 1, whitelisted);
     });
 
-    it('should allow to lock up to the sale cap, even if total allocated exceeds sale cap', async () => {
-      await mintAllocation(investor1, saleTokenCap.add(new BN('100')), whitelisted);
-      await testShouldLockContribution(investor1, tokenAmount1, whitelisted);
+    it('should allow to lock up to the sale cap, even if total with allocated exceeds sale cap', async () => {
+      await mintAllocation(investor1, allocationTokenCap, whitelisted);
+      await testShouldLockContribution(investor1, saleTokenCap, whitelisted);
     });
   });
 
@@ -250,36 +252,17 @@ describe('Minter', () => {
       await testShouldNotMintAllocation(investor1, tokenAmount1, notWhitelisted);
     });
 
-    it('should allow to mint allocation more than sale token cap', async () => {
-      await testShouldMintAllocation(investor1, saleTokenCap.add(new BN('100')), whitelisted);
+    it('should allow to mint allocation equal to the allocation cap', async () => {
+      await testShouldMintAllocation(investor1, allocationTokenCap, whitelisted);
     });
 
-    it('should allow to mint allocation equal to the token cap', async () => {
-      await testShouldMintAllocation(investor1, tokenCap, whitelisted);
+    it('should not allow to mint allocation more than allocation cap', async () => {
+      await testShouldNotMintAllocation(investor1, allocationTokenCap.add(new BN('100')), whitelisted);
     });
 
-    it('should not allow to mint allocation more than token cap', async () => {
-      await testShouldNotMintAllocation(investor1, tokenCap.add(new BN('100')), whitelisted);
-    });
-    
-    describe('total of tokens minted and reserved exceeding token cap', async () => {
-      beforeEach(async() => {
-        await lockContribution(investor1, saleTokenCap, whitelisted);
-      });
-
-      it('should not allow to mint allocation if together with reserved tokens exceeds token cap', async () => {
-        await testShouldNotMintAllocation(investor2, tokenCap.sub(saleTokenCap).add(new BN('100')), whitelisted);
-      });
-  
-      it('should allow to mint allocation after some tokens rejected', async () => {
-        await rejectContribution(investor1, whitelisted);
-        await testShouldMintAllocation(investor2, tokenCap.sub(saleTokenCap).add(new BN('100')), whitelisted);
-      });
-
-      it('should not allow to mint allocation after some tokens confirmed', async () => {
-        await confirmContribution(investor1, whitelisted);
-        await testShouldNotMintAllocation(investor2, tokenCap.sub(saleTokenCap).add(new BN('100')), whitelisted);
-      });
+    it('should allow to mint allocation up to the allocation cap, even if total with locked exceeds allocation cap', async () => {
+      await lockContribution(investor1, saleTokenCap, whitelisted);
+      await testShouldMintAllocation(investor1, allocationTokenCap, whitelisted);
     });
   });
 

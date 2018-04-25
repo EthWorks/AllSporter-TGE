@@ -17,7 +17,7 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 
 | Smart Contract  | Description |
 | ------------- | ------------- |
-| Crowdsale | Allows the investors to buy tokens for the current price. Allows the owner to allocate tokens for team & advisors. |
+| Crowdsale | Allows the investors to buy tokens for the current price. Allows the owner to allocate tokens for team & advisors. Also records external sales. |
 | Kyc | Manages pending investments before they are approved or rejected |
 | Minter | Takes care of minting tokens for investors and allocations, taking into account the token cap and the sale token cap. Also takes into account tokens placed under kyc before they are rejected or confirmed |
 | StateManager | Manages the state of the ICO, which is based on time and on contributions made by the investors |
@@ -35,8 +35,10 @@ The Smart Contracts emit the following events on the blockchain:
 | Event  | Description |
 | ------------- | ------------- |
 | ContributionMade | An investment has been recorded |
-| AllocationMade | An allocation has been recorded |
-| LockedAllocationMade | An allocation has been recorded. These tokens will be additionally locked after the sale end time |
+| ExternalSaleNoted | An external sale has been recorded. Successful KYC pass is assumed |
+| PercentageAllocationMade | A percentage allocation has been recorded |
+| LockedPercentageAllocationMade | A percentage allocation has been recorded. These tokens will be additionally locked after the sale end time |
+| ReferralBonusAdded | A purchase with a referral has been noted. Bonus tokens have been added for the referral and the referred. |
 
 ### Kyc events
 

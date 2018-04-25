@@ -22,14 +22,14 @@ contract Kyc is Whitelist {
         minter = _minter;
     }
 
-    function addToKyc(address investor, uint etherAmount, uint tokenAmount) external onlyWhitelistedReferral {
+    function addToKyc(address investor, uint etherAmount, uint tokenAmount) external onlyWhitelisted {
         totalReservedEther = totalReservedEther.add(etherAmount);
         reservedEther[investor] = reservedEther[investor].add(etherAmount);
         minter.lockContribution(investor, tokenAmount);
         emit AddedToKyc(investor, etherAmount, tokenAmount);
     }
 
-    function approve(address investor) external onlyWhitelistedReferral {
+    function approve(address investor) external onlyWhitelisted {
         totalReservedEther = totalReservedEther.sub(reservedEther[investor]);
         totalConfirmedEther = totalConfirmedEther.add(reservedEther[investor]);
         minter.confirmContribution(investor);
@@ -37,7 +37,7 @@ contract Kyc is Whitelist {
         reservedEther[investor] = 0;
     }
 
-    function reject(address investor) external onlyWhitelistedReferral {
+    function reject(address investor) external onlyWhitelisted {
         totalReservedEther = totalReservedEther.sub(reservedEther[investor]);
         minter.rejectContribution(investor);
         emit Rejected(investor, reservedEther[investor]);

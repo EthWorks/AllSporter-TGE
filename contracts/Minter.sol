@@ -13,22 +13,21 @@ contract Minter is Whitelist {
     uint public totalAllocatedTokens;
     mapping(address => uint) public lockedTokens;
 
-    event LockedContribution(address indexed investor, uint tokenAmount);
-    event RejectedContribution(address indexed investor, uint tokenAmount);
-    event ConfirmedContribution(address indexed investor, uint tokenAmount);
-    event MintedAllocation(address indexed beneficiary, uint tokenAmount);
-
-    // all minted and locked tokens
-    modifier notExceedingTokenCap(uint tokensToAdd) {
-        uint total = totalLockedTokens.add(totalConfirmedTokens).add(totalAllocatedTokens);
-        require(total.add(tokensToAdd) <= token.cap());
-        _;
-    }
+    event LockedContribution(address indexed account, uint tokenAmount);
+    event RejectedContribution(address indexed account, uint tokenAmount);
+    event ConfirmedContribution(address indexed account, uint tokenAmount);
+    event MintedAllocation(address indexed account, uint tokenAmount);
 
     // all tokens except allocated
     modifier notExceedingSaleCap(uint tokensToAdd) {
         uint saleTotal = totalLockedTokens.add(totalConfirmedTokens);
         require(saleTotal.add(tokensToAdd) <= saleTokenCap);
+        _;
+    }
+
+    modifier notExceedingAllocationCap(uint tokensToAdd) {
+        uint allocationCap = token.cap().sub(saleTokenCap);
+        require(totalAllocatedTokens.add(tokensToAdd) <= allocationCap);
         _;
     }
 
@@ -47,43 +46,42 @@ contract Minter is Whitelist {
     // external
 
     // reserve tokens for a pending investment
-    function lockContribution(address investor, uint tokenAmount)
+    function lockContribution(address account, uint tokenAmount)
         external
-        onlyWhitelistedReferral
-        notExceedingTokenCap(tokenAmount)
+        onlyWhitelisted
         notExceedingSaleCap(tokenAmount)
     {
         totalLockedTokens = totalLockedTokens.add(tokenAmount);
-        lockedTokens[investor] = lockedTokens[investor].add(tokenAmount);
-        emit LockedContribution(investor, tokenAmount);
+        lockedTokens[account] = lockedTokens[account].add(tokenAmount);
+        emit LockedContribution(account, tokenAmount);
     }
 
     // unreserve tokens of pending investment
-    function rejectContribution(address investor) external onlyWhitelistedReferral {
-        totalLockedTokens = totalLockedTokens.sub(lockedTokens[investor]);
-        emit RejectedContribution(investor, lockedTokens[investor]);
-        lockedTokens[investor] = 0;
+    function rejectContribution(address account) external onlyWhitelisted {
+        totalLockedTokens = totalLockedTokens.sub(lockedTokens[account]);
+        emit RejectedContribution(account, lockedTokens[account]);
+        lockedTokens[account] = 0;
     }
 
     // mint reserved tokens of pending investment
-    function confirmContribution(address investor) external onlyWhitelistedReferral {
-        totalLockedTokens = totalLockedTokens.sub(lockedTokens[investor]);
-        totalConfirmedTokens = totalConfirmedTokens.add(lockedTokens[investor]);
-        token.mint(investor, lockedTokens[investor]);
-        emit ConfirmedContribution(investor, lockedTokens[investor]);
-        lockedTokens[investor] = 0;
+    function confirmContribution(address account) external onlyWhitelisted {
+        totalLockedTokens = totalLockedTokens.sub(lockedTokens[account]);
+        totalConfirmedTokens = totalConfirmedTokens.add(lockedTokens[account]);
+        token.mint(account, lockedTokens[account]);
+        emit ConfirmedContribution(account, lockedTokens[account]);
+        lockedTokens[account] = 0;
     }
 
     // mint team & advisors allocation
-    function mintAllocation(address beneficiary, uint tokenAmount) external onlyWhitelistedReferral notExceedingTokenCap(tokenAmount)
+    function mintAllocation(address account, uint tokenAmount) external onlyWhitelisted notExceedingAllocationCap(tokenAmount)
     {
         totalAllocatedTokens = totalAllocatedTokens.add(tokenAmount);
-        token.mint(beneficiary, tokenAmount);
-        emit MintedAllocation(beneficiary, tokenAmount);
+        token.mint(account, tokenAmount);
+        emit MintedAllocation(account, tokenAmount);
     }
 
     // finish minting and give up token ownership
-    function finishMinting(address newTokenOwner) external onlyWhitelistedReferral noOutstandingLockedTokens {
+    function finishMinting(address newTokenOwner) external onlyWhitelisted noOutstandingLockedTokens {
         token.finishMinting();
         token.transferOwnership(newTokenOwner);
     }
