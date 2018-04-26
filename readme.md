@@ -21,6 +21,7 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 | Kyc | Manages pending investments before they are approved or rejected |
 | Minter | Takes care of minting tokens for investors and allocations, taking into account the token cap and the sale token cap. Also takes into account tokens placed under kyc before they are rejected or confirmed |
 | StateManager | Manages the state of the ICO, which is based on time and on contributions made by the investors |
+| ReferralWhitelist | Restricts referrals to whitelisted only |
 
 ### Architecture diagram
 
