@@ -1,6 +1,7 @@
 import {createWeb3, deployContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import minterJson from '../../build/contracts/Minter.json';
+import pricingMockJson from '../../build/contracts/PricingMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -14,298 +15,190 @@ chai.use(bnChai(BN));
 describe('Minter', () => {
   let tokenOwner;
   let tokenContract;
-  let accounts;
+  let pricingOwner;
+  let pricingContract;
   let minterOwner;
   let minterContract;
-  let whitelisted;
-  let notWhitelisted;
+  let approvedMinter;
+  let accounts;
+  let firstStateMinter;
+  let secondStateMinter;
+  let secondStateAfter;
   let investor1;
-  let investor2;
-  let investor3;
-  const tokenAmount1 = new BN('30000');
-  const tokenAmount2 = new BN('7777777');
-  const saleTokenCap = new BN(web3.utils.toWei('156000000'));
   const tokenCap = new BN(web3.utils.toWei('260000000'));
-  const allocationTokenCap = tokenCap.sub(saleTokenCap);
-
+  const saleEtherCap = new BN(web3.utils.toWei('100000000'));
+  const etherAmount1 = new BN('10000');
+  const tokenAmount1 = new BN('40000');
+  const minimumContribution = new BN('10');
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tokenOwner, minterOwner, whitelisted, investor1, investor2, notWhitelisted, investor3] = accounts;
+    [tokenOwner, pricingOwner, minterOwner, approvedMinter, firstStateMinter, secondStateMinter, investor1] = accounts;
   });
 
   beforeEach(async () => {
-    // token
-    tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner, []);
+    tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
+      []);
 
-    // minter
-    minterContract = await deployContract(web3, minterJson, minterOwner, [
-      tokenContract.options.address,
-      saleTokenCap
-    ]);
+    pricingContract = await deployContract(web3, pricingMockJson, pricingOwner, 
+      [
+        firstStateMinter,
+        secondStateMinter
+      ]);
+    secondStateAfter = new BN(await pricingContract.methods.secondStateAfter().call());
+
+    minterContract = await deployContract(web3, minterJson, minterOwner, 
+      [
+        tokenContract.options.address,
+        saleEtherCap
+      ]);
+
     await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
-    await minterContract.methods.add(whitelisted).send({from: minterOwner});
+    await minterContract.methods.setPricing(pricingContract.options.address).send({from: minterOwner});
   });
 
-  const lockContribution = async (investor, tokenAmount, from) => 
-    minterContract.methods.lockContribution(investor, tokenAmount).send({from});
+  const reservedEther = async () => minterContract.methods.reservedEther().call();
+  const confirmedEther = async () => minterContract.methods.confirmedEther().call();
+  const tokenBalanceOf = async (client) => tokenContract.methods.balanceOf(client).call();
 
-  const rejectContribution = async (investor, from) =>
-    minterContract.methods.rejectContribution(investor).send({from});
-
-  const confirmContribution = async (investor, from) =>
-    minterContract.methods.confirmContribution(investor).send({from});
-
-  const mintAllocation = async (beneficiary, tokenAmount, from) =>
-    minterContract.methods.mintAllocation(beneficiary, tokenAmount).send({from});
-
-  const finishMinting = async (newOwner, from) => minterContract.methods.finishMinting(newOwner).send({from});
-
-  const totalLockedTokens = async() => new BN(await minterContract.methods.totalLockedTokens().call());
-  const totalConfirmedTokens = async() => new BN(await minterContract.methods.totalConfirmedTokens().call());
-  const totalAllocatedTokens = async() => new BN(await minterContract.methods.totalAllocatedTokens().call());
-  const lockedTokens = async(investor) => new BN(await minterContract.methods.lockedTokens(investor).call());
+  const reserve = async (etherAmount, from) => minterContract.methods.reserve(etherAmount).send({from});
+  const mintReserved = async (account, etherAmount, tokenAmount, from) => minterContract.methods.mintReserved(account, etherAmount, tokenAmount).send({from});
+  const unreserve = async (etherAmount, from) => minterContract.methods.unreserve(etherAmount).send({from});
+  const mint = async (account, etherAmount, tokenAmount, from) => minterContract.methods.mint(account, etherAmount, tokenAmount).send({from});
 
   it('should be properly created', async () => {
-    const actualTokenAddress = await minterContract.methods.token().call({from: minterOwner});
-    expect(actualTokenAddress).to.be.equal(tokenContract.options.address);
+    const actualSaleEtherCap = await minterContract.methods.saleEtherCap().call();
+    expect(actualSaleEtherCap).to.eq.BN(saleEtherCap);
   });
 
-  describe('locking contributions', async () => {
-    const testShouldLockContribution = async (investor, tokenAmount, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
-      const initialLocked = await lockedTokens(investor);
-
-      await lockContribution(investor, tokenAmount, from);
-
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens.add(tokenAmount));
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
-      expect(await lockedTokens(investor)).to.eq.BN(initialLocked.add(tokenAmount));
-    };
-
-    const testShouldNotLockContribution = async(investor, tokenAmount, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
-
-      await expectThrow(lockContribution(investor, tokenAmount, from));
-
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens);
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
-    };
-
-    it('should allow to lock contribution by whitelisted', async () => {
-      await testShouldLockContribution(investor1, tokenAmount1, whitelisted);
-      await testShouldLockContribution(investor2, tokenAmount2, whitelisted);
+  describe('reserving', async () => {
+    it('should allow to reserve by first approver in the first state', async() => {
+      await reserve(etherAmount1, firstStateMinter);
     });
 
-    it('should not allow to lock contribution by not whitelisted', async () => {
-      await testShouldNotLockContribution(investor1, tokenAmount1, notWhitelisted);
-      await testShouldNotLockContribution(investor2, tokenAmount2, notWhitelisted);
+    it('should not allow to reserve by second approver in the first state', async() => {
+      await expectThrow(reserve(etherAmount1, secondStateMinter));
     });
 
-    it('should allow to lock up to the sale cap', async () => {
-      await testShouldLockContribution(investor1, saleTokenCap, whitelisted);
+    it('reserving should advance to second state', async() => {
+      await reserve(secondStateAfter, firstStateMinter);
+      expect(await pricingContract.methods.secondState().call()).to.be.true;
     });
 
-    it('should not allow to lock more than the sale cap', async () => {
-      await testShouldNotLockContribution(investor1, saleTokenCap + 1, whitelisted);
-    });
-
-    it('should allow to lock up to the sale cap, even if total with allocated exceeds sale cap', async () => {
-      await mintAllocation(investor1, allocationTokenCap, whitelisted);
-      await testShouldLockContribution(investor1, saleTokenCap, whitelisted);
-    });
-  });
-
-  describe('rejecting contributions', async () => {
-    const testShouldRejectContribution = async (investor, from) => {
-      const tokenAmount = await lockedTokens(investor);
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
-
-      await rejectContribution(investor, from);
-
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens.sub(tokenAmount));
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
-    };
-
-    const testShouldNotRejectContribution = async (investor, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
-
-      await expectThrow(rejectContribution(investor, from));
-
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens);
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
-    };
-
-    it('should not throw exception when rejecting contribution when nothing locked', async () => {
-      await testShouldRejectContribution(investor1, whitelisted);
-      await testShouldRejectContribution(investor3, whitelisted);
-    });
-
-    describe('Existing locked contributions', async() => {
+    describe('second state', async () => {
       beforeEach(async() => {
-        await lockContribution(investor1, tokenAmount1, whitelisted);
-        await lockContribution(investor2, tokenAmount2, whitelisted);
+        await reserve(secondStateAfter, firstStateMinter);
       });
 
-      it('should allow to reject contributions by whitelisted', async () => {
-        await testShouldRejectContribution(investor1, whitelisted);
-        await testShouldRejectContribution(investor2, whitelisted);
+      it('should allow to reserve by second approver in the second state', async() => {
+        await reserve(etherAmount1, secondStateMinter);
       });
   
-      it('should not allow to reject contributions by not whitelisted', async () => {
-        await testShouldNotRejectContribution(investor1, notWhitelisted);
+      it('should not allow to reserve by first approver in the second state', async() => {
+        await expectThrow(reserve(etherAmount1, firstStateMinter));
       });
+    });
+
+    it('should not allow to reserve below minimum contribution', async() => {
+      await reserve(minimumContribution, firstStateMinter);
+      await expectThrow(reserve(minimumContribution.sub(new BN('1')), firstStateMinter));
     });
   });
 
-  describe('confirming contributions', async () => {
-    const testShouldConfirmContribution = async(investor, from) => {
-      const tokenAmount = await lockedTokens(investor);
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
+  describe('minting reserved', async () => {
+    const testShouldMintReserved = async(account, etherAmount, tokenAmount, from) => {
+      const initialReservedEther = new BN(await reservedEther());
+      const initialConfirmedEther = new BN(await confirmedEther());
 
-      await confirmContribution(investor, from);
+      await mintReserved(account, etherAmount, tokenAmount, from);
 
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens.sub(tokenAmount));
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens.add(tokenAmount));
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
+      expect(await reservedEther()).to.eq.BN(0);
+      expect(await confirmedEther()).to.eq.BN(initialConfirmedEther.add(initialReservedEther));
     };
 
-    const testShouldNotConfirmContribution = async(investor, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
+    const testShouldNotMintReserved = async(account, etherAmount, tokenAmount, from) => {
+      const initialReservedEther = new BN(await reservedEther());
+      const initialConfirmedEther = new BN(await confirmedEther());
 
-      await expectThrow(confirmContribution(investor, from));
+      await expectThrow(mintReserved(account, etherAmount, tokenAmount, from));
 
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens);
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
+      expect(await reservedEther()).to.eq.BN(initialReservedEther);
+      expect(await confirmedEther()).to.eq.BN(initialConfirmedEther);
     };
 
-    it('should not throw exception when confirming when nothing locked', async () => {
-      await testShouldConfirmContribution(investor1, whitelisted);
-      await testShouldConfirmContribution(investor3, whitelisted);
+    it('should allow to mintReserved by the approved minter', async() => {
+      await reserve(etherAmount1, firstStateMinter);
+      await testShouldMintReserved(investor1, etherAmount1, tokenAmount1, firstStateMinter);
     });
 
-    describe('Existing locked contributions', async() => {
-      beforeEach(async() => {
-        await lockContribution(investor1, tokenAmount1, whitelisted);
-        await lockContribution(investor2, tokenAmount2, whitelisted);
-      });
+    it('should not allow to mintReserved by unapproved minter', async() => {
+      await reserve(etherAmount1, firstStateMinter);
+      await testShouldNotMintReserved(investor1, etherAmount1, tokenAmount1, secondStateMinter);
+    });
 
-      it('should allow to confirm by whitelisted', async () => {
-        await testShouldConfirmContribution(investor1, whitelisted);
-        await testShouldConfirmContribution(investor2, whitelisted);
-      });
-  
-      it('should not allow to confirm by not whitelisted', async () => {
-        await testShouldNotConfirmContribution(investor1, notWhitelisted);
-      });
+    it('mintingReserved should not add up to reserved for advancing state based on contributions', async() => {
+      await reserve(secondStateAfter.sub(new BN('100')), firstStateMinter);
+      await mintReserved(investor1, secondStateAfter.sub(new BN('100')), tokenAmount1, firstStateMinter);
+      expect(await pricingContract.methods.secondState().call()).to.be.false;
     });
   });
 
-  describe('minting allocations', async () => {
-    const testShouldMintAllocation = async(beneficiary, tokenAmount, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
+  describe('unreserving', async () => {
+    it('should allow to unreserve by approved minter', async() => {
+      await reserve(etherAmount1, firstStateMinter);
+      const initialReserved = new BN(await reservedEther());
 
-      await mintAllocation(beneficiary, tokenAmount, from);
+      await unreserve(etherAmount1, firstStateMinter);
 
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens);
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens.add(tokenAmount));
-    };
-
-    const testShouldNotMintAllocation = async(beneficiary, tokenAmount, from) => {
-      const initialTotalLockedTokens = await totalLockedTokens();
-      const initialTotalConfirmedTokens = await totalConfirmedTokens();
-      const initialTotalAllocatedTokens = await totalAllocatedTokens();
-
-      await expectThrow(mintAllocation(beneficiary, tokenAmount, from));
-
-      expect(await totalLockedTokens()).to.eq.BN(initialTotalLockedTokens);
-      expect(await totalConfirmedTokens()).to.eq.BN(initialTotalConfirmedTokens);
-      expect(await totalAllocatedTokens()).to.eq.BN(initialTotalAllocatedTokens);
-    };
-
-    it('should allow to mint allocation by whitelisted', async () => {
-      await testShouldMintAllocation(investor1, tokenAmount1, whitelisted);
-      await testShouldMintAllocation(investor2, tokenAmount1, whitelisted);
+      expect(await reservedEther()).to.eq.BN(initialReserved.sub(etherAmount1));
     });
 
-    it('should not allow to mint allocation by not whitelisted', async () => {
-      await testShouldNotMintAllocation(investor1, tokenAmount1, notWhitelisted);
+    it('should not allow to unreserve by unapproved minter', async() => {
+      await reserve(etherAmount1, firstStateMinter);
+      const initialReserved = await reservedEther();
+
+      await expectThrow(unreserve(etherAmount1, secondStateMinter)); 
+
+      expect(await reservedEther()).to.eq.BN(initialReserved);
     });
 
-    it('should allow to mint allocation equal to the allocation cap', async () => {
-      await testShouldMintAllocation(investor1, allocationTokenCap, whitelisted);
-    });
-
-    it('should not allow to mint allocation more than allocation cap', async () => {
-      await testShouldNotMintAllocation(investor1, allocationTokenCap.add(new BN('100')), whitelisted);
-    });
-
-    it('should allow to mint allocation up to the allocation cap, even if total with locked exceeds allocation cap', async () => {
-      await lockContribution(investor1, saleTokenCap, whitelisted);
-      await testShouldMintAllocation(investor1, allocationTokenCap, whitelisted);
+    it('should not allow to unreserve if not reserved', async() => {
+      await expectThrow(unreserve(etherAmount1, firstStateMinter)); 
     });
   });
 
-  describe('finishing minting', async () => {
-    const testShouldFinishMinting = async(newOwner, from) => {
-      await finishMinting(newOwner, from);
-      expect(await tokenContract.methods.owner().call()).to.be.equal(newOwner);
-      expect(await tokenContract.methods.mintingFinished().call()).to.be.true;
+  describe('minting', async () => {
+    const testShouldMint = async(account, etherAmount, tokenAmount, from) => {
+      const initialConfirmedEther = new BN(await confirmedEther());
+      const initialTokenBalance = new BN(await tokenBalanceOf(account));
+
+      await mint(account, etherAmount, tokenAmount, from);
+
+      expect(await confirmedEther()).to.eq.BN(initialConfirmedEther.add(etherAmount));
+      expect(await tokenBalanceOf(account)).to.eq.BN(initialTokenBalance.add(tokenAmount));
     };
 
-    const testShouldNotFinishMinting = async(newOwner, from) => {
-      await expectThrow(finishMinting(newOwner, from));
-      expect(await tokenContract.methods.owner().call()).to.be.equal(minterContract.options.address);
-      expect(await tokenContract.methods.mintingFinished().call()).to.be.false;
+    const testShouldNotMint = async(account, etherAmount, tokenAmount, from) => {
+      const initialConfirmedEther = new BN(await confirmedEther());
+      const initialTokenBalance = new BN(await tokenBalanceOf(account));
+
+      await expectThrow(mint(account, etherAmount, tokenAmount, from));
+
+      expect(await confirmedEther()).to.eq.BN(initialConfirmedEther);
+      expect(await tokenBalanceOf(account)).to.eq.BN(initialTokenBalance);
     };
 
-    it('should allow to finish minting by whitelisted', async () => {
-      await testShouldFinishMinting(tokenOwner, whitelisted);
+    it('should allow to mint by approved minter', async() => {
+      await testShouldMint(investor1, etherAmount1, tokenAmount1, firstStateMinter);
     });
 
-    it('should not allow to finish minting by not whitelisted', async () => {
-      await testShouldNotFinishMinting(tokenOwner, notWhitelisted);
+    it('should not allow to mint by unapproved minter', async() => {
+      await testShouldNotMint(investor1, etherAmount1, tokenAmount1, secondStateMinter);
     });
 
-    it('should not allow to finish minting with locked contributions', async () => {
-      await lockContribution(investor1, tokenAmount1, whitelisted);
-      await testShouldNotFinishMinting(tokenOwner, whitelisted);
-    });
-
-    it('should allow to finish minting after rejecting locked contribution', async () => {
-      await lockContribution(investor1, tokenAmount1, whitelisted);
-      await testShouldNotFinishMinting(tokenOwner, whitelisted);
-
-      await rejectContribution(investor1, whitelisted);
-      await testShouldFinishMinting(tokenOwner, whitelisted);
-    });
-
-    it('should allow to finish minting after confirming locked contribution', async () => {
-      await lockContribution(investor1, tokenAmount1, whitelisted);
-      await testShouldNotFinishMinting(tokenOwner, whitelisted);
-
-      await confirmContribution(investor1, whitelisted);
-      await testShouldFinishMinting(tokenOwner, whitelisted);
+    it('should advance state when minting', async () => {
+      await mint(investor1, secondStateAfter, tokenAmount1, firstStateMinter);
+      expect(await pricingContract.methods.secondState().call()).to.be.true;
     });
   });
 });

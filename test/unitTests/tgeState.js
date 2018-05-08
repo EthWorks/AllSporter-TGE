@@ -1,7 +1,8 @@
-import {createWeb3, deployContract, increaseTimeTo, durationInit, expectThrow, increaseTime, latestTime} from 'ethworks-solidity';
+import {createWeb3, deployContract, latestTime, expectThrow, increaseTimeTo, increaseTime, durationInit} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import minterJson from '../../build/contracts/Minter.json';
-import stateManagerJson from '../../build/contracts/StateManager.json';
+import pricingMockJson from '../../build/contracts/PricingMock.json';
+import tgeStateJson from '../../build/contracts/TgeState.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -12,16 +13,16 @@ const {BN} = web3.utils;
 chai.use(bnChai(BN));
 const duration = durationInit(web3);
 
-describe('State Manager', () => {
+describe('TgeState', () => {
   let tokenOwner;
   let tokenContract;
   let accounts;
-  let minterOwner;
-  let minterContract;
-  let whitelisted;
-  let stateContract;
-  let stateContractOwner;
+  let tgeStateOwner;
+  let tgeStateContract;
+  let updater;
+  const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   let saleStartTime;
+  const tokenCap = new BN(web3.utils.toWei('260000000'));
   const PRESALE = 0;
   const PREICO1 = 1;
   const PREICO2 = 2;
@@ -32,75 +33,66 @@ describe('State Manager', () => {
   const ICO4 = 7;
   const ICO5 = 8;
   const ICO6 = 9;
-  const ALLOCATING = 10;
-  const FINISHED = 11;
-  const etherAmount = new BN(web3.utils.toWei('1000'));
-  const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
-  const saleTokenCap = new BN(web3.utils.toWei('156000000'));
-  const tokenCap = new BN(web3.utils.toWei('260000000'));
+  const FINISHING_ICO = 10;
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tokenOwner, minterOwner, whitelisted, stateContractOwner] = accounts;
+    [tgeStateOwner, tokenOwner, updater] = accounts;
   });
 
   beforeEach(async () => {
-    // token
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner, []);
 
-    // minter
-    minterContract = await deployContract(web3, minterJson, minterOwner, [
-      tokenContract.options.address,
-      saleTokenCap
-    ]);
-    await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
-    await minterContract.methods.add(whitelisted).send({from: minterOwner});
-
-    // state manager
     saleStartTime = await latestTime(web3) + 100;
-    stateContract = await deployContract(web3, stateManagerJson, stateContractOwner, [
+    tgeStateContract = await deployContract(web3, tgeStateJson, tgeStateOwner, [
       saleStartTime,
       singleStateEtherCap
     ]);
-    await minterContract.methods.add(stateContract.options.address).send({from: minterOwner});
+    tgeStateContract.methods.addStateUpdater(tgeStateOwner).send({from: tgeStateOwner});
   });
 
   const advanceDays = async (howMany) => {
     await increaseTime(web3, duration.days(howMany));
   };
+  
   const advanceToSaleStartTime = async() => {
     const destination = saleStartTime + 100;
     await increaseTimeTo(web3, destination);
   };
-  const updateState = async(totalEtherContributions = 0) => stateContract.methods.updateState(totalEtherContributions).send({from: stateContractOwner});
+
+  const updateState = async(totalEtherContributions = 0, from = tgeStateOwner) => tgeStateContract.methods.updateState(totalEtherContributions).send({from});
 
   const isSellingState = async() => {
     await updateState();
-    return await stateContract.methods.isSellingState().call();
-  };
-
-  const getCurrentTokensForEther = async(etherAmount) => {
-    await updateState();
-    return await stateContract.methods.getCurrentTokensForEther(etherAmount).call();
+    return await tgeStateContract.methods.isSellingState().call();
   };
 
   const currentState = async() => {
     await updateState();
-    return await stateContract.methods.currentState().call();
+    return await tgeStateContract.methods.currentState().call();
   };
 
-  const finalize = async (from) => stateContract.methods.finalize().send({from});
+  const moveState = async (fromState, toState, from) =>
+    tgeStateContract.methods.moveState(fromState, toState).send({from});
 
   const increaseTimeToState = async(state) => {
-    const startTime = await stateContract.methods.startTimes(state).call();
+    const startTime = await tgeStateContract.methods.startTimes(state).call();
     await increaseTimeTo(web3, startTime);
     await updateState();
   };
 
+  const addStateUpdater = async(newUpdater, from) =>
+    tgeStateContract.methods.addStateUpdater(newUpdater).send({from});
+
   const increaseContributionsToStateCap = async(state) => {
-    const cap = await stateContract.methods.etherCaps(state).call();
-    await stateContract.methods.updateState(cap).send({from: stateContractOwner});
+    const cap = await tgeStateContract.methods.etherCaps(state).call();
+    await tgeStateContract.methods.updateState(cap).send({from: tgeStateOwner});
   };
+
+  it('should be properly created', async () => {
+    const actualCurrentState = await tgeStateContract.methods.currentState().call();
+    expect(actualCurrentState).to.eq.BN(0);
+  });
 
   describe('advancing states based on time', async () => {
     it('should be in Presale state initially', async () => {
@@ -141,15 +133,15 @@ describe('State Manager', () => {
       expect(await currentState()).to.eq.BN(ICO6);
 
       await advanceDays(10);
-      expect(await currentState()).to.eq.BN(ALLOCATING);
+      expect(await currentState()).to.eq.BN(FINISHING_ICO);
     });
 
-    it('should remain in Allocating state', async() => {
+    it('should remain in the last state', async() => {
       await advanceToSaleStartTime();
       await advanceDays(73);
-      expect(await currentState()).to.eq.BN(ALLOCATING);
+      expect(await currentState()).to.eq.BN(FINISHING_ICO);
       await advanceDays(1000);
-      expect(await currentState()).to.eq.BN(ALLOCATING);
+      expect(await currentState()).to.eq.BN(FINISHING_ICO);
     });
   });
 
@@ -219,19 +211,19 @@ describe('State Manager', () => {
         expect(await currentState()).to.eq.BN(ICO6);
       });
 
-      it('should advance from ico6 to allocating', async () => {
+      it('should advance from ico6 to finishing_ico', async () => {
         await increaseTimeToState(ICO6);
 
         await increaseContributionsToStateCap(ICO6);
-        expect(await currentState()).to.eq.BN(ALLOCATING);
+        expect(await currentState()).to.eq.BN(FINISHING_ICO);
       });
 
-      it('should not advance from allocating to finished', async () => {
-        await increaseTimeToState(ALLOCATING);
+      it('should not advance from finishing_ico to the next state', async () => {
+        await increaseTimeToState(FINISHING_ICO);
 
-        await increaseContributionsToStateCap(ALLOCATING);
+        await increaseContributionsToStateCap(FINISHING_ICO);
         await updateState(tokenCap);
-        expect(await currentState()).to.eq.BN(ALLOCATING);
+        expect(await currentState()).to.eq.BN(FINISHING_ICO);
       });
     });
 
@@ -243,11 +235,11 @@ describe('State Manager', () => {
         expect(await currentState()).to.eq.BN(BREAK);
       });
 
-      it('should advance from ico1 to allocating', async() => {
+      it('should advance from ico1 to FINISHING_ICO', async() => {
         await increaseTimeToState(ICO1);
 
         await increaseContributionsToStateCap(ICO6);
-        expect(await currentState()).to.eq.BN(ALLOCATING);
+        expect(await currentState()).to.eq.BN(FINISHING_ICO);
       });
     });
 
@@ -260,45 +252,63 @@ describe('State Manager', () => {
       await increaseContributionsToStateCap(ICO1);
       expect(await currentState()).to.eq.BN(ICO6);
     });
+
+    describe('state updaters', async () => {
+      it('should allow to add state updater', async () => {
+        expect(await tgeStateContract.methods.stateUpdaters(updater).call()).to.be.false;
+        await addStateUpdater(updater, tgeStateOwner);
+        expect(await tgeStateContract.methods.stateUpdaters(updater).call()).to.be.true;
+      });
+
+      it('should not allow to add state updater by third party', async () => {
+        await expectThrow(addStateUpdater(updater, updater));
+        expect(await tgeStateContract.methods.stateUpdaters(updater).call()).to.be.false;
+      });
+
+      it('should not allow to update state by not state updater', async () => {
+        await increaseTimeToState(ICO1);
+        await expectThrow(updateState(singleStateEtherCap, updater));
+        expect(await currentState()).to.eq.BN(ICO1);
+      });
+
+      it('should allow to update state by new state updater', async () => {
+        await increaseTimeToState(ICO1);
+        await addStateUpdater(updater, tgeStateOwner);
+        await updateState(singleStateEtherCap, updater);
+        expect(await currentState()).to.eq.BN(ICO2);
+      });
+    });
+  });
+
+  describe('moving states', async() => {
+    it('should allow the owner to move the state', async() => {
+      await moveState(PRESALE, ICO6, tgeStateOwner);
+      expect(await currentState()).to.eq.BN(ICO6);
+    });
+
+    it('should not allow any updater to move the state', async() => {
+      await addStateUpdater(updater, tgeStateOwner);
+      await expectThrow(moveState(PRESALE, ICO6, updater));
+      expect(await currentState()).to.eq.BN(PRESALE);
+    });
   });
 
   describe('state characteristics', async () => {
-    const testShouldFinalize = async(from) => {
-      await finalize(from);
-      expect(await currentState()).to.eq.BN(FINISHED);
-    };
-
-    const testShouldNotFinalize = async(from) => {
-      const initialState = await currentState();
-      await expectThrow(finalize(from));
-      expect(await currentState()).to.eq.BN(initialState);
-    };
-
     describe('Presale', async () => {
       it('should not be a selling state', async() => {
+        expect(await currentState()).to.eq.BN(PRESALE);
         expect(await isSellingState()).to.be.false;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should return a proper amount of tokens for ether', async() => {
-        expect(await getCurrentTokensForEther(etherAmount)).to.eq.BN(0);
       });
     });
 
     describe('Preico1', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
+        expect(await currentState()).to.eq.BN(PREICO1);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3250'));
       });
     });
 
@@ -306,16 +316,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(5);
+        expect(await currentState()).to.eq.BN(PREICO2);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3087.5'));
       });
     });
 
@@ -323,16 +328,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(10);
+        expect(await currentState()).to.eq.BN(BREAK);
       });
 
       it('should not be a selling state', async() => {
         expect(await isSellingState()).to.be.false;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(0);
       });
     });
 
@@ -340,16 +340,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(13);
+        expect(await currentState()).to.eq.BN(ICO1);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2925'));
       });
     });
 
@@ -357,16 +352,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(23);
+        expect(await currentState()).to.eq.BN(ICO2);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2762.5'));
       });
     });
 
@@ -374,16 +364,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(33);
+        expect(await currentState()).to.eq.BN(ICO3);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2600'));
       });
     });
 
@@ -391,16 +376,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(43);
+        expect(await currentState()).to.eq.BN(ICO4);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2437.5'));
       });
     });
 
@@ -408,16 +388,11 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(53);
+        expect(await currentState()).to.eq.BN(ICO5);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
-      });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2112.5'));
       });
     });
 
@@ -425,52 +400,23 @@ describe('State Manager', () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(63);
+        expect(await currentState()).to.eq.BN(ICO6);
       });
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
-
-      it('should not allow to finalize', async() => testShouldNotFinalize(stateContractOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('1950'));
-      });
     });
 
-    describe('Allocating', async () => {
+    describe('FINISHING_ICO', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(73);
-        expect(await currentState()).to.eq.BN(ALLOCATING);
+        expect(await currentState()).to.eq.BN(FINISHING_ICO);
       });
 
       it('should not be a selling state', async() => {
         expect(await isSellingState()).to.be.false;
-      });
-
-      it('should allow to finalize', async() => testShouldFinalize(stateContractOwner));
-      it('should not allow to finalize by not the owner', async() => testShouldNotFinalize(tokenOwner));
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
-      });
-    });
-
-    describe('Finished', async() => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(73);
-        await updateState();
-        await finalize(stateContractOwner);
-      });
-
-      it('should not be a selling state', async() => {
-        expect(await isSellingState()).to.be.false;
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
       });
     });
   });

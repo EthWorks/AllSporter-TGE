@@ -3,86 +3,63 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
+import "./IPricing.sol";
 
-contract Minter is Whitelist {
+contract Minter is Ownable {
     using SafeMath for uint;
+
     CrowdfundableToken public token;
-    uint public saleTokenCap;
-    uint public totalLockedTokens;
-    uint public totalConfirmedTokens;
-    uint public totalAllocatedTokens;
-    mapping(address => uint) public lockedTokens;
+    IPricing public pricing;
+    uint public saleEtherCap;
+    uint public confirmedEther;
+    uint public reservedEther;
 
-    event LockedContribution(address indexed account, uint tokenAmount);
-    event RejectedContribution(address indexed account, uint tokenAmount);
-    event ConfirmedContribution(address indexed account, uint tokenAmount);
-    event MintedAllocation(address indexed account, uint tokenAmount);
-
-    // all tokens except allocated
-    modifier notExceedingSaleCap(uint tokensToAdd) {
-        uint saleTotal = totalLockedTokens.add(totalConfirmedTokens);
-        require(saleTotal.add(tokensToAdd) <= saleTokenCap);
+    modifier belowSaleEtherCap(uint additionalEtherAmount) {
+        uint totalEtherAmount = confirmedEther.add(reservedEther).add(additionalEtherAmount);
+        require(totalEtherAmount < saleEtherCap);
         _;
     }
 
-    modifier notExceedingAllocationCap(uint tokensToAdd) {
-        uint allocationCap = token.cap().sub(saleTokenCap);
-        require(totalAllocatedTokens.add(tokensToAdd) <= allocationCap);
+    modifier canMint(uint additionalEtherAmount) {
+        require(address(pricing) != 0x0);
+        uint totalEtherAmount = confirmedEther.add(reservedEther).add(additionalEtherAmount);
+        require(pricing.canMint(msg.sender, totalEtherAmount));
         _;
     }
 
-    modifier noOutstandingLockedTokens() {
-        require(totalLockedTokens == 0);
+    modifier aboveMinimumAmount(uint etherAmount) {
+        require(etherAmount >= pricing.getMinimumContribution());
         _;
     }
 
-    function Minter(CrowdfundableToken _token, uint _saleTokenCap) public {
+    function Minter(CrowdfundableToken _token, uint _saleEtherCap) public {
         require(address(_token) != 0x0);
-        require(_saleTokenCap > 0);
+        require(_saleEtherCap > 0);
+
         token = _token;
-        saleTokenCap = _saleTokenCap;
+        saleEtherCap = _saleEtherCap;
     }
 
-    // external
-
-    // reserve tokens for a pending investment
-    function lockContribution(address account, uint tokenAmount)
-        external
-        onlyWhitelisted
-        notExceedingSaleCap(tokenAmount)
-    {
-        totalLockedTokens = totalLockedTokens.add(tokenAmount);
-        lockedTokens[account] = lockedTokens[account].add(tokenAmount);
-        emit LockedContribution(account, tokenAmount);
+    function setPricing(IPricing _pricing) external onlyOwner {
+        pricing = _pricing;
     }
 
-    // unreserve tokens of pending investment
-    function rejectContribution(address account) external onlyWhitelisted {
-        totalLockedTokens = totalLockedTokens.sub(lockedTokens[account]);
-        emit RejectedContribution(account, lockedTokens[account]);
-        lockedTokens[account] = 0;
+    function reserve(uint etherAmount) external belowSaleEtherCap(etherAmount) aboveMinimumAmount(etherAmount) canMint(etherAmount) {
+        reservedEther = reservedEther.add(etherAmount);
     }
 
-    // mint reserved tokens of pending investment
-    function confirmContribution(address account) external onlyWhitelisted {
-        totalLockedTokens = totalLockedTokens.sub(lockedTokens[account]);
-        totalConfirmedTokens = totalConfirmedTokens.add(lockedTokens[account]);
-        token.mint(account, lockedTokens[account]);
-        emit ConfirmedContribution(account, lockedTokens[account]);
-        lockedTokens[account] = 0;
-    }
-
-    // mint team & advisors allocation
-    function mintAllocation(address account, uint tokenAmount) external onlyWhitelisted notExceedingAllocationCap(tokenAmount)
-    {
-        totalAllocatedTokens = totalAllocatedTokens.add(tokenAmount);
+    function mintReserved(address account, uint etherAmount, uint tokenAmount) external canMint(0) {
+        reservedEther = reservedEther.sub(etherAmount);
+        confirmedEther = confirmedEther.add(etherAmount);
         token.mint(account, tokenAmount);
-        emit MintedAllocation(account, tokenAmount);
     }
 
-    // finish minting and give up token ownership
-    function finishMinting(address newTokenOwner) external onlyWhitelisted noOutstandingLockedTokens {
-        token.finishMinting();
-        token.transferOwnership(newTokenOwner);
+    function unreserve(uint etherAmount) public canMint(0) {
+        reservedEther = reservedEther.sub(etherAmount);
+    }
+
+    function mint(address account, uint etherAmount, uint tokenAmount) public canMint(etherAmount) {
+        confirmedEther = confirmedEther.add(etherAmount);
+        token.mint(account, tokenAmount);
     }
 }
