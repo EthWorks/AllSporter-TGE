@@ -1,8 +1,7 @@
 import {createWeb3, deployContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
-import minterJson from '../../build/contracts/Minter.json';
-import pricingMockJson from '../../build/contracts/PricingMock.json';
 import deferredKycJson from '../../build/contracts/DeferredKyc.json';
+import tgeMockJson from '../../build/contracts/TgeMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -17,27 +16,22 @@ describe('DeferredKyc', () => {
   let approver;
   let tokenOwner;
   let tokenContract;
-  let pricingOwner;
-  let pricingContract;
   let minterOwner;
   let minterContract;
-  let approvedMinter;
   let accounts;
   let firstStateMinter;
   let secondStateMinter;
-  let secondStateAfter;
   let kycOwner;
   let kycContract;
   let treasury;
   let investor1;
   let investor2;
-  const tokenCap = new BN(web3.utils.toWei('260000000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10000');
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tokenOwner, pricingOwner, minterOwner, approvedMinter, firstStateMinter, secondStateMinter,
+    [tokenOwner, minterOwner, firstStateMinter, secondStateMinter,
       approver, treasury, kycOwner, investor1, investor2] = accounts;
   });
 
@@ -45,34 +39,26 @@ describe('DeferredKyc', () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
       []);
 
-    pricingContract = await deployContract(web3, pricingMockJson, pricingOwner, 
-      [
-        firstStateMinter,
-        secondStateMinter
-      ]);
-    secondStateAfter = await pricingContract.methods.secondStateAfter().call();
-
-    minterContract = await deployContract(web3, minterJson, minterOwner, 
-      [
-        tokenContract.options.address,
-        saleEtherCap
-      ]);
+    minterContract = await deployContract(web3, tgeMockJson, minterOwner, [
+      tokenContract.options.address,
+      saleEtherCap,
+      firstStateMinter,
+      secondStateMinter
+    ]);
 
     await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
-    await minterContract.methods.setPricing(pricingContract.options.address).send({from: minterOwner});
 
     kycContract = await deployContract(web3, deferredKycJson, kycOwner, [
       minterContract.options.address,
       approver,
       treasury
     ]);
-    pricingContract.methods.addAllStateMinter(kycContract.options.address).send({from: pricingOwner});
+    minterContract.methods.addAllStateMinter(kycContract.options.address).send({from: minterOwner});
   });
 
   const addToKyc = async (account, etherAmount, from) => kycContract.methods.addToKyc(account).send({from, value: etherAmount});
   const approve = async(account, from) => kycContract.methods.approve(account).send({from});
   const reject = async(account, from) => kycContract.methods.reject(account).send({from});
-  const withdrawRejected = async(from) => kycContract.methods.withdrawRejected().send({from});
 
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();

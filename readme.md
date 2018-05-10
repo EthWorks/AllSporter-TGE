@@ -1,47 +1,97 @@
-# AllSporter coin and ICO
+# AllSporter TGE
 
-[![Build Status](https://travis-ci.com/EthWorks/allsporter-crowdsale.svg?token=KKBqp4NVqooxKsABJQeo&branch=master)](https://travis-ci.com/EthWorks/allsporter-crowdsale)
+## AllSporter ICO details
+
+The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. 
+
+### Price tiers
+
+| Tier | Duration | Token quantity for 1 ETH |
+| --- | --- | --- |
+| Pre ICO 1 | 5 days | 3250 |
+| Pre ICO 2 | 5 days | 3087,5 |
+| Break | 3 days | Investments not possible |
+| ICO 1 | 10 days | 2925 |
+| ICO 2 | 10 days | 2762,5 |
+| ICO 3 | 10 days | 2600 |
+| ICO 4 | 10 days | 2437,5 |
+| ICO 5 | 10 days | 2112,5 |
+| ICO 6 | 10 days | 1950 |
+
+### Token split
+
+| Group | Split |
+| --- | --- |
+| Pre-ICOm & ICO | 60% |
+| Team & Developers | 17% |
+| Customer Rewards | 15% |
+| Advisors & Bounty | 8% |
+
+### Locking and vesting period
+
+| Group | Period |
+| --- | --- |
+| Team & Developers | Locked for 24M |
+| Customer Rewards | Vesting for 30M |
 
 ## AllSporter Coin
 
-| Item  | Value |
+| Item | Value |
 | ------------- | ------------- |
 | Standard  | ERC20  |
 | Decimals | 18 |
 | Name | AllSporter Coin |
 | Symbol | ASC |
+| Cap | 260M |
 
-## AllSporter ICO
+## AllSporter ICO technical details
 
-The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. The architecture of the ICO consists of the following Smart Contracts:
+The architecture of the ICO consists of the following Smart Contracts:
 
 | Smart Contract  | Description |
 | ------------- | ------------- |
-| Crowdsale | Allows the investors to buy tokens for the current price. Allows the owner to allocate tokens for team & advisors. Also records external sales. |
-| Kyc | Manages pending investments before they are approved or rejected |
-| Minter | Takes care of minting tokens for investors and allocations, taking into account the token cap and the sale token cap. Also takes into account tokens placed under kyc before they are rejected or confirmed |
-| StateManager | Manages the state of the ICO, which is based on time and on contributions made by the investors |
-| ReferralWhitelist | Restricts referrals to whitelisted only |
+| Minter | Abstract base class responsible for minting tokens and tracking sale cap |
+| Tge | Main contract managing prices, permissions and the state of the ICO |
+| Crowdsale | Entry point for the investors and external sales |
+| DeferredKyc | Responsible for managing investments undergoing KYC process |
+| ReferralManager | Manages the fees for referring investors |
+| Allocator | Allows the allocation of tokens for Team & Developers, Customer Rewards, Advisors & Bounty |
+| Airdropper | Proportionally mints tokens maintaining the token split percentages up to the token cap of 260M ASC |
 
 ### Architecture diagram
 
 ![Architecture](/images/architecture.png)
 
-## Events
+### Events
 
 The Smart Contracts emit the following events on the blockchain:
 
-### Crowdsale events
+#### AllSporter Coin events
 
 | Event  | Description |
 | ------------- | ------------- |
-| ContributionMade | An investment has been recorded |
-| ExternalSaleNoted | An external sale has been recorded. Successful KYC pass is assumed |
-| PercentageAllocationMade | A percentage allocation has been recorded |
-| LockedPercentageAllocationMade | A percentage allocation has been recorded. These tokens will be additionally locked after the sale end time |
-| ReferralBonusAdded | A purchase with a referral has been noted. Bonus tokens have been added for the referral and the referred. |
+| Mint | Tokens are minted for a given address |
+| MintFinished | Minting is finished, and the tokens are no longer frozen (can be transferred) |
 
-### Kyc events
+#### Minter events
+
+| Event  | Description |
+| ------------- | ------------- |
+|  |  |
+
+#### Tge events
+
+| Event  | Description |
+| ------------- | ------------- |
+| StateChanged | The state of the TGE has changed |
+
+#### Crowdsale events
+
+| Event  | Description |
+| ------------- | ------------- |
+|  |  |
+
+#### DeferredKyc events
 
 | Event  | Description |
 | ------------- | ------------- |
@@ -49,45 +99,31 @@ The Smart Contracts emit the following events on the blockchain:
 | Approved | An investment under KYC has been approved |
 | Rejected | An investment under KYC has been rejected |
 
-### Minter events
+
+#### ReferralManager events
 
 | Event  | Description |
 | ------------- | ------------- |
-| LockedContribution | Investor's tokens from an investment placed under KYC have been locked |
-| RejectedContribution | Investor's locked tokens have been rejected after failing KYC |
-| ConfirmedContribution | Investor's locked tokens have been confirmed after passing KYC |
-| MintedAllocation | Allocated tokens have been minted |
+|  |  |
 
-### StateManager events
+#### Allocator events
 
 | Event  | Description |
 | ------------- | ------------- |
-| StateChanged | The state of the ICO has changed |
+|  |  |
 
-### AllSporter Coin events
+#### Airdropper events
 
 | Event  | Description |
 | ------------- | ------------- |
-| Mint | Tokens are minted for a given address |
-| MintFinished | Minting is finished, and the tokens are no longer frozen (can be transferred) |
+|  |  |
 
-## Deploying and testing
 
-### Deploying
-
-If you are running Parity node on your device you can deploy the contracts with placeholder values using the following command:
-
-```javascript
-npm run deploy
-```
-
-Placeholder values can be changed in **scripts/deploy.js** file.
-
-### ABI
+## ABI
 
 ABI (Application binary interface) files are located in the **abi** folder.
 
-### Testing
+## Testing
 
 The tests can be run using the following command:
 ```javascript

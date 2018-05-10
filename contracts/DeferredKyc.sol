@@ -4,7 +4,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/LockingContract.sol";
 import "./Minter.sol";
-import "./IPricing.sol";
 
 contract DeferredKyc is Ownable {
     using SafeMath for uint;
@@ -37,7 +36,7 @@ contract DeferredKyc is Ownable {
 
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);
-        uint tokenAmount = minter.pricing().getTokensForEther(msg.value);
+        uint tokenAmount = minter.getTokensForEther(msg.value);
         emit AddedToKyc(investor, msg.value, tokenAmount);
 
         etherInProgress[investor] = etherInProgress[investor].add(msg.value);

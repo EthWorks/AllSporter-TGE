@@ -1,7 +1,6 @@
 import {createWeb3, deployContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
-import minterJson from '../../build/contracts/Minter.json';
-import pricingMockJson from '../../build/contracts/PricingMock.json';
+import tgeMockJson from '../../build/contracts/TgeMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -15,17 +14,13 @@ chai.use(bnChai(BN));
 describe('Minter', () => {
   let tokenOwner;
   let tokenContract;
-  let pricingOwner;
-  let pricingContract;
   let minterOwner;
   let minterContract;
-  let approvedMinter;
   let accounts;
   let firstStateMinter;
   let secondStateMinter;
   let secondStateAfter;
   let investor1;
-  const tokenCap = new BN(web3.utils.toWei('260000000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10000');
   const tokenAmount1 = new BN('40000');
@@ -33,32 +28,26 @@ describe('Minter', () => {
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tokenOwner, pricingOwner, minterOwner, approvedMinter, firstStateMinter, secondStateMinter, investor1] = accounts;
+    [tokenOwner, minterOwner, firstStateMinter, secondStateMinter, investor1] = accounts;
   });
 
   beforeEach(async () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
       []);
 
-    pricingContract = await deployContract(web3, pricingMockJson, pricingOwner, 
-      [
-        firstStateMinter,
-        secondStateMinter
-      ]);
-    secondStateAfter = new BN(await pricingContract.methods.secondStateAfter().call());
-
-    minterContract = await deployContract(web3, minterJson, minterOwner, 
-      [
-        tokenContract.options.address,
-        saleEtherCap
-      ]);
+    minterContract = await deployContract(web3, tgeMockJson, minterOwner, [
+      tokenContract.options.address,
+      saleEtherCap,
+      firstStateMinter,
+      secondStateMinter
+    ]);
+    secondStateAfter = new BN(await minterContract.methods.secondStateAfter().call());
 
     await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
-    await minterContract.methods.setPricing(pricingContract.options.address).send({from: minterOwner});
   });
 
-  const reservedEther = async () => minterContract.methods.reservedEther().call();
-  const confirmedEther = async () => minterContract.methods.confirmedEther().call();
+  const reservedEther = async () => minterContract.methods.reservedSaleEther().call();
+  const confirmedEther = async () => minterContract.methods.confirmedSaleEther().call();
   const tokenBalanceOf = async (client) => tokenContract.methods.balanceOf(client).call();
 
   const reserve = async (etherAmount, from) => minterContract.methods.reserve(etherAmount).send({from});
@@ -82,7 +71,7 @@ describe('Minter', () => {
 
     it('reserving should advance to second state', async() => {
       await reserve(secondStateAfter, firstStateMinter);
-      expect(await pricingContract.methods.secondState().call()).to.be.true;
+      expect(await minterContract.methods.secondState().call()).to.be.true;
     });
 
     describe('second state', async () => {
@@ -139,7 +128,7 @@ describe('Minter', () => {
     it('mintingReserved should not add up to reserved for advancing state based on contributions', async() => {
       await reserve(secondStateAfter.sub(new BN('100')), firstStateMinter);
       await mintReserved(investor1, secondStateAfter.sub(new BN('100')), tokenAmount1, firstStateMinter);
-      expect(await pricingContract.methods.secondState().call()).to.be.false;
+      expect(await minterContract.methods.secondState().call()).to.be.false;
     });
   });
 
@@ -198,7 +187,7 @@ describe('Minter', () => {
 
     it('should advance state when minting', async () => {
       await mint(investor1, secondStateAfter, tokenAmount1, firstStateMinter);
-      expect(await pricingContract.methods.secondState().call()).to.be.true;
+      expect(await minterContract.methods.secondState().call()).to.be.true;
     });
   });
 });

@@ -14,7 +14,8 @@ contract Airdropper is Ownable {
 
     Minter public minter;
     bool isInitialized = false;
-    uint tokensPerDrop;
+    uint initialTotalSupply;
+    uint airdropPool;
     mapping(address => bool) public dropped;
     uint public ETHER_AMOUNT = 0;
 
@@ -41,14 +42,14 @@ contract Airdropper is Ownable {
 
     function drop(address account) public onlyOwner initialized notAlreadyDropped(account) {
         dropped[account] = true;
-        minter.mint(account, ETHER_AMOUNT, tokensPerDrop);
+        uint contributed = minter.token().balanceOf(account);
+        uint tokenAmount = airdropPool.div(initialTotalSupply).mul(contributed);
+        minter.mint(account, ETHER_AMOUNT, tokenAmount);
     }
 
-    function initialize(uint totalDrops) external onlyOwner {
-        require(totalDrops > 0);
+    function initialize() external onlyOwner {
         isInitialized = true;
-        CrowdfundableToken token = CrowdfundableToken(minter.token());
-        uint tokensLeft = token.cap().sub(token.totalSupply());
-        tokensPerDrop = tokensLeft.div(totalDrops);
+        initialTotalSupply = minter.token().totalSupply();
+        airdropPool = minter.token().cap().sub(initialTotalSupply);
     }
 }

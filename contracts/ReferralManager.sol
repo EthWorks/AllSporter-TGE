@@ -13,15 +13,36 @@ contract ReferralManager is Ownable {
 
     Minter public minter;
     uint public ETHER_AMOUNT = 0;
+    mapping (address => uint) realised;
+
+    modifier onlyValidPercent(uint percent) {
+        require(percent >= 0 && percent <= 100);
+        _;
+    }
 
     function ReferralManager(Minter _minter) public {
         require(address(_minter) != 0x0);
 
         minter = _minter;
     }
-    
-    function addReferralFee(address referral, address referred, uint tokenAmount) public onlyOwner {
-        minter.mint(referral, ETHER_AMOUNT, tokenAmount);
-        minter.mint(referred, ETHER_AMOUNT, tokenAmount);
+
+    function addFee(address referring, uint referringPercent, address referred, uint referredPercent)
+        external
+        onlyOwner
+        onlyValidPercent(referringPercent)
+        onlyValidPercent(referredPercent)
+    {
+        require(referring != 0x0 && referred != 0x0);
+        require(referringPercent < 5 && referredPercent < 5);
+
+        applyFee(referring, referringPercent);
+        applyFee(referred, referredPercent);
+    }
+
+    function applyFee(address account, uint percent) internal {
+        uint balance = minter.token().balanceOf(account);
+        uint unrealised = balance.sub(realised[account]);
+        uint tokenAmount = unrealised.mul(percent).div(100);
+        minter.mint(account, ETHER_AMOUNT, tokenAmount);
     }
 }

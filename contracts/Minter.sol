@@ -3,32 +3,33 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
-import "./IPricing.sol";
 
 contract Minter is Ownable {
     using SafeMath for uint;
 
     CrowdfundableToken public token;
-    IPricing public pricing;
     uint public saleEtherCap;
-    uint public confirmedEther;
-    uint public reservedEther;
+    uint public confirmedSaleEther;
+    uint public reservedSaleEther;
 
-    modifier belowSaleEtherCap(uint additionalEtherAmount) {
-        uint totalEtherAmount = confirmedEther.add(reservedEther).add(additionalEtherAmount);
-        require(totalEtherAmount < saleEtherCap);
+    modifier onlyInUpdatedState() {
+        updateState();
         _;
     }
 
-    modifier canMint(uint additionalEtherAmount) {
-        require(address(pricing) != 0x0);
-        uint totalEtherAmount = confirmedEther.add(reservedEther).add(additionalEtherAmount);
-        require(pricing.canMint(msg.sender, totalEtherAmount));
+    modifier upToSaleEtherCap(uint additionalEtherAmount) {
+        uint totalEtherAmount = confirmedSaleEther.add(reservedSaleEther).add(additionalEtherAmount);
+        require(totalEtherAmount <= saleEtherCap);
         _;
     }
 
-    modifier aboveMinimumAmount(uint etherAmount) {
-        require(etherAmount >= pricing.getMinimumContribution());
+    modifier onlyApprovedMinter() {
+        require(canMint(msg.sender));
+        _;
+    }
+
+    modifier atLeastMinimumAmount(uint etherAmount) {
+        require(etherAmount >= getMinimumContribution());
         _;
     }
 
@@ -40,26 +41,50 @@ contract Minter is Ownable {
         saleEtherCap = _saleEtherCap;
     }
 
-    function setPricing(IPricing _pricing) external onlyOwner {
-        pricing = _pricing;
+    function reserve(uint etherAmount) external
+        onlyInUpdatedState
+        onlyApprovedMinter
+        upToSaleEtherCap(etherAmount)
+        atLeastMinimumAmount(etherAmount)
+    {
+        reservedSaleEther = reservedSaleEther.add(etherAmount);
+        updateState();
     }
 
-    function reserve(uint etherAmount) external belowSaleEtherCap(etherAmount) aboveMinimumAmount(etherAmount) canMint(etherAmount) {
-        reservedEther = reservedEther.add(etherAmount);
-    }
-
-    function mintReserved(address account, uint etherAmount, uint tokenAmount) external canMint(0) {
-        reservedEther = reservedEther.sub(etherAmount);
-        confirmedEther = confirmedEther.add(etherAmount);
+    function mintReserved(address account, uint etherAmount, uint tokenAmount) external
+        onlyInUpdatedState
+        onlyApprovedMinter
+    {
+        reservedSaleEther = reservedSaleEther.sub(etherAmount);
+        confirmedSaleEther = confirmedSaleEther.add(etherAmount);
         token.mint(account, tokenAmount);
+        updateState();
     }
 
-    function unreserve(uint etherAmount) public canMint(0) {
-        reservedEther = reservedEther.sub(etherAmount);
+    function unreserve(uint etherAmount) public
+        onlyInUpdatedState
+        onlyApprovedMinter
+    {
+        reservedSaleEther = reservedSaleEther.sub(etherAmount);
+        updateState();
     }
 
-    function mint(address account, uint etherAmount, uint tokenAmount) public canMint(etherAmount) {
-        confirmedEther = confirmedEther.add(etherAmount);
+    function mint(address account, uint etherAmount, uint tokenAmount) public
+        onlyInUpdatedState
+        onlyApprovedMinter
+    {
+        confirmedSaleEther = confirmedSaleEther.add(etherAmount);
         token.mint(account, tokenAmount);
+        updateState();
     }
+
+    // abstract
+
+    function getMinimumContribution() public view returns(uint);
+
+    function updateState() public;
+
+    function canMint(address sender) public view returns(bool);
+
+    function getTokensForEther(uint etherAmount) public view returns(uint);
 }

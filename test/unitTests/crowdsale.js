@@ -1,9 +1,7 @@
 import {createWeb3, deployContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
-import minterJson from '../../build/contracts/Minter.json';
-import pricingMockJson from '../../build/contracts/PricingMock.json';
-import deferredKycJson from '../../build/contracts/DeferredKyc.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
+import tgeMockJson from '../../build/contracts/TgeMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -18,50 +16,39 @@ describe('Crowdsale', () => {
   let approver;
   let tokenOwner;
   let tokenContract;
-  let pricingOwner;
-  let pricingContract;
   let minterOwner;
   let minterContract;
   let crowdsaleContract;
   let crowdsaleOwner;
-  let approvedMinter;
   let accounts;
   let firstStateMinter;
   let secondStateMinter;
-  let secondStateAfter;
-  let kycOwner;
-  let kycContract;
   let kycContractAddress;
   let investor1;
   let treasury;
-  const tokenCap = new BN(web3.utils.toWei('260000000'));
+  let minimumContributionAmount;
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
-  const minimumContributionAmount = new BN(web3.utils.toWei('0.2'));
   const etherAmount1 = new BN(web3.utils.toWei('1000'));
   const tokenAmount1 = new BN(web3.utils.toWei('4000'));
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tokenOwner, pricingOwner, minterOwner, approvedMinter, firstStateMinter, secondStateMinter,
-      approver, treasury, kycOwner, crowdsaleOwner, investor1] = accounts;
+    [tokenOwner, minterOwner, firstStateMinter, secondStateMinter,
+      approver, treasury, crowdsaleOwner, investor1] = accounts;
   });
 
   beforeEach(async () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
       []);
 
-    pricingContract = await deployContract(web3, pricingMockJson, pricingOwner, [
+    minterContract = await deployContract(web3, tgeMockJson, minterOwner, [
+      tokenContract.options.address,
+      saleEtherCap,
       firstStateMinter,
       secondStateMinter
     ]);
-
-    minterContract = await deployContract(web3, minterJson, minterOwner, [
-      tokenContract.options.address,
-      saleEtherCap
-    ]);
-
     await tokenContract.methods.transferOwnership(minterContract.options.address).send({from: tokenOwner});
-    await minterContract.methods.setPricing(pricingContract.options.address).send({from: minterOwner});
+    minimumContributionAmount = new BN(await minterContract.methods.minimumContributionAmount().call());
 
     crowdsaleContract = await deployContract(web3, crowdsaleJson, crowdsaleOwner, [
       minterContract.options.address,
@@ -69,8 +56,8 @@ describe('Crowdsale', () => {
       treasury
     ]);
     kycContractAddress = await crowdsaleContract.methods.deferredKyc().call();
-    pricingContract.methods.addAllStateMinter(crowdsaleContract.options.address).send({from: pricingOwner});
-    pricingContract.methods.addAllStateMinter(kycContractAddress).send({from: pricingOwner});
+    minterContract.methods.addAllStateMinter(crowdsaleContract.options.address).send({from: minterOwner});
+    minterContract.methods.addAllStateMinter(kycContractAddress).send({from: minterOwner});
   });
 
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
@@ -137,12 +124,12 @@ describe('Crowdsale', () => {
     };
 
     it('should not allow to buy below minimum contribution amount', async() => {
-      await testShouldNotBuy(minimumContributionAmount.sub(new BN('100')), investor1);
+      await testShouldNotBuy(minimumContributionAmount.sub(new BN('1')), investor1);
     });
 
     it('should allow to buy equal and above the minimum contribution amount', async() => {
       await testShouldBuy(minimumContributionAmount, investor1);
-      await testShouldBuy(minimumContributionAmount.add(new BN('100')), investor1);
+      await testShouldBuy(minimumContributionAmount.add(new BN('1')), investor1);
     });
   });
 
