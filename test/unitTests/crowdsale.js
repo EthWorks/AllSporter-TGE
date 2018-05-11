@@ -1,11 +1,10 @@
-import {createWeb3, deployContract} from 'ethworks-solidity';
+import {createWeb3, deployContract, expectThrow} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
-import {expectThrow} from 'ethworks-solidity/test/testUtils';
 
 const {expect} = chai;
 const web3 = createWeb3(Web3, 20);
