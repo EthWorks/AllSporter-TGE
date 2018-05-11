@@ -1,5 +1,7 @@
 # AllSporter TGE
 
+[![Build Status](https://travis-ci.org/EthWorks/AllSporter-TGE.svg?branch=master)](https://travis-ci.org/EthWorks/AllSporter-TGE)
+
 ## AllSporter ICO details
 
 The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. 
