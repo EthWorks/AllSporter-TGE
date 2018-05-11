@@ -32,7 +32,7 @@
     "truffle": "^4.1.5",
     "web3": "^1.0.0-beta.29",
     "zeppelin-solidity": "1.6.0",
-    "ethworks-solidity": "ethworks/ethworks-solidity#3b63cd9b0604a3673f4cf8c7104a07422ac49493"
+    "ethworks-solidity": "ethworks/ethworks-solidity#8902c03ad415b2deab90759bff46a39d14170619"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",

@@ -828,7 +828,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
+async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -2965,9 +2965,9 @@ ethjs-util@^0.1.3:
     is-hex-prefixed "1.0.0"
     strip-hex-prefix "1.0.0"
 
-ethworks-solidity@ethworks/ethworks-solidity#3b63cd9b0604a3673f4cf8c7104a07422ac49493:
+ethworks-solidity@ethworks/ethworks-solidity#8902c03ad415b2deab90759bff46a39d14170619:
   version "1.0.0"
-  resolved "https://codeload.github.com/ethworks/ethworks-solidity/tar.gz/3b63cd9b0604a3673f4cf8c7104a07422ac49493"
+  resolved "https://codeload.github.com/ethworks/ethworks-solidity/tar.gz/8902c03ad415b2deab90759bff46a39d14170619"
   dependencies:
     zeppelin-solidity "1.6.0"
 
