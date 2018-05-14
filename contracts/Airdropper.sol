@@ -18,6 +18,9 @@ contract Airdropper is Ownable {
 
     /* --- EVENTS --- */
 
+    event Initialized();
+    event Airdropped(address account, uint tokenAmount);
+
     /* --- FIELDS --- */
 
     Minter public minter;
@@ -51,6 +54,7 @@ contract Airdropper is Ownable {
         isInitialized = true;
         initialTotalSupply = minter.token().totalSupply();
         airdropPool = minter.token().cap().sub(initialTotalSupply);
+        emit Initialized();
     }
 
     function dropMultiple(address[] accounts) external onlyOwner initialized {
@@ -64,5 +68,6 @@ contract Airdropper is Ownable {
         uint contributed = minter.token().balanceOf(account);
         uint tokenAmount = airdropPool.div(initialTotalSupply).mul(contributed);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
+        emit Airdropped(account, tokenAmount);
     }
 }

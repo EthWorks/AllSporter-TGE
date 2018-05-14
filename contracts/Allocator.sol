@@ -34,6 +34,12 @@ contract Allocator is Ownable {
     
     /* --- EVENTS --- */
 
+    event Initialized();
+    event AllocatedCommunity(address account, uint tokenAmount);
+    event AllocatedAdvisors(address account, uint tokenAmount);
+    event AllocatedCustomer(address account, uint tokenAmount);
+    event AllocatedTeam(address account, uint tokenAmount);
+
     /* --- FIELDS --- */
 
     Minter public minter;
@@ -84,11 +90,13 @@ contract Allocator is Ownable {
     function allocateCommunity(address account, uint tokenAmount) external initialized {
         communityPool.sub(tokenAmount);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
+        emit AllocatedCommunity(account, tokenAmount);
     }
 
     function allocateAdvisors(address account, uint tokenAmount) external initialized {
         advisorsPool.sub(tokenAmount);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
+        emit AllocatedAdvisors(account, tokenAmount);
     }
 
     // vesting
@@ -98,6 +106,7 @@ contract Allocator is Ownable {
             vestingContracts[account] = new TokenVesting(account, VESTING_START_TIME, VESTING_CLIFF_DURATION, VESTING_PERIOD, false);
         }
         minter.mint(address(vestingContracts[account]), ETHER_AMOUNT, tokenAmount);
+        emit AllocatedCustomer(account, tokenAmount);
     }
 
     // locking
@@ -105,6 +114,7 @@ contract Allocator is Ownable {
         teamPool.sub(tokenAmount);
         minter.mint(lockingContract, ETHER_AMOUNT, tokenAmount);
         lockingContract.noteTokens(account, tokenAmount);
+        emit AllocatedTeam(account, tokenAmount);
     }
 
     /* --- INTERNAL METHODS --- */
@@ -119,5 +129,7 @@ contract Allocator is Ownable {
         advisorsPool = ADVISORS_PERCENTAGE.mul(tokensPerPercent);
         customerPool = CUSTOMER_PERCENTAGE.mul(tokensPerPercent);
         teamPool = TEAM_PERCENTAGE.mul(tokensPerPercent);
+
+        emit Initialized();
     }
 }

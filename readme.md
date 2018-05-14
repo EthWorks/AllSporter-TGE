@@ -80,7 +80,10 @@ The Smart Contracts emit the following events on the blockchain:
 
 | Event  | Description |
 | ------------- | ------------- |
-|  |  |
+| Minted | A portion of tokens has been minted |
+| Reserved | A portion of ether in the sale ether cap has been reserved |
+| Unreserved | Reserved portion of ether has been unreserved |
+| MintedReserved | Reserved portion of ether has been minted |
 
 #### Tge events
 
@@ -92,7 +95,8 @@ The Smart Contracts emit the following events on the blockchain:
 
 | Event  | Description |
 | ------------- | ------------- |
-|  |  |
+| Bought | Tokens have been bought by an investor |
+| SaleNoted | External sale has been noted |
 
 #### DeferredKyc events
 
@@ -107,19 +111,24 @@ The Smart Contracts emit the following events on the blockchain:
 
 | Event  | Description |
 | ------------- | ------------- |
-|  |  |
+| FeeAdded | A referral fee has been minted |
 
 #### Allocator events
 
 | Event  | Description |
 | ------------- | ------------- |
-|  |  |
+| Initialized | The contract has been initialized |
+| AllocatedCommunity | Tokens have been allocated for group: Community and Bounty |
+| AllocatedAdvisors | Tokens have been allocated for group: Advisors, Developers, Ambassadors and Partners |
+| AllocatedCustomer | Tokens have been allocated for group: Customer Rewards |
+| AllocatedTeam | Tokens have been allocated for group: Team |
 
 #### Airdropper events
 
 | Event  | Description |
 | ------------- | ------------- |
-|  |  |
+| Initialized | The contract has been initialized |
+| Airdropped | The tokens have been minted for an account |
 
 
 ## ABI

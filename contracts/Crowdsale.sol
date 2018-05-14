@@ -11,6 +11,11 @@ import "./Minter.sol";
 contract Crowdsale is Ownable {
     using SafeMath for uint;
 
+    /* --- EVENTS --- */
+
+    event Bought(address indexed account, uint etherAmount);
+    event SaleNoted(address indexed account, uint etherAmount, uint tokenAmount);
+
     /* --- FIELDS --- */
 
     Minter public minter;
@@ -31,9 +36,11 @@ contract Crowdsale is Ownable {
     
     function buy() public payable {
         deferredKyc.addToKyc.value(msg.value)(msg.sender);
+        emit Bought(msg.sender, msg.value);
     }
 
     function noteSale(address account, uint etherAmount, uint tokenAmount) public onlyOwner {
         minter.mint(account, etherAmount, tokenAmount);
+        emit SaleNoted(account, etherAmount, tokenAmount);
     }
 }

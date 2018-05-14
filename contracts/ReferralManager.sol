@@ -13,6 +13,8 @@ contract ReferralManager is Ownable {
 
     /* --- EVENTS --- */
 
+    event FeeAdded(address indexed account, uint tokenAmount);
+
     /* --- FIELDS --- */
 
     Minter public minter;
@@ -55,6 +57,9 @@ contract ReferralManager is Ownable {
         uint balance = minter.token().balanceOf(account);
         uint unrealised = balance.sub(realised[account]);
         uint tokenAmount = unrealised.mul(percent).div(100);
+
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
+        realised[account] = minter.token().balanceOf(account);
+        emit FeeAdded(account, tokenAmount);
     }
 }

@@ -9,6 +9,11 @@ contract Minter is Ownable {
 
     /* --- EVENTS --- */
 
+    event Minted(address indexed account, uint etherAmount, uint tokenAmount);
+    event Reserved(uint etherAmount);
+    event MintedReserved(address indexed account, uint etherAmount, uint tokenAmount);
+    event Unreserved(uint etherAmount);
+
     /* --- FIELDS --- */
 
     CrowdfundableToken public token;
@@ -59,6 +64,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.add(etherAmount);
         updateState();
+        emit Reserved(etherAmount);
     }
 
     function mintReserved(address account, uint etherAmount, uint tokenAmount) external
@@ -69,6 +75,7 @@ contract Minter is Ownable {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
         token.mint(account, tokenAmount);
         updateState();
+        emit MintedReserved(account, etherAmount, tokenAmount);
     }
 
     function unreserve(uint etherAmount) public
@@ -77,6 +84,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.sub(etherAmount);
         updateState();
+        emit Unreserved(etherAmount);
     }
 
     function mint(address account, uint etherAmount, uint tokenAmount) public
@@ -86,6 +94,7 @@ contract Minter is Ownable {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
         token.mint(account, tokenAmount);
         updateState();
+        emit Minted(account, etherAmount, tokenAmount);
     }
 
     // abstract
