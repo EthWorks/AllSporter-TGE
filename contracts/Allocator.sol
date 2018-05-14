@@ -45,7 +45,7 @@ contract Allocator is Ownable {
     Minter public minter;
     LockingContract public lockingContract;
     bool public isInitialized = false;
-    mapping(address => TokenVesting) vestingContracts; // one customer => one TokenVesting contract
+    mapping(address => TokenVesting) public vestingContracts; // one customer => one TokenVesting contract
 
     // pools
     uint public communityPool;
@@ -87,21 +87,21 @@ contract Allocator is Ownable {
         lockingContract.releaseTokens(account);
     }
 
-    function allocateCommunity(address account, uint tokenAmount) external initialized {
-        communityPool.sub(tokenAmount);
+    function allocateCommunity(address account, uint tokenAmount) external initialized onlyOwner {
+        communityPool = communityPool.sub(tokenAmount);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
         emit AllocatedCommunity(account, tokenAmount);
     }
 
-    function allocateAdvisors(address account, uint tokenAmount) external initialized {
-        advisorsPool.sub(tokenAmount);
+    function allocateAdvisors(address account, uint tokenAmount) external initialized onlyOwner {
+        advisorsPool = advisorsPool.sub(tokenAmount);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
         emit AllocatedAdvisors(account, tokenAmount);
     }
 
     // vesting
-    function allocateCustomer(address account, uint tokenAmount) external initialized {
-        customerPool.sub(tokenAmount);
+    function allocateCustomer(address account, uint tokenAmount) external initialized onlyOwner {
+        customerPool = customerPool.sub(tokenAmount);
         if (address(vestingContracts[account]) == 0x0) {
             vestingContracts[account] = new TokenVesting(account, VESTING_START_TIME, VESTING_CLIFF_DURATION, VESTING_PERIOD, false);
         }
@@ -110,8 +110,8 @@ contract Allocator is Ownable {
     }
 
     // locking
-    function allocateTeam(address account, uint tokenAmount) external initialized {
-        teamPool.sub(tokenAmount);
+    function allocateTeam(address account, uint tokenAmount) external initialized onlyOwner {
+        teamPool = teamPool.sub(tokenAmount);
         minter.mint(lockingContract, ETHER_AMOUNT, tokenAmount);
         lockingContract.noteTokens(account, tokenAmount);
         emit AllocatedTeam(account, tokenAmount);

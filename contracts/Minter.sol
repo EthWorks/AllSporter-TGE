@@ -56,6 +56,10 @@ contract Minter is Ownable {
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
 
+    function transferTokenOwnership() external onlyOwner {
+        token.transferOwnership(owner);
+    }
+
     function reserve(uint etherAmount) external
         onlyInUpdatedState
         onlyApprovedMinter

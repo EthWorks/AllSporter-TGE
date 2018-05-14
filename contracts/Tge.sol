@@ -101,6 +101,7 @@ contract Tge is Minter {
         advanceStateIfNewer(State(to));
     }
 
+    // override
     function transferTokenOwnership() external onlyInUpdatedState onlyOwner {
         require(currentState == State.Finished);
         token.transferOwnership(owner);

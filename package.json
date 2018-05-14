@@ -6,6 +6,7 @@
     "dev:lint": "./node_modules/.bin/eslint test/unitTests/*.js",
     "dev:compile": "truffle compile --all",
     "dev:test": "truffle compile --all && mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
+    "dev:test:nocompile": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
     "deploy": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register scripts/deploy.js"
   },
   "author": "Przemek <przemek@ethworks.io>",
