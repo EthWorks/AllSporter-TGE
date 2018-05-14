@@ -15,28 +15,38 @@ contract Allocator is Ownable {
 
     /* --- CONSTANTS --- */
 
-    uint public SALE_PERCENTAGE = 60;
-    uint public TEAM_DEVELOPERS_PERCENTAGE = 17;
-    uint public CUSTOMER_REWARDS_PERCENTAGE = 15;
-    uint public ADVISORS_BOUNTY_PERCENTAGE = 8;
-    uint public TEAM_DEVELOPERS_UNLOCK_TIME = 1590710400;
-    uint public CUSTOMER_REWARDS_CLIFF_TIME = 10000;
-    uint public CUSTOMER_REWARDS_VESTING_PERIOD = 50000;
-    uint public CUSTOMER_REWARDS_VESTING_START_TIME = 1590710400;
     uint public ETHER_AMOUNT = 0;
 
+    // percentages
+    uint public COMMUNITY_PERCENTAGE = 5;
+    uint public ADVISORS_PERCENTAGE = 8;
+    uint public CUSTOMER_PERCENTAGE = 15;
+    uint public TEAM_PERCENTAGE = 17;
+    uint public SALE_PERCENTAGE = 55;
+    
+    // locking
+    uint public LOCKING_UNLOCK_TIME = 1590710400;
+
+    // vesting
+    uint public VESTING_START_TIME = 1590710400;
+    uint public VESTING_CLIFF_DURATION = 10000;
+    uint public VESTING_PERIOD = 50000;
+    
     /* --- EVENTS --- */
 
     /* --- FIELDS --- */
 
     Minter public minter;
-    LockingContract public teamDevelopersLocking;
-    uint public teamDevelopersTokenPool;
-    uint public customerRewardsTokenPool;
-    uint public advisorsBountyTokenPool;
-    uint public tokensPerPercent;
+    LockingContract public lockingContract;
     bool public isInitialized = false;
-    mapping(address => TokenVesting) customerRewardsVestingContracts; // one customer => one TokenVesting contract
+    mapping(address => TokenVesting) vestingContracts; // one customer => one TokenVesting contract
+
+    // pools
+    uint public communityPool;
+    uint public advisorsPool;
+    uint public customerPool;
+    uint public teamPool;
+    
 
     /* --- MODIFIERS --- */
 
@@ -57,45 +67,57 @@ contract Allocator is Ownable {
     function Allocator(Minter _minter) public {
         require(address(_minter) != 0x0);
         minter = _minter;
-        teamDevelopersLocking = new LockingContract(_minter.token(), TEAM_DEVELOPERS_UNLOCK_TIME);
+        lockingContract = new LockingContract(_minter.token(), LOCKING_UNLOCK_TIME);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
-    
-    function allocateTeamDevelopers(address account, uint tokenAmount) external initialized onlyOwner {
-        minter.mint(teamDevelopersLocking, ETHER_AMOUNT, tokenAmount);
-        teamDevelopersLocking.noteTokens(account, tokenAmount);
-        teamDevelopersTokenPool.sub(tokenAmount);
-    }
 
-    function allocateCustomerRewards(address account, uint tokenAmount) external initialized onlyOwner {
-        if (address(customerRewardsVestingContracts[account]) == 0x0) {
-            customerRewardsVestingContracts[account] = new TokenVesting(account, CUSTOMER_REWARDS_VESTING_START_TIME, CUSTOMER_REWARDS_CLIFF_TIME, CUSTOMER_REWARDS_VESTING_PERIOD, false);
-        }
-        minter.mint(address(customerRewardsVestingContracts[account]), ETHER_AMOUNT, tokenAmount);
-        customerRewardsTokenPool.sub(tokenAmount);
-    }
-
-    function allocateAdvisorsBounty(address account, uint tokenAmount) external initialized onlyOwner {
-        minter.mint(account, ETHER_AMOUNT, tokenAmount);
-        advisorsBountyTokenPool.sub(tokenAmount);
-    }
-
-    function releaseVesting(address account) public initialized {
-        TokenVesting vesting = customerRewardsVestingContracts[account];
+    function releaseVested(address account) external initialized {
+        TokenVesting vesting = vestingContracts[account];
         vesting.release(minter.token());
+    }
+
+    function releaseLocked(address account) external initialized {
+        lockingContract.releaseTokens(account);
+    }
+
+    function allocateCommunity(address account, uint tokenAmount) external initialized {
+        communityPool.sub(tokenAmount);
+        minter.mint(account, ETHER_AMOUNT, tokenAmount);
+    }
+
+    function allocateAdvisors(address account, uint tokenAmount) external initialized {
+        advisorsPool.sub(tokenAmount);
+        minter.mint(account, ETHER_AMOUNT, tokenAmount);
+    }
+
+    // vesting
+    function allocateCustomer(address account, uint tokenAmount) external initialized {
+        customerPool.sub(tokenAmount);
+        if (address(vestingContracts[account]) == 0x0) {
+            vestingContracts[account] = new TokenVesting(account, VESTING_START_TIME, VESTING_CLIFF_DURATION, VESTING_PERIOD, false);
+        }
+        minter.mint(address(vestingContracts[account]), ETHER_AMOUNT, tokenAmount);
+    }
+
+    // locking
+    function allocateTeam(address account, uint tokenAmount) external initialized {
+        teamPool.sub(tokenAmount);
+        minter.mint(lockingContract, ETHER_AMOUNT, tokenAmount);
+        lockingContract.noteTokens(account, tokenAmount);
     }
 
     /* --- INTERNAL METHODS --- */
 
     function initialize() internal {
         isInitialized = true;
-        CrowdfundableToken token = CrowdfundableToken(minter.token());
+        CrowdfundableToken token = minter.token();
         uint tokensSold = token.totalSupply();
-        tokensPerPercent = tokensSold.div(SALE_PERCENTAGE);
+        uint tokensPerPercent = tokensSold.div(SALE_PERCENTAGE);
 
-        teamDevelopersTokenPool = TEAM_DEVELOPERS_PERCENTAGE.mul(tokensPerPercent);
-        customerRewardsTokenPool = CUSTOMER_REWARDS_PERCENTAGE.mul(tokensPerPercent);
-        advisorsBountyTokenPool = ADVISORS_BOUNTY_PERCENTAGE.mul(tokensPerPercent);
+        communityPool = COMMUNITY_PERCENTAGE.mul(tokensPerPercent);
+        advisorsPool = ADVISORS_PERCENTAGE.mul(tokensPerPercent);
+        customerPool = CUSTOMER_PERCENTAGE.mul(tokensPerPercent);
+        teamPool = TEAM_PERCENTAGE.mul(tokensPerPercent);
     }
 }
