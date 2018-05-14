@@ -110,134 +110,6 @@ describe('Tge', () => {
     expect(actualCurrentState).to.eq.BN(0);
   });
 
-  describe('tokens for ether per state', async () => {
-    describe('Presale', async () => {
-      it('should return a proper amount of tokens for ether', async() => {
-        expect(await currentState()).to.eq.BN(PRESALE);
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(0);
-      });
-    });
-
-    describe('Preico1', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        expect(await currentState()).to.eq.BN(PREICO1);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3250'));
-      });
-    });
-
-    describe('Preico2', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(5);
-        expect(await currentState()).to.eq.BN(PREICO2);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3087.5'));
-      });
-    });
-
-    describe('Break', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(10);
-        expect(await currentState()).to.eq.BN(BREAK);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(0);
-      });
-    });
-
-    describe('Ico1', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(13);
-        expect(await currentState()).to.eq.BN(ICO1);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2925'));
-      });
-    });
-
-    describe('Ico2', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(23);
-        expect(await currentState()).to.eq.BN(ICO2);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2762.5'));
-      });
-    });
-
-    describe('Ico3', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(33);
-        expect(await currentState()).to.eq.BN(ICO3);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2600'));
-      });
-    });
-
-    describe('Ico4', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(43);
-        expect(await currentState()).to.eq.BN(ICO4);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2437.5'));
-      });
-    });
-
-    describe('Ico5', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(53);
-        expect(await currentState()).to.eq.BN(ICO5);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2112.5'));
-      });
-    });
-
-    describe('Ico6', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(63);
-        expect(await currentState()).to.eq.BN(ICO6);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('1950'));
-      });
-    });
-
-    describe('FINISHING_ICO', async () => {
-      beforeEach(async() => {
-        await advanceToSaleStartTime();
-        await advanceDays(73);
-        expect(await currentState()).to.eq.BN(FINISHING_ICO);
-      });
-
-      it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
-      });
-    });
-  });
-
   describe('advancing states based on time', async () => {
     it('should be in Presale state initially', async () => {
       expect(await currentState()).to.eq.BN(PRESALE);
@@ -412,9 +284,16 @@ describe('Tge', () => {
 
   describe('state characteristics', async () => {
     describe('Presale', async () => {
-      it('should not be a selling state', async() => {
+      beforeEach(async() => {
         expect(await currentState()).to.eq.BN(PRESALE);
+      });
+
+      it('should not be a selling state', async() => {
         expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(0);
       });
     });
 
@@ -426,6 +305,10 @@ describe('Tge', () => {
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3250'));
       });
     });
 
@@ -439,6 +322,10 @@ describe('Tge', () => {
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3087.5'));
+      });
     });
 
     describe('Break', async () => {
@@ -450,6 +337,10 @@ describe('Tge', () => {
 
       it('should not be a selling state', async() => {
         expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(0);
       });
     });
 
@@ -463,6 +354,10 @@ describe('Tge', () => {
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2925'));
+      });
     });
 
     describe('Ico2', async () => {
@@ -474,6 +369,10 @@ describe('Tge', () => {
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2762.5'));
       });
     });
 
@@ -487,6 +386,10 @@ describe('Tge', () => {
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2600'));
+      });
     });
 
     describe('Ico4', async () => {
@@ -498,6 +401,10 @@ describe('Tge', () => {
 
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2437.5'));
       });
     });
 
@@ -511,6 +418,10 @@ describe('Tge', () => {
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2112.5'));
+      });
     });
 
     describe('Ico6', async () => {
@@ -523,9 +434,13 @@ describe('Tge', () => {
       it('should be a selling state', async() => {
         expect(await isSellingState()).to.be.true;
       });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('1950'));
+      });
     });
 
-    describe('FINISHING_ICO', async () => {
+    describe('Finishing_ICO', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(73);
@@ -534,6 +449,10 @@ describe('Tge', () => {
 
       it('should not be a selling state', async() => {
         expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
       });
     });
   });

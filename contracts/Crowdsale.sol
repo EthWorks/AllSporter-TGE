@@ -11,8 +11,12 @@ import "./Minter.sol";
 contract Crowdsale is Ownable {
     using SafeMath for uint;
 
+    /* --- FIELDS --- */
+
     Minter public minter;
     DeferredKyc public deferredKyc;
+
+    /* --- CONSTRUCTOR --- */
 
     function Crowdsale(Minter _minter, address _approver, address _treasury) public {
         require(address(_minter) != 0x0);
@@ -22,6 +26,8 @@ contract Crowdsale is Ownable {
         minter = _minter;
         deferredKyc = new DeferredKyc(_minter, _approver, _treasury);
     }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
     
     function buy() public payable {
         deferredKyc.addToKyc.value(msg.value)(msg.sender);

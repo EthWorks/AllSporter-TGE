@@ -8,6 +8,14 @@ import "./Minter.sol";
 contract DeferredKyc is Ownable {
     using SafeMath for uint;
 
+    /* --- EVENTS --- */
+
+    event AddedToKyc(address investor, uint etherAmount, uint tokenAmount);
+    event Approved(address investor, uint etherAmount, uint tokenAmount);
+    event Rejected(address investor, uint etherAmount, uint tokenAmount);
+
+    /* --- FIELDS --- */
+
     address public treasury;
     Minter public minter;
     address public approver;
@@ -15,14 +23,14 @@ contract DeferredKyc is Ownable {
     mapping(address => uint) public tokenInProgress;
     mapping(address => uint) public etherRejected;
 
-    event AddedToKyc(address investor, uint etherAmount, uint tokenAmount);
-    event Approved(address investor, uint etherAmount, uint tokenAmount);
-    event Rejected(address investor, uint etherAmount, uint tokenAmount);
+    /* --- MODIFIERS --- */ 
 
     modifier onlyApprover() {
         require(msg.sender == approver);
         _;
     }
+
+    /* --- CONSTRUCTOR --- */
 
     function DeferredKyc(Minter _minter, address _approver, address _treasury) public {
         require(address(_minter) != 0x0);
@@ -33,6 +41,8 @@ contract DeferredKyc is Ownable {
         approver = _approver;
         treasury = _treasury;
     }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);

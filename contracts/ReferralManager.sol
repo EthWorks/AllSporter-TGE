@@ -11,20 +11,30 @@ import "./Minter.sol";
 contract ReferralManager is Ownable {
     using SafeMath for uint;
 
+    /* --- EVENTS --- */
+
+    /* --- FIELDS --- */
+
     Minter public minter;
     uint public ETHER_AMOUNT = 0;
     mapping (address => uint) realised;
+
+    /* --- MODIFIERS --- */
 
     modifier onlyValidPercent(uint percent) {
         require(percent >= 0 && percent <= 100);
         _;
     }
 
+    /* --- CONSTRUCTOR --- */
+
     function ReferralManager(Minter _minter) public {
         require(address(_minter) != 0x0);
 
         minter = _minter;
     }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function addFee(address referring, uint referringPercent, address referred, uint referredPercent)
         external
@@ -38,6 +48,8 @@ contract ReferralManager is Ownable {
         applyFee(referring, referringPercent);
         applyFee(referred, referredPercent);
     }
+
+    /* --- INTERNAL METHODS --- */
 
     function applyFee(address account, uint percent) internal {
         uint balance = minter.token().balanceOf(account);

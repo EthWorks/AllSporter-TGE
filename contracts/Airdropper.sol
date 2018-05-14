@@ -12,12 +12,21 @@ import "./Minter.sol";
 contract Airdropper is Ownable {
     using SafeMath for uint;
 
+    /* --- CONSTANTS --- */
+
+    uint public ETHER_AMOUNT = 0;
+
+    /* --- EVENTS --- */
+
+    /* --- FIELDS --- */
+
     Minter public minter;
     bool isInitialized = false;
     uint initialTotalSupply;
     uint airdropPool;
     mapping(address => bool) public dropped;
-    uint public ETHER_AMOUNT = 0;
+
+    /* --- MODIFIERS --- */
 
     modifier notAlreadyDropped(address account) {
         require(!dropped[account]);
@@ -29,9 +38,19 @@ contract Airdropper is Ownable {
         _;
     }
 
+    /* --- CONSTRUCTOR --- */
+
     function Airdropper(Minter _minter) public {
         require(address(_minter) != 0x0);
         minter = _minter;
+    }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
+
+    function initialize() external onlyOwner {
+        isInitialized = true;
+        initialTotalSupply = minter.token().totalSupply();
+        airdropPool = minter.token().cap().sub(initialTotalSupply);
     }
 
     function dropMultiple(address[] accounts) external onlyOwner initialized {
@@ -45,11 +64,5 @@ contract Airdropper is Ownable {
         uint contributed = minter.token().balanceOf(account);
         uint tokenAmount = airdropPool.div(initialTotalSupply).mul(contributed);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
-    }
-
-    function initialize() external onlyOwner {
-        isInitialized = true;
-        initialTotalSupply = minter.token().totalSupply();
-        airdropPool = minter.token().cap().sub(initialTotalSupply);
     }
 }

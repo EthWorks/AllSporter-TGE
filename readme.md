@@ -24,17 +24,18 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 
 | Group | Split |
 | --- | --- |
-| Pre-ICOm & ICO | 60% |
-| Team & Developers | 17% |
+| Community and Bounty | 5% |
+| Advisors, Developers, Ambassadors and Partners | 8% |
 | Customer Rewards | 15% |
-| Advisors & Bounty | 8% |
+| Team | 17% |
+| PRE-ICO & ICO | 55% |
 
-### Locking and vesting period
+### Locking and vesting durations
 
 | Group | Period |
 | --- | --- |
-| Team & Developers | Locked for 24M |
-| Customer Rewards | Vesting for 30M |
+| Team | Locked for 24M |
+| Customer Rewards | Vesting for 15M (first 3M frozen) |
 
 ## AllSporter Coin
 

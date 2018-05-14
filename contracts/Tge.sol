@@ -6,14 +6,16 @@ import "./Minter.sol";
 contract Tge is Minter {
     using SafeMath for uint;
 
-    /* --- FIELDS --- */
+    /* --- CONSTANTS --- */
 
-    // constants
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 * 1e18;
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 2 * 1e17;
 
-    // events
+    /* --- EVENTS --- */
+
     event StateChanged(uint from, uint to);
+
+    /* --- FIELDS --- */
 
     // minters
     address crowdsale;
@@ -202,8 +204,6 @@ contract Tge is Minter {
             else if (totalEtherContributions >= etherCaps[uint(State.Ico1)]) advanceStateIfNewer(State.Ico2);
         }
     }
-
-    /* --- HELPER METHODS --- */
 
     function advanceStateIfNewer(State newState) internal {
         if (uint(newState) > uint(currentState)) {

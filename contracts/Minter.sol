@@ -7,10 +7,16 @@ import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 contract Minter is Ownable {
     using SafeMath for uint;
 
+    /* --- EVENTS --- */
+
+    /* --- FIELDS --- */
+
     CrowdfundableToken public token;
     uint public saleEtherCap;
     uint public confirmedSaleEther;
     uint public reservedSaleEther;
+
+    /* --- MODIFIERS --- */
 
     modifier onlyInUpdatedState() {
         updateState();
@@ -33,6 +39,8 @@ contract Minter is Ownable {
         _;
     }
 
+    /* --- CONSTRUCTOR --- */
+
     function Minter(CrowdfundableToken _token, uint _saleEtherCap) public {
         require(address(_token) != 0x0);
         require(_saleEtherCap > 0);
@@ -40,6 +48,8 @@ contract Minter is Ownable {
         token = _token;
         saleEtherCap = _saleEtherCap;
     }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function reserve(uint etherAmount) external
         onlyInUpdatedState
@@ -79,12 +89,14 @@ contract Minter is Ownable {
     }
 
     // abstract
-
     function getMinimumContribution() public view returns(uint);
 
+    // abstract
     function updateState() public;
 
+    // abstract
     function canMint(address sender) public view returns(bool);
 
+    // abstract
     function getTokensForEther(uint etherAmount) public view returns(uint);
 }
