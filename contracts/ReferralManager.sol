@@ -11,6 +11,11 @@ import "./Minter.sol";
 contract ReferralManager is Ownable {
     using SafeMath for uint;
 
+    /* --- CONSTANTS --- */
+
+    uint public ETHER_AMOUNT = 0;
+    uint public MAXIMUM_PERCENT = 5;
+
     /* --- EVENTS --- */
 
     event FeeAdded(address indexed account, uint tokenAmount);
@@ -18,13 +23,23 @@ contract ReferralManager is Ownable {
     /* --- FIELDS --- */
 
     Minter public minter;
-    uint public ETHER_AMOUNT = 0;
-    mapping (address => uint) realised;
+    mapping(address => bool) alreadyReferred;
 
     /* --- MODIFIERS --- */
 
+    modifier notAlreadyReferred(address account) {
+        require(!alreadyReferred[account]);
+        _;
+    }
+
     modifier onlyValidPercent(uint percent) {
         require(percent >= 0 && percent <= 100);
+        require(percent <= MAXIMUM_PERCENT);
+        _;
+    }
+
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
         _;
     }
 
@@ -41,25 +56,23 @@ contract ReferralManager is Ownable {
     function addFee(address referring, uint referringPercent, address referred, uint referredPercent)
         external
         onlyOwner
+        onlyValidAddress(referring)
+        onlyValidAddress(referred)
         onlyValidPercent(referringPercent)
         onlyValidPercent(referredPercent)
+        notAlreadyReferred(referred)
     {
-        require(referring != 0x0 && referred != 0x0);
-        require(referringPercent < 5 && referredPercent < 5);
-
-        applyFee(referring, referringPercent);
-        applyFee(referred, referredPercent);
+        alreadyReferred[referred] = true;
+        uint baseContribution = minter.token().balanceOf(referred);
+        applyFee(referring, baseContribution, referringPercent);
+        applyFee(referred, baseContribution, referredPercent);
     }
 
     /* --- INTERNAL METHODS --- */
 
-    function applyFee(address account, uint percent) internal {
-        uint balance = minter.token().balanceOf(account);
-        uint unrealised = balance.sub(realised[account]);
-        uint tokenAmount = unrealised.mul(percent).div(100);
-
-        minter.mint(account, ETHER_AMOUNT, tokenAmount);
-        realised[account] = minter.token().balanceOf(account);
-        emit FeeAdded(account, tokenAmount);
+    function applyFee(address account, uint baseContribution, uint percent) internal {
+        uint tokensDue = baseContribution.div(100).mul(percent);
+        minter.mint(account, ETHER_AMOUNT, tokensDue);
+        emit FeeAdded(account, tokensDue);
     }
 }
