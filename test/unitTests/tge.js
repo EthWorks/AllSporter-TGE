@@ -31,6 +31,9 @@ describe('Tge', () => {
   const ICO5 = 8;
   const ICO6 = 9;
   const FINISHING_ICO = 10;
+  const ALLOCATING = 11;
+  const AIRDROPPING = 12;
+  const FINISHED = 13;
   const tokenCap = new BN(web3.utils.toWei('260000000'));
 
   before(async () => {
@@ -440,11 +443,56 @@ describe('Tge', () => {
       });
     });
 
-    describe('Finishing_ICO', async () => {
+    describe('FinishingIco', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
         await advanceDays(73);
         expect(await currentState()).to.eq.BN(FINISHING_ICO);
+      });
+
+      it('should not be a selling state', async() => {
+        expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
+      });
+    });
+
+    describe('Allocating', async () => {
+      beforeEach(async() => {
+        await moveState(PRESALE, ALLOCATING, tgeOwner);
+        expect(await currentState()).to.eq.BN(ALLOCATING);
+      });
+
+      it('should not be a selling state', async() => {
+        expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
+      });
+    });
+
+    describe('Airdropping', async () => {
+      beforeEach(async() => {
+        await moveState(PRESALE, AIRDROPPING, tgeOwner);
+        expect(await currentState()).to.eq.BN(AIRDROPPING);
+      });
+
+      it('should not be a selling state', async() => {
+        expect(await isSellingState()).to.be.false;
+      });
+
+      it('should calculate proper quantity of tokens', async() => {
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
+      });
+    });
+
+    describe('Finished', async () => {
+      beforeEach(async() => {
+        await moveState(PRESALE, FINISHED, tgeOwner);
+        expect(await currentState()).to.eq.BN(FINISHED);
       });
 
       it('should not be a selling state', async() => {

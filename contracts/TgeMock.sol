@@ -3,19 +3,26 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
 
-/* TgeMock is used for unit testing base abstract class Minter */
+/* TgeMock is used for unit testing */
 
 contract TgeMock is Minter {
     using SafeMath for uint;
 
-    address public firstStateMinter;
-    address public secondStateMinter;
+    /* --- CONSTANTS --- */
+
     uint public firstStateMultiplier = 2;
     uint public secondStateMultiplier = 3;
     bool public secondState = false;
     uint public secondStateAfter = 10 * 1e18;
     uint public minimumContributionAmount = 10;
+
+    /* --- FIELDS --- */
+
+    address public firstStateMinter;
+    address public secondStateMinter;
     mapping(address => bool) public allStateMinters;
+
+    /* --- CONSTRUCTOR --- */
 
     function TgeMock(
         CrowdfundableToken _token,
@@ -26,6 +33,8 @@ contract TgeMock is Minter {
         firstStateMinter = _firstStateMinter;
         secondStateMinter = _secondStateMinter;
     }
+
+    /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function addAllStateMinter(address account) public {
         allStateMinters[account] = true;

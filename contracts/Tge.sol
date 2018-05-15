@@ -18,11 +18,11 @@ contract Tge is Minter {
     /* --- FIELDS --- */
 
     // minters
-    address crowdsale;
-    address deferredKyc;
-    address referralManager;
-    address allocator;
-    address airdropper;
+    address public crowdsale;
+    address public deferredKyc;
+    address public referralManager;
+    address public allocator;
+    address public airdropper;
 
     // state
     enum State {Presale, Preico1, Preico2, Break, Ico1, Ico2, Ico3, Ico4, Ico5, Ico6, FinishingIco, Allocating, Airdropping, Finished}
@@ -68,6 +68,7 @@ contract Tge is Minter {
         setStateLength(State.Ico5, 10 days);
         setStateLength(State.Ico6, 10 days);
 
+        // the total sale ether cap is distributed evenly over all selling states
         setEtherCap(State.Preico1, singleStateEtherCap);
         setEtherCap(State.Preico2, singleStateEtherCap);
         setEtherCap(State.Ico1, singleStateEtherCap);
@@ -149,18 +150,29 @@ contract Tge is Minter {
     // override
     function canMint(address account) public view returns(bool) {
         if (currentState == State.Presale) {
+            // external sales
             return account == crowdsale;
         }
         else if (isSellingState()) {
+            // external sales
+            // direct investments from investors
+            // referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.FinishingIco) {
+            // referral fees
+            // investments under kyc that were made in previous states
             return account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Allocating) {
+            // Community and Bounty allocations
+            // Advisors, Developers, Ambassadors and Partners allocations
+            // Customer Rewards allocations
+            // Team allocations
             return account == allocator;
         }
         else if (currentState == State.Airdropping) {
+            // airdropping for all token holders
             return account == airdropper;
         }
         return false;
@@ -173,6 +185,7 @@ contract Tge is Minter {
     }
 
     function updateStateBasedOnTime() internal {
+        // move to the next state, if the current one has finished
         if (now >= startTimes[uint(State.FinishingIco)]) advanceStateIfNewer(State.FinishingIco);
         else if (now >= startTimes[uint(State.Ico6)]) advanceStateIfNewer(State.Ico6);
         else if (now >= startTimes[uint(State.Ico5)]) advanceStateIfNewer(State.Ico5);
@@ -186,17 +199,18 @@ contract Tge is Minter {
     }
 
     function updateStateBasedOnContributions(uint totalEtherContributions) internal {
+        // move to the next state, if the current one's cap has been reached
         if (!isSellingState()) {
             return;
         }
 
         if (int(currentState) < int(State.Break)) {
-            // before the break
+            // preico
             if (totalEtherContributions >= etherCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);
             else if (totalEtherContributions >= etherCaps[uint(State.Preico1)]) advanceStateIfNewer(State.Preico2);
         }
         else {
-            // after the break
+            // ico
             if (totalEtherContributions >= etherCaps[uint(State.Ico6)]) advanceStateIfNewer(State.FinishingIco);
             else if (totalEtherContributions >= etherCaps[uint(State.Ico5)]) advanceStateIfNewer(State.Ico6);
             else if (totalEtherContributions >= etherCaps[uint(State.Ico4)]) advanceStateIfNewer(State.Ico5);
