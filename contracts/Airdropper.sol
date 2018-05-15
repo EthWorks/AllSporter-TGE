@@ -24,9 +24,9 @@ contract Airdropper is Ownable {
     /* --- FIELDS --- */
 
     Minter public minter;
-    bool isInitialized = false;
-    uint initialTotalSupply;
-    uint airdropPool;
+    bool public isInitialized = false;
+    uint public initialTotalSupply;
+    uint public airdropPool;
     mapping(address => bool) public dropped;
 
     /* --- MODIFIERS --- */
@@ -37,7 +37,9 @@ contract Airdropper is Ownable {
     }
 
     modifier initialized {
-        require(isInitialized);
+        if (!isInitialized) {
+            initialize();
+        }
         _;
     }
 
@@ -49,13 +51,6 @@ contract Airdropper is Ownable {
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
-
-    function initialize() external onlyOwner {
-        isInitialized = true;
-        initialTotalSupply = minter.token().totalSupply();
-        airdropPool = minter.token().cap().sub(initialTotalSupply);
-        emit Initialized();
-    }
 
     function dropMultiple(address[] accounts) external onlyOwner initialized {
         for (uint i = 0; i < accounts.length; i++) {
@@ -69,5 +64,14 @@ contract Airdropper is Ownable {
         uint tokenAmount = airdropPool.div(initialTotalSupply).mul(contributed);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
         emit Airdropped(account, tokenAmount);
+    }
+
+    /* --- INTERNAL METHODS --- */
+
+    function initialize() internal {
+        isInitialized = true;
+        initialTotalSupply = minter.token().totalSupply();
+        airdropPool = minter.token().cap().sub(initialTotalSupply);
+        emit Initialized();
     }
 }
