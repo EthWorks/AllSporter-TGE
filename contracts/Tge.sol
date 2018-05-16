@@ -110,7 +110,7 @@ contract Tge is Minter {
 
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
-        uint tokenAmount;
+        uint tokenAmount = 0;
         if (currentState == State.Preico1) tokenAmount = etherAmount.mul(3250);
         else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(30875).div(10);
         else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(2925);
@@ -155,14 +155,16 @@ contract Tge is Minter {
         }
         else if (isSellingState()) {
             // external sales
-            // direct investments from investors
+            // approving kyc
+            // adding to kyc
             // referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
-        else if (currentState == State.FinishingIco) {
+        else if (currentState == State.Break || currentState == State.FinishingIco) {
+            // external sales
+            // approving kyc
             // referral fees
-            // investments under kyc that were made in previous states
-            return account == deferredKyc || account == referralManager;
+            return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Allocating) {
             // Community and Bounty allocations

@@ -47,6 +47,7 @@ contract DeferredKyc is Ownable {
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);
         uint tokenAmount = minter.getTokensForEther(msg.value);
+        require(tokenAmount > 0);
         emit AddedToKyc(investor, msg.value, tokenAmount);
 
         etherInProgress[investor] = etherInProgress[investor].add(msg.value);
