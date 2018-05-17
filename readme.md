@@ -30,12 +30,12 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 | Team | 17% |
 | PRE-ICO & ICO | 55% |
 
-### Locking and vesting durations
+### Unlocking duration
 
 | Group | Period |
 | --- | --- |
 | Team | Locked for 24M |
-| Customer Rewards | Vesting for 15M (first 3M frozen) |
+| Customer Rewards | Unlocking over 15M (first 3M frozen) |
 
 ## AllSporter Coin
 
@@ -44,7 +44,7 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 | Standard  | ERC20  |
 | Decimals | 18 |
 | Name | AllSporter Coin |
-| Symbol | ASC |
+| Symbol | ALL |
 | Cap | 260M |
 
 ## AllSporter ICO technical details
@@ -59,7 +59,7 @@ The architecture of the ICO consists of the following Smart Contracts:
 | DeferredKyc | Responsible for managing investments undergoing KYC process |
 | ReferralManager | Manages the fees for referring investors |
 | Allocator | Allows the allocation of tokens for Team & Developers, Customer Rewards, Advisors & Bounty |
-| Airdropper | Proportionally mints tokens maintaining the token split percentages up to the token cap of 260M ASC |
+| Airdropper | Proportionally mints tokens maintaining the token split percentages up to the token cap of 260M ALL |
 
 ### Architecture diagram
 

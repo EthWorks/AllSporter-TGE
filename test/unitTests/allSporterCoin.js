@@ -31,7 +31,7 @@ describe('AllSporter Coin', () => {
     const cap = new BN(await tokenContract.methods.cap().call({from: tokenOwner}));
     const decimals = new BN(await tokenContract.methods.decimals().call({from: tokenOwner}));
     expect(name).to.equal('AllSporter Coin');
-    expect(symbol).to.equal('ASC');
+    expect(symbol).to.equal('ALL');
     expect(cap).to.eq.BN(tokenCap);
     expect(decimals).to.eq.BN(18);
   });

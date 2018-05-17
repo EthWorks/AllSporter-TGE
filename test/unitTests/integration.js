@@ -1,4 +1,4 @@
-import {createWeb3, deployContract, latestTime, expectThrow, increaseTime, increaseTimeTo, durationInit, createContract} from 'ethworks-solidity';
+import {createWeb3, deployContract, latestTime, expectThrow, increaseTimeTo, durationInit, createContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import tgeJson from '../../build/contracts/Tge.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
@@ -9,6 +9,8 @@ import deferredKycJson from '../../build/contracts/DeferredKyc.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
+
+/* eslint-disable no-unused-vars */
 
 const {expect} = chai;
 const web3 = createWeb3(Web3, 20);
@@ -85,6 +87,8 @@ describe('Integration', () => {
   const reject = async(account) => kycContract.methods.reject(account).send({from: approver});
   const addFee = async(referring, referringPercent, referred, referredPercent) =>
     referralManagerContract.methods.addFee(referring, referringPercent, referred, referredPercent).send({from: referralManagerOwner});
+  
+  /* eslint-enable no-unused-vars */
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
