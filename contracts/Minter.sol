@@ -94,6 +94,7 @@ contract Minter is Ownable {
     function mint(address account, uint etherAmount, uint tokenAmount) public
         onlyInUpdatedState
         onlyApprovedMinter
+        upToSaleEtherCap(etherAmount)
     {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
         token.mint(account, tokenAmount);

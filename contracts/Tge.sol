@@ -87,12 +87,12 @@ contract Tge is Minter {
         address _airdropper
     ) public onlyOwner {
         require(crowdsale == 0x0 && deferredKyc == 0x0 && referralManager == 0x0 && allocator == 0x0 && airdropper == 0x0);
-        // check parameters
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
+        require(crowdsale != 0x0 && deferredKyc != 0x0 && referralManager != 0x0 && allocator != 0x0 && airdropper != 0x0);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
