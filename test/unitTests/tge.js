@@ -18,6 +18,8 @@ describe('Tge', () => {
   let tgeOwner;
   let tgeContract;
   let saleStartTime;
+  let thirdParty;
+  let gas;
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const PRESALE = 0;
@@ -38,7 +40,9 @@ describe('Tge', () => {
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tgeOwner, tokenOwner] = accounts;
+    [tgeOwner, tokenOwner, thirdParty] = accounts;
+    const block = await web3.eth.getBlock('latest');
+    gas = block.gasLimit;
   });
 
   beforeEach(async () => {
@@ -51,6 +55,7 @@ describe('Tge', () => {
       saleStartTime,
       singleStateEtherCap
     ]);
+    await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
 
     tgeContract.methods.initialize(
       tgeOwner,
@@ -107,6 +112,8 @@ describe('Tge', () => {
     await updateState();
     return await tgeContract.methods.getTokensForEther(etherAmount).call();
   };
+
+  const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
   it('should be properly created', async () => {
     const actualCurrentState = await tgeContract.methods.currentState().call();
@@ -502,6 +509,34 @@ describe('Tge', () => {
       it('should calculate proper quantity of tokens', async() => {
         expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('0'));
       });
+    });
+  });
+
+  describe('Transferring token ownership', async () => {
+    const getTokenOwner = async() => tokenContract.methods.owner().call();
+
+    it('should allow to transfer token ownership', async() => {
+      await moveState(PRESALE, FINISHED, tgeOwner);
+      await transferTokenOwnership(tgeOwner);
+      expect(await getTokenOwner()).to.be.equal(tgeOwner);
+    });
+
+    it('should not allow to transfer token ownership before finishing', async() => {
+      await increaseTimeToState(FINISHING_ICO, tgeOwner);
+      await expectThrow(transferTokenOwnership(tgeOwner));
+
+      await moveState(FINISHING_ICO, ALLOCATING, tgeOwner);
+      await expectThrow(transferTokenOwnership(tgeOwner));
+
+      await moveState(ALLOCATING, AIRDROPPING, tgeOwner);
+      await expectThrow(transferTokenOwnership(tgeOwner));
+
+      expect(await getTokenOwner()).to.be.equal(tgeContract.options.address);
+    });
+
+    it('should not allow to transfer token ownership by third party', async() => {
+      await expectThrow(transferTokenOwnership(thirdParty));
+      expect(await getTokenOwner()).to.be.equal(tgeContract.options.address);
     });
   });
 });

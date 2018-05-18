@@ -7,6 +7,7 @@ import referralManagerJson from '../../build/contracts/ReferralManager.json';
 import allocatorJson from '../../build/contracts/Allocator.json';
 import airdropperJson from '../../build/contracts/Airdropper.json';
 import deferredKycJson from '../../build/contracts/DeferredKyc.json';
+import lockingContractJson from '../../build/contracts/LockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -18,7 +19,6 @@ const web3 = createWeb3(Web3, 20);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
 const duration = durationInit(web3);
-const gas = 6721975;
 
 describe('Integration', () => {
   let accounts;
@@ -35,6 +35,7 @@ describe('Integration', () => {
   let referralManagerOwner;
   let allocatorContract;
   let allocatorOwner;
+  let lockingContract;
   let airdropperContract;
   let airdropperOwner;
   let kycContract;
@@ -84,7 +85,14 @@ describe('Integration', () => {
   const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount, gas});
   const noteSale = async(account, etherAmount, tokenAmount) =>
     crowdsaleContract.methods.noteSale(account, etherAmount, tokenAmount).send({from: crowdsaleOwner, gas});
+  const lockedBalanceOf = async(account) => lockingContract.methods.balanceOf(account).call();
   const tokenBalanceOf = async (client) => new BN(await tokenContract.methods.balanceOf(client).call());
+
+  const vestedBalanceOf = async(account) => {
+    const vestingContractAddress = await allocatorContract.methods.vestingContracts(account).call();
+    return await tokenBalanceOf(vestingContractAddress);
+  };
+
   const allocateCommunity = async(account, tokenAmount) =>
     allocatorContract.methods.allocateCommunity(account, tokenAmount).send({from: allocatorOwner, gas});
   const allocateAdvisors = async(account, tokenAmount) =>
@@ -100,6 +108,7 @@ describe('Integration', () => {
     referralManagerContract.methods.addFee(referring, referringPercent, referred, referredPercent).send({from: referralManagerOwner, gas});
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
+  const transferTokenOwnership = async() => tgeContract.methods.transferTokenOwnership().send({from: tgeOwner, gas});
   
   /* eslint-enable no-unused-vars */
 
@@ -153,6 +162,10 @@ describe('Integration', () => {
       tgeContract.options.address
     ]);
     allocatorContract.options.defaultGas = gas;
+
+    // LOCKING CONTRACT
+    const lockingContractAddress = await allocatorContract.methods.lockingContract().call();
+    lockingContract = await createContract(web3, lockingContractJson, lockingContractAddress);
 
     // AIRDROPPER
     airdropperContract = await deployContract(web3, airdropperJson, airdropperOwner, [
@@ -500,6 +513,115 @@ describe('Integration', () => {
 
       await increaseTimeToState(FINISHING_ICO);
       await addFee(referring1, percent, investor1, percent);
+    });
+  });
+
+  describe('Allocating', async () => {
+    beforeEach(async() => {
+      await moveState(PRESALE, PREICO1);
+      await noteSale(investor1, etherAmount1, new BN(web3.utils.toWei('1000')));
+      await moveState(PREICO1, ALLOCATING);
+      expect(await currentState()).to.eq.BN(ALLOCATING);
+      await allocateCommunity('0x0', 0); // initialize
+    });
+
+    it('should have proper pool for Community', async() => {
+      const saleTokens = new BN(await tokenContract.methods.totalSupply().call());
+      const actualCommunityPool = await allocatorContract.methods.communityPool().call();
+      expect(actualCommunityPool).to.eq.BN(saleTokens.div(new BN('55')).mul(new BN('5')));
+    });
+
+    it('should have proper pool for Advisors', async() => {
+      const saleTokens = new BN(await tokenContract.methods.totalSupply().call());
+      const actualAdvisorsPool = await allocatorContract.methods.advisorsPool().call();
+      expect(actualAdvisorsPool).to.eq.BN(saleTokens.div(new BN('55')).mul(new BN('8')));
+    });
+
+    it('should have proper pool for Customer', async() => {
+      const saleTokens = new BN(await tokenContract.methods.totalSupply().call());
+      const actualCustomerPool = await allocatorContract.methods.customerPool().call();
+      expect(actualCustomerPool).to.eq.BN(saleTokens.div(new BN('55')).mul(new BN('15')));
+    });
+
+    it('should have proper pool for Team', async() => {
+      const saleTokens = new BN(await tokenContract.methods.totalSupply().call());
+      const actualTeamPool = await allocatorContract.methods.teamPool().call();
+      expect(actualTeamPool).to.eq.BN(saleTokens.div(new BN('55')).mul(new BN('17')));
+    });
+
+    it('should not allow to buy', async() => {
+      await expectThrow(buy(etherAmount1, investor1));
+    });
+
+    it('should not allow to add fee', async() => {
+      await expectThrow(addFee(referring1, 1, investor1, 1));
+    });
+
+    it('should allow to allocate for Community', async() => {
+      await allocateCommunity(community1, tokenAmount1);
+    });
+
+    it('should allocate for Community directly', async() => {
+      await allocateCommunity(community1, tokenAmount1);
+      expect(await tokenBalanceOf(community1)).to.eq.BN(tokenAmount1);
+    });
+
+    it('should allow to allocate for Advisors', async() => {
+      await allocateAdvisors(advisor1, tokenAmount1);
+    });
+
+    it('should allocate for Advisors directly', async() => {
+      await allocateAdvisors(advisor1, tokenAmount1);
+      expect(await tokenBalanceOf(advisor1)).to.eq.BN(tokenAmount1);
+    });
+
+    it('should allow to allocate for Customers', async() => {
+      await allocateCustomer(customer1, tokenAmount1);
+    });
+
+    it('should allocate for Customers in vesting', async() => {
+      await allocateCustomer(customer1, tokenAmount1);
+      expect(await vestedBalanceOf(customer1)).to.eq.BN(tokenAmount1);
+    });
+
+    it('should allow to allocate for Team', async() => {
+      await allocateTeam(team1, tokenAmount1);
+    });
+
+    it('should allocate for Team in locking contract', async() => {
+      await allocateTeam(team1, tokenAmount1);
+      expect(await lockedBalanceOf(team1)).to.eq.BN(tokenAmount1);
+    });
+  });
+
+  xdescribe('Airdropping', async () => {
+    
+  });
+
+  describe('Transferring token ownership', async () => {
+    it('should allow to transfer token ownership after all stages', async() => {
+      await noteSale(investor1, etherAmount1, tokenAmount1);
+      await increaseTimeToState(PREICO1);
+      await buy(etherAmount1, investor1);
+      await increaseTimeToState(ICO2);
+      await buy(etherAmount2, investor2);
+      await increaseTimeToState(FINISHING_ICO);
+      await approve(investor1);
+      await approve(investor2);
+      await addFee(referring1, 1, investor2, 1);
+      await moveState(FINISHING_ICO, ALLOCATING);
+      await allocateCommunity(community1, tokenAmount1);
+      await allocateAdvisors(advisor1, tokenAmount1);
+      await allocateCustomer(customer1, tokenAmount1);
+      await allocateTeam(team1, tokenAmount1);
+      await moveState(ALLOCATING, AIRDROPPING);
+      await drop(referring1);
+      await drop(investor1);
+      await drop(investor2);
+      await moveState(AIRDROPPING, FINISHED);
+
+      await transferTokenOwnership();
+      expect(await tokenContract.methods.owner().call()).to.be.equal(tgeOwner);
     });
   });
 });
