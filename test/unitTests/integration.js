@@ -1,4 +1,5 @@
-import {createWeb3, deployContract, latestTime, expectThrow, increaseTimeTo, durationInit, createContract} from 'ethworks-solidity';
+import {createWeb3, deployContract, latestTime, expectThrow,
+  increaseTimeTo, durationInit, createContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import tgeJson from '../../build/contracts/Tge.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
@@ -17,6 +18,7 @@ const web3 = createWeb3(Web3, 20);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
 const duration = durationInit(web3);
+const gas = 6721975;
 
 describe('Integration', () => {
   let accounts;
@@ -37,15 +39,19 @@ describe('Integration', () => {
   let airdropperOwner;
   let kycContract;
   let investor1;
-  let referring;
+  let investor2;
+  let referring1;
   let community1;
   let advisor1;
   let customer1;
   let team1;
+  let gas;
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
-  const etherAmount1 = new BN(web3.utils.toWei('1000'));
-  const tokenAmount1 = new BN(web3.utils.toWei('4000'));
+  const etherAmount1 = new BN(web3.utils.toWei('1'));
+  const etherAmount2 = new BN(web3.utils.toWei('10'));
+  const tokenAmount1 = new BN(web3.utils.toWei('4'));
+  const tokenAmount2 = new BN(web3.utils.toWei('40'));
   const PRESALE = 0;
   const PREICO1 = 1;
   const PREICO2 = 2;
@@ -72,28 +78,37 @@ describe('Integration', () => {
     await updateState();
   };
 
-  const updateState = async() => tgeContract.methods.updateState().send({from: tgeOwner});
-  const moveState = async (fromState, toState) => tgeContract.methods.moveState(fromState, toState).send({from: tgeOwner});
+  const updateState = async() => tgeContract.methods.updateState().send({from: tgeOwner, gas});
+  const moveState = async (fromState, toState) => tgeContract.methods.moveState(fromState, toState).send({from: tgeOwner, gas});
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
-  const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount});
-  const noteSale = async(account, etherAmount, tokenAmount) => crowdsaleContract.methods.noteSale(account, etherAmount, tokenAmount).send({from: crowdsaleOwner});
+  const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount, gas});
+  const noteSale = async(account, etherAmount, tokenAmount) =>
+    crowdsaleContract.methods.noteSale(account, etherAmount, tokenAmount).send({from: crowdsaleOwner, gas});
   const tokenBalanceOf = async (client) => new BN(await tokenContract.methods.balanceOf(client).call());
-  const allocateCommunity = async(account, tokenAmount) => allocatorContract.methods.allocateCommunity(account, tokenAmount).send({from: allocatorOwner});
-  const allocateAdvisors = async(account, tokenAmount) => allocatorContract.methods.allocateAdvisors(account, tokenAmount).send({from: allocatorOwner});
-  const allocateCustomer = async(account, tokenAmount) => allocatorContract.methods.allocateCustomer(account, tokenAmount).send({from: allocatorOwner});
-  const allocateTeam = async(account, tokenAmount) => allocatorContract.methods.allocateTeam(account, tokenAmount).send({from: allocatorOwner});
-  const drop = async(account) => airdropperContract.methods.drop(account).send({from: airdropperOwner});
-  const approve = async(account) => kycContract.methods.approve(account).send({from: approver});
-  const reject = async(account) => kycContract.methods.reject(account).send({from: approver});
+  const allocateCommunity = async(account, tokenAmount) =>
+    allocatorContract.methods.allocateCommunity(account, tokenAmount).send({from: allocatorOwner, gas});
+  const allocateAdvisors = async(account, tokenAmount) =>
+    allocatorContract.methods.allocateAdvisors(account, tokenAmount).send({from: allocatorOwner, gas});
+  const allocateCustomer = async(account, tokenAmount) =>
+    allocatorContract.methods.allocateCustomer(account, tokenAmount).send({from: allocatorOwner, gas});
+  const allocateTeam = async(account, tokenAmount) =>
+    allocatorContract.methods.allocateTeam(account, tokenAmount).send({from: allocatorOwner, gas});
+  const drop = async(account) => airdropperContract.methods.drop(account).send({from: airdropperOwner, gas});
+  const approve = async(account) => kycContract.methods.approve(account).send({from: approver, gas});
+  const reject = async(account) => kycContract.methods.reject(account).send({from: approver, gas});
   const addFee = async(referring, referringPercent, referred, referredPercent) =>
-    referralManagerContract.methods.addFee(referring, referringPercent, referred, referredPercent).send({from: referralManagerOwner});
+    referralManagerContract.methods.addFee(referring, referringPercent, referred, referredPercent).send({from: referralManagerOwner, gas});
+  const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
+  const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   
   /* eslint-enable no-unused-vars */
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, tgeOwner, crowdsaleOwner, approver, treasury, referralManagerOwner, allocatorOwner, airdropperOwner,
-      investor1, referring, community1, advisor1, customer1, team1] = accounts;
+      investor1, investor2, referring1, community1, advisor1, customer1, team1] = accounts;
+    const block = await web3.eth.getBlock('latest');
+    gas = block.gasLimit;
   });
 
   beforeEach(async () => {
@@ -102,6 +117,7 @@ describe('Integration', () => {
     // TOKEN
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
       []);
+    tokenContract.options.defaultGas = gas;
 
     // TGE
     tgeContract = await deployContract(web3, tgeJson, tgeOwner, [
@@ -111,6 +127,7 @@ describe('Integration', () => {
       singleStateEtherCap
     ]);
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
+    tgeContract.options.defaultGas = gas;
 
     // CROWDSALE
     crowdsaleContract = await deployContract(web3, crowdsaleJson, crowdsaleOwner, [
@@ -118,25 +135,30 @@ describe('Integration', () => {
       approver,
       treasury
     ]);
+    crowdsaleContract.options.defaultGas = gas;
 
     // DEFERRED KYC
     const deferredKycAddress = await crowdsaleContract.methods.deferredKyc().call();
     kycContract = await createContract(web3, deferredKycJson, deferredKycAddress);
+    kycContract.options.defaultGas = gas;
 
     // REFERRAL MANAGER
     referralManagerContract = await deployContract(web3, referralManagerJson, referralManagerOwner, [
       tgeContract.options.address
     ]);
+    referralManagerContract.options.defaultGas = gas;
     
     // ALLOCATOR
     allocatorContract = await deployContract(web3, allocatorJson, allocatorOwner, [
       tgeContract.options.address
     ]);
+    allocatorContract.options.defaultGas = gas;
 
     // AIRDROPPER
     airdropperContract = await deployContract(web3, airdropperJson, airdropperOwner, [
       tgeContract.options.address
     ]);
+    airdropperContract.options.defaultGas = gas;
 
     // TGE DEPENDENCIES
     await tgeContract.methods.initialize(
@@ -193,7 +215,7 @@ describe('Integration', () => {
     });
 
     it('should not allow to add referral fee', async() => {
-      await expectThrow(addFee(referring, 1, investor1, 1));
+      await expectThrow(addFee(referring1, 1, investor1, 1));
     });
 
     it('should not allow to allocate', async() => {
@@ -209,6 +231,39 @@ describe('Integration', () => {
 
     it('should allow to note sales', async() => {
       await noteSale(investor1, etherAmount1, tokenAmount1);
+    });
+
+    describe('noting sales', async() => {
+      it('should allow to note up to the sale ether cap', async () => {
+        await noteSale(investor1, saleEtherCap, tokenAmount1);
+      });
+
+      it('should not allow to note exceeding the sale ether cap (in one investment)', async () => {
+        await expectThrow(noteSale(investor1, saleEtherCap.add(new BN('1')), tokenAmount1));
+      });
+
+      it('should not allow to note exceeding the sale ether cap (in multiple investment)', async () => {
+        await noteSale(investor1, saleEtherCap, tokenAmount1);
+        await expectThrow(noteSale(investor2, new BN('1'), tokenAmount1));
+      });
+    });
+  });
+
+  describe('advancing state by noting sales in presale', async() => {
+    it('should advance to preico2 immediately if noted enough sales in presale', async() => {
+      await noteSale(investor1, singleStateEtherCap, tokenAmount1);
+      expect(await currentState()).to.eq.BN(PRESALE);
+      await increaseTimeToState(PREICO1);
+      await updateState();
+      expect(await currentState()).to.eq.BN(PREICO2);
+    });
+
+    it('should advance to break immediately if noted enough sales in presale', async() => {
+      await noteSale(investor1, singleStateEtherCap.mul(new BN('2')), tokenAmount1);
+      expect(await currentState()).to.eq.BN(PRESALE);
+      await increaseTimeToState(PREICO1);
+      await updateState();
+      expect(await currentState()).to.eq.BN(BREAK);
     });
   });
 
@@ -222,8 +277,18 @@ describe('Integration', () => {
       await buy(etherAmount1, investor1);
     });
 
+    it('should allow to buy and reject', async() => {
+      await buy(etherAmount1, investor1);
+      await reject(investor1);
+    });
+
+    it('should allow to buy and approve', async() => {
+      await buy(etherAmount1, investor1);
+      await approve(investor1);
+    });
+
     it('should allow to add referral fee', async() => {
-      await addFee(referring, 1, investor1, 1);
+      await addFee(referring1, 1, investor1, 1);
     });
 
     it('should not allow to allocate', async() => {
@@ -239,6 +304,66 @@ describe('Integration', () => {
 
     it('should allow to note sales', async() => {
       await noteSale(investor1, etherAmount1, tokenAmount1);
+    });
+
+    describe('sales and fees', async() => {
+      it('should add referral fees based on external sales', async() => {
+        const percent = new BN('1');
+        const expectedFee = tokenAmount1.div(new BN('100')).mul(percent);
+        await noteSale(investor1, etherAmount1, tokenAmount1);
+
+        await addFee(investor2, percent, investor1, percent);
+
+        expect(await tokenBalanceOf(investor2)).to.eq.BN(expectedFee);
+        expect(await tokenBalanceOf(investor1)).to.eq.BN(tokenAmount1.add(expectedFee));
+      });
+
+      it('should add referral fee based on direct sales', async() => {
+        const percent = new BN('1');
+        await buy(etherAmount1, investor1);
+        await approve(investor1);
+        const tokenAmount = await tokenBalanceOf(investor1);
+        const expectedFee = tokenAmount.div(new BN('100')).mul(percent);
+
+        await addFee(referring1, percent, investor1, percent);
+
+        expect(await tokenBalanceOf(referring1)).to.eq.BN(expectedFee);
+        expect(await tokenBalanceOf(investor1)).to.eq.BN(tokenAmount.add(expectedFee));
+      });
+
+      it('should calculate fees based on both external and direct sales', async() => {
+        const percent = new BN('1');
+        await noteSale(investor1, etherAmount1, tokenAmount1);
+        await buy(etherAmount2, investor2);
+        await approve(investor2);
+        const tokenAmount2 = await tokenBalanceOf(investor2);
+
+        await addFee(referring1, percent, investor2, percent);
+        await addFee(referring1, percent, investor1, percent);
+        const expectedFee1 = tokenAmount1.div(new BN('100')).mul(percent);
+        const expectedFee2 = tokenAmount2.div(new BN('100')).mul(percent);
+        expect(await tokenBalanceOf(investor1)).to.eq.BN(tokenAmount1.add(expectedFee1));
+        expect(await tokenBalanceOf(investor2)).to.eq.BN(tokenAmount2.add(expectedFee2));
+        expect(await tokenBalanceOf(referring1)).to.eq.BN(expectedFee1.add(expectedFee2));
+      });
+
+      it('should not allow to add fee twice for the same investor', async() => {
+        await noteSale(investor1, etherAmount1, tokenAmount1);
+        await addFee(referring1, 1, investor2, 1);
+        await expectThrow(addFee(referring1, 1, investor2, 1));
+      });
+
+      it('should not add fee for investments under kyc', async() => {
+        const percent = new BN('1');
+        await buy(etherAmount1, investor1);
+        const tokenAmount = await tokenBalanceOf(investor1);
+        expect(tokenAmount).to.eq.BN(0);
+
+        await addFee(referring1, percent, investor1, percent);
+
+        expect(await tokenBalanceOf(referring1)).to.eq.BN(0);
+        expect(await tokenBalanceOf(investor1)).to.eq.BN(tokenAmount);
+      });
     });
   });
 
@@ -253,7 +378,7 @@ describe('Integration', () => {
     });
 
     it('should allow to add referral fee', async() => {
-      await addFee(referring, 1, investor1, 1);
+      await addFee(referring1, 1, investor1, 1);
     });
 
     it('should not allow to allocate', async() => {
@@ -283,7 +408,7 @@ describe('Integration', () => {
     });
 
     it('should allow to add referral fee', async() => {
-      await addFee(referring, 1, investor1, 1);
+      await addFee(referring1, 1, investor1, 1);
     });
 
     it('should not allow to allocate', async() => {
@@ -313,7 +438,7 @@ describe('Integration', () => {
     });
 
     it('should allow to add referral fee', async() => {
-      await addFee(referring, 1, investor1, 1);
+      await addFee(referring1, 1, investor1, 1);
     });
 
     it('should not allow to allocate', async() => {
@@ -329,6 +454,52 @@ describe('Integration', () => {
 
     it('should allow to note sales', async() => {
       await noteSale(investor1, etherAmount1, tokenAmount1);
+    });
+  });
+
+  describe('from presale to finishingIco', async() => {
+    it('should allow to approve in FinishingIco state investments made previously', async() => {
+      await increaseTimeToState(PREICO1);
+      await buy(etherAmount1, investor1);
+      const expectedTokenAmount1 = await tokenInProgress(investor1);
+      await increaseTimeToState(ICO1);
+      await buy(etherAmount2, investor2);
+      const expectedTokenAmount2 = await tokenInProgress(investor2);
+      await increaseTimeToState(FINISHING_ICO);
+
+      await approve(investor1);
+      await approve(investor2);
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(expectedTokenAmount1);
+      expect(await tokenBalanceOf(investor2)).to.eq.BN(expectedTokenAmount2);
+    });
+
+    it('should calculate token amount for the price at time of buying, not time of approving', async() => {
+      await increaseTimeToState(PREICO1);
+      const expectedTokens = await tgeContract.methods.getTokensForEther(etherAmount1).call();
+      await buy(etherAmount1, investor1);
+      await increaseTimeToState(ICO6);
+      await approve(investor1);
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(expectedTokens);
+    });
+
+    it('should allow to reject in FinishingIco state investments made previously', async() => {
+      await increaseTimeToState(PREICO1);
+      await buy(etherAmount1, investor1);
+      await increaseTimeToState(FINISHING_ICO);
+
+      await reject(investor1);
+      expect(await tokenInProgress(investor1)).to.eq.BN(0);
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(0);
+    });
+
+    it('should allow to add fees in FinishingIco state for investments made previously', async() => {
+      const percent = new BN('1');
+      await increaseTimeToState(PREICO1);
+      await buy(etherAmount1, investor1);
+      await approve(investor1);
+
+      await increaseTimeToState(FINISHING_ICO);
+      await addFee(referring1, percent, investor1, percent);
     });
   });
 });
