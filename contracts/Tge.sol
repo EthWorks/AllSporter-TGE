@@ -61,12 +61,12 @@ contract Tge is Minter {
         setStateLength(State.Preico1, 5 days);
         setStateLength(State.Preico2, 5 days);
         setStateLength(State.Break, 3 days);
-        setStateLength(State.Ico1, 10 days);
-        setStateLength(State.Ico2, 10 days);
-        setStateLength(State.Ico3, 10 days);
-        setStateLength(State.Ico4, 10 days);
-        setStateLength(State.Ico5, 10 days);
-        setStateLength(State.Ico6, 10 days);
+        setStateLength(State.Ico1, 5 days);
+        setStateLength(State.Ico2, 5 days);
+        setStateLength(State.Ico3, 5 days);
+        setStateLength(State.Ico4, 5 days);
+        setStateLength(State.Ico5, 5 days);
+        setStateLength(State.Ico6, 5 days);
 
         // the total sale ether cap is distributed evenly over all selling states
         setEtherCap(State.Preico1, singleStateEtherCap);

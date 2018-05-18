@@ -13,12 +13,12 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 | Pre ICO 1 | 5 days | 3250 |
 | Pre ICO 2 | 5 days | 3087,5 |
 | Break | 3 days | Investments not possible |
-| ICO 1 | 10 days | 2925 |
-| ICO 2 | 10 days | 2762,5 |
-| ICO 3 | 10 days | 2600 |
-| ICO 4 | 10 days | 2437,5 |
-| ICO 5 | 10 days | 2112,5 |
-| ICO 6 | 10 days | 1950 |
+| ICO 1 | 5 days | 2925 |
+| ICO 2 | 5 days | 2762,5 |
+| ICO 3 | 5 days | 2600 |
+| ICO 4 | 5 days | 2437,5 |
+| ICO 5 | 5 days | 2112,5 |
+| ICO 6 | 5 days | 1950 |
 
 ### Token split
 

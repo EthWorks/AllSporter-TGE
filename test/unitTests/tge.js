@@ -136,22 +136,22 @@ describe('Tge', () => {
       await advanceDays(3);
       expect(await currentState()).to.eq.BN(ICO1);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(ICO2);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(ICO3);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(ICO4);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(ICO5);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(ICO6);
 
-      await advanceDays(10);
+      await advanceDays(5);
       expect(await currentState()).to.eq.BN(FINISHING_ICO);
     });
 
@@ -366,7 +366,7 @@ describe('Tge', () => {
     describe('Ico2', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
-        await advanceDays(23);
+        await advanceDays(18);
         expect(await currentState()).to.eq.BN(ICO2);
       });
 
@@ -382,7 +382,7 @@ describe('Tge', () => {
     describe('Ico3', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
-        await advanceDays(33);
+        await advanceDays(23);
         expect(await currentState()).to.eq.BN(ICO3);
       });
 
@@ -398,7 +398,7 @@ describe('Tge', () => {
     describe('Ico4', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
-        await advanceDays(43);
+        await advanceDays(28);
         expect(await currentState()).to.eq.BN(ICO4);
       });
 
@@ -414,7 +414,7 @@ describe('Tge', () => {
     describe('Ico5', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
-        await advanceDays(53);
+        await advanceDays(33);
         expect(await currentState()).to.eq.BN(ICO5);
       });
 
@@ -430,7 +430,7 @@ describe('Tge', () => {
     describe('Ico6', async () => {
       beforeEach(async() => {
         await advanceToSaleStartTime();
-        await advanceDays(63);
+        await advanceDays(38);
         expect(await currentState()).to.eq.BN(ICO6);
       });
 
