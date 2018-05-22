@@ -61,7 +61,7 @@ contract Airdropper is Ownable {
     function drop(address account) public onlyOwner initialized notAlreadyDropped(account) {
         dropped[account] = true;
         uint contributed = minter.token().balanceOf(account);
-        uint tokenAmount = airdropPool.div(initialTotalSupply).mul(contributed);
+        uint tokenAmount = airdropPool.mul(contributed).div(initialTotalSupply);
         minter.mint(account, ETHER_AMOUNT, tokenAmount);
         emit Airdropped(account, tokenAmount);
     }

@@ -102,6 +102,7 @@ describe('Integration', () => {
   const allocateTeam = async(account, tokenAmount) =>
     allocatorContract.methods.allocateTeam(account, tokenAmount).send({from: allocatorOwner, gas});
   const drop = async(account) => airdropperContract.methods.drop(account).send({from: airdropperOwner, gas});
+  const dropMultiple = async(accounts) => airdropperContract.methods.dropMultiple(accounts).send({from: airdropperOwner, gas});
   const approve = async(account) => kycContract.methods.approve(account).send({from: approver, gas});
   const reject = async(account) => kycContract.methods.reject(account).send({from: approver, gas});
   const addFee = async(referring, referringPercent, referred, referredPercent) =>
@@ -594,8 +595,76 @@ describe('Integration', () => {
     });
   });
 
-  xdescribe('Airdropping', async () => {
-    
+  describe('Airdropping', async () => {
+    beforeEach(async() => {
+      await moveState(PRESALE, PREICO1);
+      await noteSale(investor1, etherAmount1, new BN('159999910000000000000000000'));
+      await moveState(PREICO1, ALLOCATING);
+      await allocateCommunity(community1, new BN('30000000000000000000'));
+      await allocateAdvisors(advisor1, new BN('60000000000000000000'));
+      await moveState(ALLOCATING, AIRDROPPING);
+    });
+
+    it('should allow to airdrop for every account', async() => {
+      await drop(investor1);
+      await drop(community1);
+      await drop(advisor1);
+    });
+
+    it('should not throw when dropping for en empty account', async() => {
+      await drop(investor2);
+    });
+
+    it('should not allow to airdrop twice for the same account', async() => {
+      await drop(investor1);
+      await expectThrow(drop(investor1));
+    });
+
+    it('should allow to airdrop for an array of accounts', async () => {
+      await dropMultiple([
+        investor1,
+        community1,
+        advisor1
+      ]);
+    });
+
+    it('should calculate airdropped amount proportionally', async() => {
+      await drop(investor1);
+      await drop(community1);
+      await drop(advisor1);
+      const epsilon = new BN('100000000');
+
+      const actualSupply = new BN(await tokenContract.methods.totalSupply().call());
+      const cap = new BN(await tokenContract.methods.cap().call());
+      expect(cap.sub(actualSupply).lte(epsilon)).to.be.true;
+    });
+  });
+
+  describe('Airdropping with vested accounts', async () => {
+    let vestingContractAddress;
+    beforeEach(async() => {
+      await moveState(PRESALE, PREICO1);
+      await noteSale(investor1, etherAmount1, new BN('159999920000000000000000000'));
+      await moveState(PREICO1, ALLOCATING);
+      await allocateCustomer(customer1, new BN('80000000000000000000'));
+      await moveState(ALLOCATING, AIRDROPPING);
+      vestingContractAddress = await allocatorContract.methods.vestingContracts(customer1).call();
+    });
+
+    it('should allow to airdrop for every account', async() => {
+      await drop(investor1);
+      await drop(vestingContractAddress);
+    });
+
+    it('should calculate airdropped amount proportionally', async() => {
+      await drop(investor1);
+      await drop(vestingContractAddress);
+      const epsilon = new BN('100000000');
+
+      const actualSupply = new BN(await tokenContract.methods.totalSupply().call());
+      const cap = new BN(await tokenContract.methods.cap().call());
+      expect(cap.sub(actualSupply).lte(epsilon)).to.be.true;
+    });
   });
 
   describe('Transferring token ownership', async () => {
