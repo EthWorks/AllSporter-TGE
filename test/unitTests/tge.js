@@ -318,7 +318,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3250'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3895.8'));
       });
     });
 
@@ -334,7 +334,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3087.5'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3766.2'));
       });
     });
 
@@ -366,7 +366,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2925'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3415'));
       });
     });
 
@@ -382,7 +382,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2762.5'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3317.1'));
       });
     });
 
@@ -398,7 +398,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2600'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3138'));
       });
     });
 
@@ -414,7 +414,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2437.5'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('3055.9'));
       });
     });
 
@@ -430,7 +430,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2112.5'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2904.7'));
       });
     });
 
@@ -446,7 +446,7 @@ describe('Tge', () => {
       });
 
       it('should calculate proper quantity of tokens', async() => {
-        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('1950'));
+        expect(await getCurrentTokensForEther(web3.utils.toWei('1'))).to.eq.BN(web3.utils.toWei('2768.6'));
       });
     });
 
