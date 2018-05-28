@@ -111,13 +111,13 @@ contract Tge is Minter {
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
         uint tokenAmount = 0;
-        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(38958).div(10);
-        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(37662).div(10);
-        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(3415);
-        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(33171).div(10);
-        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(3138);
-        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(30559).div(10);
-        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(29047).div(10);
+        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(39553).div(10);
+        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(38189).div(10);
+        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(34609).div(10);
+        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(33559).div(10);
+        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(31641).div(10);
+        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(30762).div(10);
+        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(29143).div(10);
         else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(27686).div(10);
 
         // bonus
