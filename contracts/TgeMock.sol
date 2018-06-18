@@ -10,11 +10,11 @@ contract TgeMock is Minter {
 
     /* --- CONSTANTS --- */
 
-    uint public firstStateMultiplier = 2;
-    uint public secondStateMultiplier = 3;
-    bool public secondState = false;
-    uint public secondStateAfter = 10 * 1e18;
-    uint public minimumContributionAmount = 10;
+    uint constant public firstStateMultiplier = 2;
+    uint constant public secondStateMultiplier = 3;
+    bool constant public secondState = false;
+    uint constant public secondStateAfter = 10 * 1e18;
+    uint constant public minimumContributionAmount = 10;
 
     /* --- FIELDS --- */
 

@@ -14,7 +14,7 @@ contract Airdropper is Ownable {
 
     /* --- CONSTANTS --- */
 
-    uint public ETHER_AMOUNT = 0;
+    uint constant public ETHER_AMOUNT = 0;
 
     /* --- EVENTS --- */
 
