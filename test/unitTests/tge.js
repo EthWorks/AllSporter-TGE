@@ -115,7 +115,7 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
-  describe.only('initializing', async() => {
+  describe('initializing', async() => {
     let uninitializedTgeContract;
     const zeroAddress = '0x0';
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.26;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
@@ -54,7 +54,7 @@ contract Tge is Minter {
 
     /* --- CONSTRUCTOR / INITIALIZATION --- */
 
-    function Tge(
+    constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap,
         uint saleStartTime,

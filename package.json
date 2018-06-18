@@ -29,8 +29,8 @@
     "ethereumjs-testrpc": "^6.0.2",
     "ganache-core": "^2.0.2",
     "mocha": "^4.0.1",
-    "solc": "^0.4.19",
-    "truffle": "^4.1.5",
+    "solc": "^0.4.24",
+    "truffle": "^4.1.11",
     "web3": "^1.0.0-beta.29",
     "zeppelin-solidity": "1.6.0",
     "ethworks-solidity": "ethworks/ethworks-solidity#8902c03ad415b2deab90759bff46a39d14170619"

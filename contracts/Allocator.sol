@@ -1,4 +1,4 @@
-pragma solidity ^0.4.26;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/token/ERC20/TokenVesting.sol";
@@ -74,7 +74,7 @@ contract Allocator is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function Allocator(Minter _minter) public onlyValidAddress(_minter) {
+    constructor(Minter _minter) public onlyValidAddress(_minter) {
         minter = _minter;
         lockingContract = new LockingContract(_minter.token(), LOCKING_UNLOCK_TIME);
     }

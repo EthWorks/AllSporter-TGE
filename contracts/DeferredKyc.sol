@@ -1,4 +1,4 @@
-pragma solidity ^0.4.26;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
@@ -37,7 +37,7 @@ contract DeferredKyc is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function DeferredKyc(Minter _minter, address _approver, address _treasury)
+    constructor(Minter _minter, address _approver, address _treasury)
         public
         onlyValidAddress(address(_minter))
         onlyValidAddress(_approver)

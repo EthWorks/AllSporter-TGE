@@ -1,4 +1,4 @@
-pragma solidity ^0.4.26;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
@@ -24,7 +24,7 @@ contract TgeMock is Minter {
 
     /* --- CONSTRUCTOR --- */
 
-    function TgeMock(
+    constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap,
         address _firstStateMinter,

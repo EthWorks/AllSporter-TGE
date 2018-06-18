@@ -1,4 +1,4 @@
-pragma solidity ^0.4.26;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/LockingContract.sol";
@@ -44,7 +44,7 @@ contract ReferralManager is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function ReferralManager(Minter _minter) public onlyValidAddress(address(_minter)) {
+    constructor(Minter _minter) public onlyValidAddress(address(_minter)) {
         minter = _minter;
     }
 
