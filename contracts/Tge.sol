@@ -201,7 +201,7 @@ contract Tge is Minter {
     // override
     function updateState() public {
         updateStateBasedOnTime();
-        updateStateBasedOnContributions(confirmedSaleEther.add(reservedSaleEther));
+        updateStateBasedOnContributions();
     }
 
     function updateStateBasedOnTime() internal {
@@ -218,8 +218,9 @@ contract Tge is Minter {
         else if (now >= startTimes[uint(State.Preico1)]) advanceStateIfNewer(State.Preico1);
     }
 
-    function updateStateBasedOnContributions(uint totalEtherContributions) internal {
+    function updateStateBasedOnContributions() internal {
         // move to the next state, if the current one's cap has been reached
+        uint totalEtherContributions = confirmedSaleEther.add(reservedSaleEther);
         if (!isSellingState()) {
             return;
         }
