@@ -6,7 +6,6 @@ import "ethworks-solidity/contracts/Whitelist.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
-import "./Minter.sol";
 
 contract ReferralManager is Ownable {
     using SafeMath for uint;

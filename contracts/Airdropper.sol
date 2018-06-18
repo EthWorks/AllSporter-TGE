@@ -5,7 +5,6 @@ import "ethworks-solidity/contracts/LockingContract.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 import "./Tge.sol";
-import "./Minter.sol";
 import "./DeferredKyc.sol";
 import "./Minter.sol";
 

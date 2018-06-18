@@ -8,7 +8,6 @@ import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
-import "./Minter.sol";
 
 contract Allocator is Ownable {
     using SafeMath for uint;
