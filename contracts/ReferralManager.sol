@@ -45,9 +45,7 @@ contract ReferralManager is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function ReferralManager(Minter _minter) public {
-        require(address(_minter) != 0x0);
-
+    function ReferralManager(Minter _minter) public onlyValidAddress(address(_minter)) {
         minter = _minter;
     }
 

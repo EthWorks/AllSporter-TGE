@@ -30,13 +30,19 @@ contract DeferredKyc is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function DeferredKyc(Minter _minter, address _approver, address _treasury) public {
-        require(address(_minter) != 0x0);
-        require(_approver != 0x0);
-        require(_treasury != 0x0);
-        
+    function DeferredKyc(Minter _minter, address _approver, address _treasury)
+        public
+        onlyValidAddress(address(_minter))
+        onlyValidAddress(_approver)
+        onlyValidAddress(_treasury)
+    {
         minter = _minter;
         approver = _approver;
         treasury = _treasury;

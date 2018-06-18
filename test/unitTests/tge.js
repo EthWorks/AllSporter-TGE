@@ -115,6 +115,69 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
+  describe.only('initializing', async() => {
+    let uninitializedTgeContract;
+    const zeroAddress = '0x0';
+
+    beforeEach(async() => {
+      uninitializedTgeContract = await deployContract(web3, tgeJson, tgeOwner, [
+        tokenContract.options.address,
+        saleEtherCap,
+        saleStartTime,
+        singleStateEtherCap
+      ]);
+    });
+
+    const isInitialized = async() => uninitializedTgeContract.methods.isInitialized().call();
+
+    const initialize = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, from) => uninitializedTgeContract.methods.initialize(
+      crowdsale,
+      deferredKyc,
+      referralManager,
+      allocator,
+      airdropper
+    ).send({from});
+
+    it('should be uninitialized initially', async() => {
+      expect(await isInitialized()).to.be.false;
+    });
+
+    it('should allow to initialize by the owner', async() => {
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      expect(await isInitialized()).to.be.true; 
+    });
+
+    it('should not allow to initialize by not the owner', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tokenOwner));
+      expect(await isInitialized()).to.be.false; 
+    });
+
+    it('should not allow to initialize twice', async() => {
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without crowdsale', async() => {
+      await expectThrow(initialize(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without deferredKyc', async() => {
+      await expectThrow(initialize(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without referralManager', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without allocator', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without airdropper', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner));
+    });
+  });
+
   describe('Creating', async () => {
     it('should be properly deployed', async () => {
       const actualCurrentState = await tgeContract.methods.currentState().call();

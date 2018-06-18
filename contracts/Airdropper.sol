@@ -43,10 +43,14 @@ contract Airdropper is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Airdropper(Minter _minter) public {
-        require(address(_minter) != 0x0);
+    function Airdropper(Minter _minter) public  onlyValidAddress(address(_minter)) {
         minter = _minter;
     }
 

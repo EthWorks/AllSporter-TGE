@@ -68,10 +68,15 @@ contract Allocator is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Allocator(Minter _minter) public {
-        require(address(_minter) != 0x0);
+    function Allocator(Minter _minter) public onlyValidAddress(_minter) {
+
         minter = _minter;
         lockingContract = new LockingContract(_minter.token(), LOCKING_UNLOCK_TIME);
     }

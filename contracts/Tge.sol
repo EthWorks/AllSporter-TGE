@@ -42,6 +42,16 @@ contract Tge is Minter {
         _;
     }
 
+    modifier onlyNotInitialized() {
+        require(!isInitialized());
+        _;
+    }
+
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR / INITIALIZATION --- */
 
     function Tge(
@@ -86,14 +96,21 @@ contract Tge is Minter {
         address _referralManager,
         address _allocator,
         address _airdropper
-    ) public onlyOwner {
-        require(crowdsale == 0x0 && deferredKyc == 0x0 && referralManager == 0x0 && allocator == 0x0 && airdropper == 0x0);
+    )
+    public
+    onlyOwner
+    onlyNotInitialized // initialize only once
+    onlyValidAddress(_crowdsale)
+    onlyValidAddress(_deferredKyc)
+    onlyValidAddress(_referralManager)
+    onlyValidAddress(_allocator)
+    onlyValidAddress(_airdropper)
+    {
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
-        require(crowdsale != 0x0 && deferredKyc != 0x0 && referralManager != 0x0 && allocator != 0x0 && airdropper != 0x0);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */

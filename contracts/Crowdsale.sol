@@ -21,13 +21,21 @@ contract Crowdsale is Ownable {
     Minter public minter;
     DeferredKyc public deferredKyc;
 
+    /* --- MODIFIERS --- */
+
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Crowdsale(Minter _minter, address _approver, address _treasury) public {
-        require(address(_minter) != 0x0);
-        require(_approver != 0x0);
-        require(_treasury != 0x0);
-
+    function Crowdsale(Minter _minter, address _approver, address _treasury)
+        public
+        onlyValidAddress(address(_minter))
+        onlyValidAddress(_approver)
+        onlyValidAddress(_treasury)
+    {
         minter = _minter;
         deferredKyc = new DeferredKyc(_minter, _approver, _treasury);
     }
