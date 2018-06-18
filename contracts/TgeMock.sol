@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.26;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
@@ -12,7 +12,6 @@ contract TgeMock is Minter {
 
     uint constant public firstStateMultiplier = 2;
     uint constant public secondStateMultiplier = 3;
-    bool constant public secondState = false;
     uint constant public secondStateAfter = 10 * 1e18;
     uint constant public minimumContributionAmount = 10;
 
@@ -21,6 +20,7 @@ contract TgeMock is Minter {
     address public firstStateMinter;
     address public secondStateMinter;
     mapping(address => bool) public allStateMinters;
+    bool public secondState = false;
 
     /* --- CONSTRUCTOR --- */
 

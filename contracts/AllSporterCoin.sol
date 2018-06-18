@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.26;
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 
 contract AllSporterCoin is CrowdfundableToken {
