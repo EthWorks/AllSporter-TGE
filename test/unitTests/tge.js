@@ -115,9 +115,83 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
-  it('should be properly created', async () => {
-    const actualCurrentState = await tgeContract.methods.currentState().call();
-    expect(actualCurrentState).to.eq.BN(0);
+  describe.only('Creating', async () => {
+    it('should be properly deployed', async () => {
+      const actualCurrentState = await tgeContract.methods.currentState().call();
+      expect(actualCurrentState).to.eq.BN('0');
+    });
+
+    describe('should have proper state ether caps', async() => {
+      it('Presale state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PRESALE).call())
+          .to.eq.BN('0');
+      });
+
+      it('Preico1 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PREICO1).call())
+          .to.eq.BN(singleStateEtherCap);
+      });
+
+      it('Preico2 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PREICO2).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('2')));
+      });
+
+      it('Break state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(BREAK).call())
+          .to.eq.BN('0');
+      });
+
+      it('Ico1 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO1).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN(3)));
+      });
+
+      it('Ico2 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO2).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('4')));
+      });
+
+      it('Ico3 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO3).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('5')));
+      });
+
+      it('Ico4 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO4).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('6')));
+      });
+
+      it('Ico5 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO5).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('7')));
+      });
+
+      it('Ico6 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO6).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('8')));
+      });
+
+      it('FinishingIco state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(FINISHING_ICO).call())
+          .to.eq.BN('0');
+      });
+
+      it('Allocating state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ALLOCATING).call())
+          .to.eq.BN('0');
+      });
+
+      it('Airdropping state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(AIRDROPPING).call())
+          .to.eq.BN('0');
+      });
+
+      it('Finished state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(FINISHED).call())
+          .to.eq.BN('0');
+      });
+    });
   });
 
   describe('advancing states based on time', async () => {
