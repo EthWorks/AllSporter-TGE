@@ -69,14 +69,15 @@ contract Tge is Minter {
         setStateLength(State.Ico6, 5 days);
 
         // the total sale ether cap is distributed evenly over all selling states
-        setEtherCap(State.Preico1, singleStateEtherCap);
-        setEtherCap(State.Preico2, singleStateEtherCap);
-        setEtherCap(State.Ico1, singleStateEtherCap);
-        setEtherCap(State.Ico2, singleStateEtherCap);
-        setEtherCap(State.Ico3, singleStateEtherCap);
-        setEtherCap(State.Ico4, singleStateEtherCap);
-        setEtherCap(State.Ico5, singleStateEtherCap);
-        setEtherCap(State.Ico6, singleStateEtherCap);
+        // the cap from previous states is accumulated in consequent states
+        etherCaps[uint(State.Preico1)] = singleStateEtherCap;
+        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2);
+        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3);
+        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4);
+        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5);
+        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6);
+        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7);
+        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
     }
 
     function initialize(
@@ -232,11 +233,6 @@ contract Tge is Minter {
     function setStateLength(State state, uint length) internal {
         // state length is determined by next state's start time
         startTimes[uint(state)+1] = startTimes[uint(state)].add(length);
-    }
-
-    function setEtherCap(State state, uint cap) internal {
-        // accumulate cap from previous states
-        etherCaps[uint(state)] = etherCaps[uint(state)-1].add(cap);
     }
 
     function isInitialized() public view returns(bool) {

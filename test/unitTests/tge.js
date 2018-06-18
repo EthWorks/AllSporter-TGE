@@ -115,7 +115,7 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
-  describe.only('Creating', async () => {
+  describe('Creating', async () => {
     it('should be properly deployed', async () => {
       const actualCurrentState = await tgeContract.methods.currentState().call();
       expect(actualCurrentState).to.eq.BN('0');
