@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
@@ -10,21 +10,21 @@ contract TgeMock is Minter {
 
     /* --- CONSTANTS --- */
 
-    uint public firstStateMultiplier = 2;
-    uint public secondStateMultiplier = 3;
-    bool public secondState = false;
-    uint public secondStateAfter = 10 * 1e18;
-    uint public minimumContributionAmount = 10;
+    uint constant public firstStateMultiplier = 2;
+    uint constant public secondStateMultiplier = 3;
+    uint constant public secondStateAfter = 10 * 1e18;
+    uint constant public minimumContributionAmount = 10;
 
     /* --- FIELDS --- */
 
     address public firstStateMinter;
     address public secondStateMinter;
     mapping(address => bool) public allStateMinters;
+    bool public secondState = false;
 
     /* --- CONSTRUCTOR --- */
 
-    function TgeMock(
+    constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap,
         address _firstStateMinter,

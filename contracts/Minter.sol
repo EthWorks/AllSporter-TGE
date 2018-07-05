@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
@@ -44,10 +44,14 @@ contract Minter is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Minter(CrowdfundableToken _token, uint _saleEtherCap) public {
-        require(address(_token) != 0x0);
+    constructor(CrowdfundableToken _token, uint _saleEtherCap) public onlyValidAddress(address(_token)) {
         require(_saleEtherCap > 0);
 
         token = _token;

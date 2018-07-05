@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/LockingContract.sol";
@@ -6,15 +6,14 @@ import "ethworks-solidity/contracts/Whitelist.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
-import "./Minter.sol";
 
 contract ReferralManager is Ownable {
     using SafeMath for uint;
 
     /* --- CONSTANTS --- */
 
-    uint public ETHER_AMOUNT = 0;
-    uint public MAXIMUM_PERCENT = 5;
+    uint constant public ETHER_AMOUNT = 0;
+    uint constant public MAXIMUM_PERCENT = 5;
 
     /* --- EVENTS --- */
 
@@ -45,9 +44,7 @@ contract ReferralManager is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function ReferralManager(Minter _minter) public {
-        require(address(_minter) != 0x0);
-
+    constructor(Minter _minter) public onlyValidAddress(address(_minter)) {
         minter = _minter;
     }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/token/ERC20/TokenVesting.sol";
@@ -8,29 +8,28 @@ import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
-import "./Minter.sol";
 
 contract Allocator is Ownable {
     using SafeMath for uint;
 
     /* --- CONSTANTS --- */
 
-    uint public ETHER_AMOUNT = 0;
+    uint constant public ETHER_AMOUNT = 0;
 
     // percentages
-    uint public COMMUNITY_PERCENTAGE = 5;
-    uint public ADVISORS_PERCENTAGE = 8;
-    uint public CUSTOMER_PERCENTAGE = 15;
-    uint public TEAM_PERCENTAGE = 17;
-    uint public SALE_PERCENTAGE = 55;
+    uint constant public COMMUNITY_PERCENTAGE = 5;
+    uint constant public ADVISORS_PERCENTAGE = 8;
+    uint constant public CUSTOMER_PERCENTAGE = 15;
+    uint constant public TEAM_PERCENTAGE = 17;
+    uint constant public SALE_PERCENTAGE = 55;
     
     // locking
-    uint public LOCKING_UNLOCK_TIME = 1590710400;
+    uint constant public LOCKING_UNLOCK_TIME = 1590710400;
 
     // vesting
-    uint public VESTING_START_TIME = 1590710400;
-    uint public VESTING_CLIFF_DURATION = 10000;
-    uint public VESTING_PERIOD = 50000;
+    uint constant public VESTING_START_TIME = 1590710400;
+    uint constant public VESTING_CLIFF_DURATION = 10000;
+    uint constant public VESTING_PERIOD = 50000;
     
     /* --- EVENTS --- */
 
@@ -68,10 +67,14 @@ contract Allocator is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Allocator(Minter _minter) public {
-        require(address(_minter) != 0x0);
+    constructor(Minter _minter) public onlyValidAddress(_minter) {
         minter = _minter;
         lockingContract = new LockingContract(_minter.token(), LOCKING_UNLOCK_TIME);
     }

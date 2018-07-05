@@ -115,9 +115,146 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
-  it('should be properly created', async () => {
-    const actualCurrentState = await tgeContract.methods.currentState().call();
-    expect(actualCurrentState).to.eq.BN(0);
+  describe('initializing', async() => {
+    let uninitializedTgeContract;
+    const zeroAddress = '0x0';
+
+    beforeEach(async() => {
+      uninitializedTgeContract = await deployContract(web3, tgeJson, tgeOwner, [
+        tokenContract.options.address,
+        saleEtherCap,
+        saleStartTime,
+        singleStateEtherCap
+      ]);
+    });
+
+    const isInitialized = async() => uninitializedTgeContract.methods.isInitialized().call();
+
+    const initialize = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, from) => uninitializedTgeContract.methods.initialize(
+      crowdsale,
+      deferredKyc,
+      referralManager,
+      allocator,
+      airdropper
+    ).send({from});
+
+    it('should be uninitialized initially', async() => {
+      expect(await isInitialized()).to.be.false;
+    });
+
+    it('should allow to initialize by the owner', async() => {
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      expect(await isInitialized()).to.be.true; 
+    });
+
+    it('should not allow to initialize by not the owner', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tokenOwner));
+      expect(await isInitialized()).to.be.false; 
+    });
+
+    it('should not allow to initialize twice', async() => {
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without crowdsale', async() => {
+      await expectThrow(initialize(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without deferredKyc', async() => {
+      await expectThrow(initialize(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without referralManager', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without allocator', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner));
+    });
+
+    it('should not allow to initialize without airdropper', async() => {
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner));
+    });
+  });
+
+  describe('Creating', async () => {
+    it('should be properly deployed', async () => {
+      const actualCurrentState = await tgeContract.methods.currentState().call();
+      expect(actualCurrentState).to.eq.BN('0');
+    });
+
+    describe('should have proper state ether caps', async() => {
+      it('Presale state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PRESALE).call())
+          .to.eq.BN('0');
+      });
+
+      it('Preico1 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PREICO1).call())
+          .to.eq.BN(singleStateEtherCap);
+      });
+
+      it('Preico2 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(PREICO2).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('2')));
+      });
+
+      it('Break state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(BREAK).call())
+          .to.eq.BN('0');
+      });
+
+      it('Ico1 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO1).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN(3)));
+      });
+
+      it('Ico2 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO2).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('4')));
+      });
+
+      it('Ico3 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO3).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('5')));
+      });
+
+      it('Ico4 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO4).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('6')));
+      });
+
+      it('Ico5 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO5).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('7')));
+      });
+
+      it('Ico6 state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ICO6).call())
+          .to.eq.BN(singleStateEtherCap.mul(new BN('8')));
+      });
+
+      it('FinishingIco state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(FINISHING_ICO).call())
+          .to.eq.BN('0');
+      });
+
+      it('Allocating state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(ALLOCATING).call())
+          .to.eq.BN('0');
+      });
+
+      it('Airdropping state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(AIRDROPPING).call())
+          .to.eq.BN('0');
+      });
+
+      it('Finished state should have proper ether cap', async() => {
+        expect(await tgeContract.methods.etherCaps(FINISHED).call())
+          .to.eq.BN('0');
+      });
+    });
   });
 
   describe('advancing states based on time', async () => {

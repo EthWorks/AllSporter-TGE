@@ -1,11 +1,10 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/LockingContract.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 import "./Tge.sol";
-import "./Minter.sol";
 import "./DeferredKyc.sol";
 import "./Minter.sol";
 
@@ -14,7 +13,7 @@ contract Airdropper is Ownable {
 
     /* --- CONSTANTS --- */
 
-    uint public ETHER_AMOUNT = 0;
+    uint constant public ETHER_AMOUNT = 0;
 
     /* --- EVENTS --- */
 
@@ -43,10 +42,14 @@ contract Airdropper is Ownable {
         _;
     }
 
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Airdropper(Minter _minter) public {
-        require(address(_minter) != 0x0);
+    constructor(Minter _minter) public onlyValidAddress(address(_minter)) {
         minter = _minter;
     }
 

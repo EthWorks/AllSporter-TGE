@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "ethworks-solidity/contracts/LockingContract.sol";
@@ -6,7 +6,6 @@ import "ethworks-solidity/contracts/Whitelist.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
-import "./Minter.sol";
 
 contract Crowdsale is Ownable {
     using SafeMath for uint;
@@ -21,13 +20,21 @@ contract Crowdsale is Ownable {
     Minter public minter;
     DeferredKyc public deferredKyc;
 
+    /* --- MODIFIERS --- */
+
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR --- */
 
-    function Crowdsale(Minter _minter, address _approver, address _treasury) public {
-        require(address(_minter) != 0x0);
-        require(_approver != 0x0);
-        require(_treasury != 0x0);
-
+    constructor(Minter _minter, address _approver, address _treasury)
+        public
+        onlyValidAddress(address(_minter))
+        onlyValidAddress(_approver)
+        onlyValidAddress(_treasury)
+    {
         minter = _minter;
         deferredKyc = new DeferredKyc(_minter, _approver, _treasury);
     }

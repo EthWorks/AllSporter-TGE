@@ -64,6 +64,7 @@ describe('DeferredKyc', () => {
   const etherRejected = async(account) => kycContract.methods.etherRejected(account).call();
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
   const tokenBalanceOf = async (client) => tokenContract.methods.balanceOf(client).call();
+  const isSecondState = async () => await minterContract.methods.secondState().call();
 
   it('should be properly created', async () => {
     const actualTreasury = await kycContract.methods.treasury().call();
@@ -81,6 +82,13 @@ describe('DeferredKyc', () => {
       const initialEtherInProgress = new BN(await etherInProgress(investor1));
       await expectThrow(addToKyc(investor1, etherAmount1, investor1));
       expect(await etherInProgress(investor1)).to.eq.BN(initialEtherInProgress);
+    });
+
+    it('should update the state when adding to kyc', async() => {
+      expect(await isSecondState()).to.be.false;
+      const secondStateAfter = await minterContract.methods.secondStateAfter().call();
+      await addToKyc(investor1, secondStateAfter, kycOwner);
+      expect(await isSecondState()).to.be.true;
     });
   });
 

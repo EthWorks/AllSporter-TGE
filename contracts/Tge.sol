@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
@@ -42,9 +42,19 @@ contract Tge is Minter {
         _;
     }
 
+    modifier onlyNotInitialized() {
+        require(!isInitialized());
+        _;
+    }
+
+    modifier onlyValidAddress(address account) {
+        require(account != 0x0);
+        _;
+    }
+
     /* --- CONSTRUCTOR / INITIALIZATION --- */
 
-    function Tge(
+    constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap,
         uint saleStartTime,
@@ -69,14 +79,15 @@ contract Tge is Minter {
         setStateLength(State.Ico6, 5 days);
 
         // the total sale ether cap is distributed evenly over all selling states
-        setEtherCap(State.Preico1, singleStateEtherCap);
-        setEtherCap(State.Preico2, singleStateEtherCap);
-        setEtherCap(State.Ico1, singleStateEtherCap);
-        setEtherCap(State.Ico2, singleStateEtherCap);
-        setEtherCap(State.Ico3, singleStateEtherCap);
-        setEtherCap(State.Ico4, singleStateEtherCap);
-        setEtherCap(State.Ico5, singleStateEtherCap);
-        setEtherCap(State.Ico6, singleStateEtherCap);
+        // the cap from previous states is accumulated in consequent states
+        etherCaps[uint(State.Preico1)] = singleStateEtherCap;
+        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2);
+        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3);
+        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4);
+        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5);
+        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6);
+        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7);
+        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
     }
 
     function initialize(
@@ -85,14 +96,21 @@ contract Tge is Minter {
         address _referralManager,
         address _allocator,
         address _airdropper
-    ) public onlyOwner {
-        require(crowdsale == 0x0 && deferredKyc == 0x0 && referralManager == 0x0 && allocator == 0x0 && airdropper == 0x0);
+    )
+    public
+    onlyOwner
+    onlyNotInitialized // initialize only once
+    onlyValidAddress(_crowdsale)
+    onlyValidAddress(_deferredKyc)
+    onlyValidAddress(_referralManager)
+    onlyValidAddress(_allocator)
+    onlyValidAddress(_airdropper)
+    {
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
-        require(crowdsale != 0x0 && deferredKyc != 0x0 && referralManager != 0x0 && allocator != 0x0 && airdropper != 0x0);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
@@ -183,7 +201,7 @@ contract Tge is Minter {
     // override
     function updateState() public {
         updateStateBasedOnTime();
-        updateStateBasedOnContributions(confirmedSaleEther.add(reservedSaleEther));
+        updateStateBasedOnContributions();
     }
 
     function updateStateBasedOnTime() internal {
@@ -200,8 +218,9 @@ contract Tge is Minter {
         else if (now >= startTimes[uint(State.Preico1)]) advanceStateIfNewer(State.Preico1);
     }
 
-    function updateStateBasedOnContributions(uint totalEtherContributions) internal {
+    function updateStateBasedOnContributions() internal {
         // move to the next state, if the current one's cap has been reached
+        uint totalEtherContributions = confirmedSaleEther.add(reservedSaleEther);
         if (!isSellingState()) {
             return;
         }
@@ -232,11 +251,6 @@ contract Tge is Minter {
     function setStateLength(State state, uint length) internal {
         // state length is determined by next state's start time
         startTimes[uint(state)+1] = startTimes[uint(state)].add(length);
-    }
-
-    function setEtherCap(State state, uint cap) internal {
-        // accumulate cap from previous states
-        etherCaps[uint(state)] = etherCaps[uint(state)-1].add(cap);
     }
 
     function isInitialized() public view returns(bool) {
