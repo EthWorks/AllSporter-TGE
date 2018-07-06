@@ -46,7 +46,7 @@ const deployContract = async (json, constructorArguments, name) => {
   return await new web3.eth.Contract(json.abi, contractAddress);
 };
 
-const sendTransaction = async (method, name, to) => {
+const sendTransaction = async (method, name, to, value = 0) => {
   console.log(`Sending transaction: ${name}...`);
   if (!usingInfura) {
     return await method.send({from, gas: 6000000});
@@ -57,7 +57,8 @@ const sendTransaction = async (method, name, to) => {
     to,
     gas: 3000000,
     gasPrice: 600000000,
-    data: method.encodeABI()
+    data: method.encodeABI(),
+    value
   };
   const signedTx = await account.signTransaction(tx);
   return await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
@@ -80,9 +81,9 @@ const sendTransaction = async (method, name, to) => {
 
   const tgeArguments = [
     allSporterCoinContract.options.address,
-    1000,
+    100000000000000000000,
     1577840461,
-    10
+    10000000000000000000
   ];
   const tgeContract = await deployContract(tgeJson, tgeArguments, 'Tge');
 
