@@ -33,7 +33,8 @@
     "solc": "^0.4.24",
     "truffle": "^4.1.11",
     "web3": "^1.0.0-beta.29",
-    "zeppelin-solidity": "1.6.0"
+    "zeppelin-solidity": "1.6.0",
+    "web3js-chai": "git+https://91a59f8539993db39061298f40375f8ad5a684ef:x-oauth-basic@github.com/EthWorks/web3js-chai.git#9d8aa3bd11d4826aea828ff58199d4469710cc37"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",

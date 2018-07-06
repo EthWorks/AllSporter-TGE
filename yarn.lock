@@ -6948,6 +6948,10 @@ web3@^1.0.0-beta.29, web3@^1.0.0-beta.34:
     web3-shh "1.0.0-beta.34"
     web3-utils "1.0.0-beta.34"
 
+"web3js-chai@git+https://91a59f8539993db39061298f40375f8ad5a684ef:x-oauth-basic@github.com/EthWorks/web3js-chai.git#9d8aa3bd11d4826aea828ff58199d4469710cc37":
+  version "1.0.0"
+  resolved "git+https://91a59f8539993db39061298f40375f8ad5a684ef:x-oauth-basic@github.com/EthWorks/web3js-chai.git#9d8aa3bd11d4826aea828ff58199d4469710cc37"
+
 webpack-sources@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-1.1.0.tgz#a101ebae59d6507354d71d8013950a3a8b7a5a54"

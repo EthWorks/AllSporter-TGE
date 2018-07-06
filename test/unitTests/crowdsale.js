@@ -1,15 +1,18 @@
-import {createWeb3, deployContract, expectThrow} from 'ethworks-solidity';
+import {createWeb3, deployContract, expectThrow, latestTime} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
+import lockingContractJson from '../../build/contracts/LockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
+import web3jsChai from 'web3js-chai';
 
 const {expect} = chai;
 const web3 = createWeb3(Web3, 20);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
+chai.use(web3jsChai(web3));
 
 describe('Crowdsale', () => {
   let approver;
@@ -29,6 +32,7 @@ describe('Crowdsale', () => {
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN(web3.utils.toWei('1000'));
   const tokenAmount1 = new BN(web3.utils.toWei('4000'));
+  const lockingPeriod = 10000;
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
@@ -62,6 +66,7 @@ describe('Crowdsale', () => {
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
   const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount});
   const noteSale = async(account, etherAmount, tokenAmount, from) => crowdsaleContract.methods.noteSale(account, etherAmount, tokenAmount).send({from});
+  const noteSaleLocked = async(account, etherAmount, tokenAmount, lockingPeriod, from) => crowdsaleContract.methods.noteSaleLocked(account, etherAmount, tokenAmount, lockingPeriod).send({from});
   const tokenBalanceOf = async (client) => new BN(await tokenContract.methods.balanceOf(client).call());
 
   it('should be properly created', async () => {
@@ -143,6 +148,36 @@ describe('Crowdsale', () => {
       const initialTokenBalance = new BN(await tokenBalanceOf(investor1));
       await expectThrow(noteSale(investor1, etherAmount1, tokenAmount1, investor1));
       expect(await tokenBalanceOf(investor1)).to.eq.BN(initialTokenBalance);
+    });
+  });
+
+  describe('noting sale locked', async() => {
+    it('should allow the owner to note locked sale', async () => {
+      await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
+    });
+
+    it('should not allow third party to note locked sale', async () => {
+      await expectThrow(noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, investor1));
+    });
+
+    it('should emit address of a locking contract in an event', async () => {
+      const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
+      expect(tx.events.SaleLockedNoted.returnValues.lockingContract).to.be.an.address;
+      expect(tx.events.SaleLockedNoted.returnValues.lockingPeriod).to.be.eq.BN(lockingPeriod);
+    });
+
+    it('should lock proper amount of tokens on the locking contract', async () => {
+      const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
+      const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
+      const balance = await lockingContract.methods.balanceOf(investor1);
+      expect(balance).to.be.eq.BN(tokenAmount1);
+    });
+
+    it.only('should lock the tokens for a proper amount of time', async () => {
+      const initialTime = await latestTime(web3);
+      const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
+      const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
+      expect(await lockingContract.methods.unlockTime().call()).to.be.eq.BN(initialTime + lockingPeriod);
     });
   });
 });

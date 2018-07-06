@@ -231,7 +231,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3384,
+        "sourceUnit": 3452,
         "src": "25:55:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -242,7 +242,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3440,
+        "sourceUnit": 3508,
         "src": "81:59:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -253,7 +253,7 @@
         "id": 4,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3209,
+        "sourceUnit": 3277,
         "src": "141:57:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -264,7 +264,7 @@
         "id": 5,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3286,
+        "sourceUnit": 3354,
         "src": "199:51:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -275,7 +275,7 @@
         "id": 6,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 2971,
+        "sourceUnit": 3039,
         "src": "251:60:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -286,7 +286,7 @@
         "id": 7,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 2653,
+        "sourceUnit": 2721,
         "src": "312:19:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -297,7 +297,7 @@
         "id": 8,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 1061,
+        "sourceUnit": 1129,
         "src": "332:27:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -308,7 +308,7 @@
         "id": 9,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 1369,
+        "sourceUnit": 1437,
         "src": "360:22:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -322,10 +322,10 @@
               "id": 10,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3439,
+              "referencedDeclaration": 3507,
               "src": "407:7:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$3439",
+                "typeIdentifier": "t_contract$_Ownable_$3507",
                 "typeString": "contract Ownable"
               }
             },
@@ -335,7 +335,7 @@
           }
         ],
         "contractDependencies": [
-          3439
+          3507
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -343,7 +343,7 @@
         "id": 201,
         "linearizedBaseContracts": [
           201,
-          3439
+          3507
         ],
         "name": "Airdropper",
         "nodeType": "ContractDefinition",
@@ -355,10 +355,10 @@
               "id": 12,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3383,
+              "referencedDeclaration": 3451,
               "src": "427:8:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_SafeMath_$3383",
+                "typeIdentifier": "t_contract$_SafeMath_$3451",
                 "typeString": "library SafeMath"
               }
             },
@@ -511,7 +511,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_Minter_$1368",
+              "typeIdentifier": "t_contract$_Minter_$1436",
               "typeString": "contract Minter"
             },
             "typeName": {
@@ -519,10 +519,10 @@
               "id": 26,
               "name": "Minter",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1368,
+              "referencedDeclaration": 1436,
               "src": "659:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Minter_$1368",
+                "typeIdentifier": "t_contract$_Minter_$1436",
                 "typeString": "contract Minter"
               }
             },
@@ -747,10 +747,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4290,
-                        4291
+                        4358,
+                        4359
                       ],
-                      "referencedDeclaration": 4290,
+                      "referencedDeclaration": 4358,
                       "src": "918:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -997,10 +997,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4290,
-                        4291
+                        4358,
+                        4359
                       ],
-                      "referencedDeclaration": 4290,
+                      "referencedDeclaration": 4358,
                       "src": "1132:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1095,7 +1095,7 @@
                       "referencedDeclaration": 27,
                       "src": "1290:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1368",
+                        "typeIdentifier": "t_contract$_Minter_$1436",
                         "typeString": "contract Minter"
                       }
                     },
@@ -1110,13 +1110,13 @@
                       "referencedDeclaration": 76,
                       "src": "1299:7:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1368",
+                        "typeIdentifier": "t_contract$_Minter_$1436",
                         "typeString": "contract Minter"
                       }
                     },
                     "src": "1290:16:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1368",
+                      "typeIdentifier": "t_contract$_Minter_$1436",
                       "typeString": "contract Minter"
                     }
                   },
@@ -1146,7 +1146,7 @@
                         "referencedDeclaration": 76,
                         "src": "1270:7:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       }
@@ -1154,7 +1154,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       ],
@@ -1220,7 +1220,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Minter_$1368",
+                    "typeIdentifier": "t_contract$_Minter_$1436",
                     "typeString": "contract Minter"
                   },
                   "typeName": {
@@ -1228,10 +1228,10 @@
                     "id": 75,
                     "name": "Minter",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1368,
+                    "referencedDeclaration": 1436,
                     "src": "1222:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1368",
+                      "typeIdentifier": "t_contract$_Minter_$1436",
                       "typeString": "contract Minter"
                     }
                   },
@@ -1519,7 +1519,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3413,
+                  "referencedDeclaration": 3481,
                   "src": "1415:9:0",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -1762,7 +1762,7 @@
                             "referencedDeclaration": 27,
                             "src": "1693:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_Minter_$1368",
+                              "typeIdentifier": "t_contract$_Minter_$1436",
                               "typeString": "contract Minter"
                             }
                           },
@@ -1773,10 +1773,10 @@
                           "lValueRequested": false,
                           "memberName": "token",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 1097,
+                          "referencedDeclaration": 1165,
                           "src": "1693:12:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                            "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                             "typeString": "function () view external returns (contract CrowdfundableToken)"
                           }
                         },
@@ -1790,7 +1790,7 @@
                         "nodeType": "FunctionCall",
                         "src": "1693:14:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                          "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                           "typeString": "contract CrowdfundableToken"
                         }
                       },
@@ -1801,7 +1801,7 @@
                       "lValueRequested": false,
                       "memberName": "balanceOf",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3534,
+                      "referencedDeclaration": 3602,
                       "src": "1693:24:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
@@ -1926,7 +1926,7 @@
                           "lValueRequested": false,
                           "memberName": "mul",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 3320,
+                          "referencedDeclaration": 3388,
                           "src": "1755:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -1954,7 +1954,7 @@
                       "lValueRequested": false,
                       "memberName": "div",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3338,
+                      "referencedDeclaration": 3406,
                       "src": "1755:32:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2046,7 +2046,7 @@
                         "referencedDeclaration": 27,
                         "src": "1817:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       },
@@ -2057,7 +2057,7 @@
                       "lValueRequested": false,
                       "memberName": "mint",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1345,
+                      "referencedDeclaration": 1413,
                       "src": "1817:11:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$_t_uint256_$returns$__$",
@@ -2170,7 +2170,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3413,
+                  "referencedDeclaration": 3481,
                   "src": "1582:9:0",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -2380,7 +2380,7 @@
                               "referencedDeclaration": 27,
                               "src": "2052:6:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_Minter_$1368",
+                                "typeIdentifier": "t_contract$_Minter_$1436",
                                 "typeString": "contract Minter"
                               }
                             },
@@ -2391,10 +2391,10 @@
                             "lValueRequested": false,
                             "memberName": "token",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 1097,
+                            "referencedDeclaration": 1165,
                             "src": "2052:12:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                              "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                               "typeString": "function () view external returns (contract CrowdfundableToken)"
                             }
                           },
@@ -2408,7 +2408,7 @@
                           "nodeType": "FunctionCall",
                           "src": "2052:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                            "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                             "typeString": "contract CrowdfundableToken"
                           }
                         },
@@ -2419,7 +2419,7 @@
                         "lValueRequested": false,
                         "memberName": "totalSupply",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3462,
+                        "referencedDeclaration": 3530,
                         "src": "2052:26:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -2516,7 +2516,7 @@
                                   "referencedDeclaration": 27,
                                   "src": "2104:6:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_Minter_$1368",
+                                    "typeIdentifier": "t_contract$_Minter_$1436",
                                     "typeString": "contract Minter"
                                   }
                                 },
@@ -2527,10 +2527,10 @@
                                 "lValueRequested": false,
                                 "memberName": "token",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 1097,
+                                "referencedDeclaration": 1165,
                                 "src": "2104:12:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                                  "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                                   "typeString": "function () view external returns (contract CrowdfundableToken)"
                                 }
                               },
@@ -2544,7 +2544,7 @@
                               "nodeType": "FunctionCall",
                               "src": "2104:14:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                                "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                                 "typeString": "contract CrowdfundableToken"
                               }
                             },
@@ -2555,7 +2555,7 @@
                             "lValueRequested": false,
                             "memberName": "cap",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2815,
+                            "referencedDeclaration": 2883,
                             "src": "2104:18:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -2583,7 +2583,7 @@
                         "lValueRequested": false,
                         "memberName": "sub",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3358,
+                        "referencedDeclaration": 3426,
                         "src": "2104:24:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2712,7 +2712,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3384,
+        "sourceUnit": 3452,
         "src": "25:55:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2723,7 +2723,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3440,
+        "sourceUnit": 3508,
         "src": "81:59:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2734,7 +2734,7 @@
         "id": 4,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3209,
+        "sourceUnit": 3277,
         "src": "141:57:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2745,7 +2745,7 @@
         "id": 5,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 3286,
+        "sourceUnit": 3354,
         "src": "199:51:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2756,7 +2756,7 @@
         "id": 6,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 2971,
+        "sourceUnit": 3039,
         "src": "251:60:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2767,7 +2767,7 @@
         "id": 7,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 2653,
+        "sourceUnit": 2721,
         "src": "312:19:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2778,7 +2778,7 @@
         "id": 8,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 1061,
+        "sourceUnit": 1129,
         "src": "332:27:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2789,7 +2789,7 @@
         "id": 9,
         "nodeType": "ImportDirective",
         "scope": 202,
-        "sourceUnit": 1369,
+        "sourceUnit": 1437,
         "src": "360:22:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2803,10 +2803,10 @@
               "id": 10,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3439,
+              "referencedDeclaration": 3507,
               "src": "407:7:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$3439",
+                "typeIdentifier": "t_contract$_Ownable_$3507",
                 "typeString": "contract Ownable"
               }
             },
@@ -2816,7 +2816,7 @@
           }
         ],
         "contractDependencies": [
-          3439
+          3507
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -2824,7 +2824,7 @@
         "id": 201,
         "linearizedBaseContracts": [
           201,
-          3439
+          3507
         ],
         "name": "Airdropper",
         "nodeType": "ContractDefinition",
@@ -2836,10 +2836,10 @@
               "id": 12,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3383,
+              "referencedDeclaration": 3451,
               "src": "427:8:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_SafeMath_$3383",
+                "typeIdentifier": "t_contract$_SafeMath_$3451",
                 "typeString": "library SafeMath"
               }
             },
@@ -2992,7 +2992,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_Minter_$1368",
+              "typeIdentifier": "t_contract$_Minter_$1436",
               "typeString": "contract Minter"
             },
             "typeName": {
@@ -3000,10 +3000,10 @@
               "id": 26,
               "name": "Minter",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1368,
+              "referencedDeclaration": 1436,
               "src": "659:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Minter_$1368",
+                "typeIdentifier": "t_contract$_Minter_$1436",
                 "typeString": "contract Minter"
               }
             },
@@ -3228,10 +3228,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4290,
-                        4291
+                        4358,
+                        4359
                       ],
-                      "referencedDeclaration": 4290,
+                      "referencedDeclaration": 4358,
                       "src": "918:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3478,10 +3478,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4290,
-                        4291
+                        4358,
+                        4359
                       ],
-                      "referencedDeclaration": 4290,
+                      "referencedDeclaration": 4358,
                       "src": "1132:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3576,7 +3576,7 @@
                       "referencedDeclaration": 27,
                       "src": "1290:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1368",
+                        "typeIdentifier": "t_contract$_Minter_$1436",
                         "typeString": "contract Minter"
                       }
                     },
@@ -3591,13 +3591,13 @@
                       "referencedDeclaration": 76,
                       "src": "1299:7:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1368",
+                        "typeIdentifier": "t_contract$_Minter_$1436",
                         "typeString": "contract Minter"
                       }
                     },
                     "src": "1290:16:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1368",
+                      "typeIdentifier": "t_contract$_Minter_$1436",
                       "typeString": "contract Minter"
                     }
                   },
@@ -3627,7 +3627,7 @@
                         "referencedDeclaration": 76,
                         "src": "1270:7:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       }
@@ -3635,7 +3635,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       ],
@@ -3701,7 +3701,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Minter_$1368",
+                    "typeIdentifier": "t_contract$_Minter_$1436",
                     "typeString": "contract Minter"
                   },
                   "typeName": {
@@ -3709,10 +3709,10 @@
                     "id": 75,
                     "name": "Minter",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1368,
+                    "referencedDeclaration": 1436,
                     "src": "1222:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1368",
+                      "typeIdentifier": "t_contract$_Minter_$1436",
                       "typeString": "contract Minter"
                     }
                   },
@@ -4000,7 +4000,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3413,
+                  "referencedDeclaration": 3481,
                   "src": "1415:9:0",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -4243,7 +4243,7 @@
                             "referencedDeclaration": 27,
                             "src": "1693:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_Minter_$1368",
+                              "typeIdentifier": "t_contract$_Minter_$1436",
                               "typeString": "contract Minter"
                             }
                           },
@@ -4254,10 +4254,10 @@
                           "lValueRequested": false,
                           "memberName": "token",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 1097,
+                          "referencedDeclaration": 1165,
                           "src": "1693:12:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                            "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                             "typeString": "function () view external returns (contract CrowdfundableToken)"
                           }
                         },
@@ -4271,7 +4271,7 @@
                         "nodeType": "FunctionCall",
                         "src": "1693:14:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                          "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                           "typeString": "contract CrowdfundableToken"
                         }
                       },
@@ -4282,7 +4282,7 @@
                       "lValueRequested": false,
                       "memberName": "balanceOf",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3534,
+                      "referencedDeclaration": 3602,
                       "src": "1693:24:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
@@ -4407,7 +4407,7 @@
                           "lValueRequested": false,
                           "memberName": "mul",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 3320,
+                          "referencedDeclaration": 3388,
                           "src": "1755:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -4435,7 +4435,7 @@
                       "lValueRequested": false,
                       "memberName": "div",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3338,
+                      "referencedDeclaration": 3406,
                       "src": "1755:32:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -4527,7 +4527,7 @@
                         "referencedDeclaration": 27,
                         "src": "1817:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1368",
+                          "typeIdentifier": "t_contract$_Minter_$1436",
                           "typeString": "contract Minter"
                         }
                       },
@@ -4538,7 +4538,7 @@
                       "lValueRequested": false,
                       "memberName": "mint",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1345,
+                      "referencedDeclaration": 1413,
                       "src": "1817:11:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$_t_uint256_$returns$__$",
@@ -4651,7 +4651,7 @@
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3413,
+                  "referencedDeclaration": 3481,
                   "src": "1582:9:0",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -4861,7 +4861,7 @@
                               "referencedDeclaration": 27,
                               "src": "2052:6:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_Minter_$1368",
+                                "typeIdentifier": "t_contract$_Minter_$1436",
                                 "typeString": "contract Minter"
                               }
                             },
@@ -4872,10 +4872,10 @@
                             "lValueRequested": false,
                             "memberName": "token",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 1097,
+                            "referencedDeclaration": 1165,
                             "src": "2052:12:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                              "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                               "typeString": "function () view external returns (contract CrowdfundableToken)"
                             }
                           },
@@ -4889,7 +4889,7 @@
                           "nodeType": "FunctionCall",
                           "src": "2052:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                            "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                             "typeString": "contract CrowdfundableToken"
                           }
                         },
@@ -4900,7 +4900,7 @@
                         "lValueRequested": false,
                         "memberName": "totalSupply",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3462,
+                        "referencedDeclaration": 3530,
                         "src": "2052:26:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -4997,7 +4997,7 @@
                                   "referencedDeclaration": 27,
                                   "src": "2104:6:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_Minter_$1368",
+                                    "typeIdentifier": "t_contract$_Minter_$1436",
                                     "typeString": "contract Minter"
                                   }
                                 },
@@ -5008,10 +5008,10 @@
                                 "lValueRequested": false,
                                 "memberName": "token",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 1097,
+                                "referencedDeclaration": 1165,
                                 "src": "2104:12:0",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$2970_$",
+                                  "typeIdentifier": "t_function_external_view$__$returns$_t_contract$_CrowdfundableToken_$3038_$",
                                   "typeString": "function () view external returns (contract CrowdfundableToken)"
                                 }
                               },
@@ -5025,7 +5025,7 @@
                               "nodeType": "FunctionCall",
                               "src": "2104:14:0",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_CrowdfundableToken_$2970",
+                                "typeIdentifier": "t_contract$_CrowdfundableToken_$3038",
                                 "typeString": "contract CrowdfundableToken"
                               }
                             },
@@ -5036,7 +5036,7 @@
                             "lValueRequested": false,
                             "memberName": "cap",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 2815,
+                            "referencedDeclaration": 2883,
                             "src": "2104:18:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -5064,7 +5064,7 @@
                         "lValueRequested": false,
                         "memberName": "sub",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3358,
+                        "referencedDeclaration": 3426,
                         "src": "2104:24:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -5172,5 +5172,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-06-18T13:27:28.985Z"
+  "updatedAt": "2018-07-06T12:38:57.472Z"
 }
