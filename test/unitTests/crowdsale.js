@@ -169,15 +169,15 @@ describe('Crowdsale', () => {
     it('should lock proper amount of tokens on the locking contract', async () => {
       const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
       const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
-      const balance = await lockingContract.methods.balanceOf(investor1);
+      const balance = await lockingContract.methods.balanceOf(investor1).call();
       expect(balance).to.be.eq.BN(tokenAmount1);
     });
 
-    it.only('should lock the tokens for a proper amount of time', async () => {
-      const initialTime = await latestTime(web3);
+    it('should lock the tokens for a proper amount of time', async () => {
       const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
       const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
-      expect(await lockingContract.methods.unlockTime().call()).to.be.eq.BN(initialTime + lockingPeriod);
+      const blockTime = (await web3.eth.getBlock(tx.blockNumber)).timestamp;
+      expect(await lockingContract.methods.unlockTime().call()).to.be.eq.BN(blockTime + lockingPeriod);
     });
   });
 });

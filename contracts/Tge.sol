@@ -10,6 +10,16 @@ contract Tge is Minter {
 
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 * 1e18;
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 2 * 1e17;
+    
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 39553;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 38189;
+
+    uint constant public PRICE_MULTIPLIER_ICO1 = 34609;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 33559;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 31641;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 30762;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 29143;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 27686;
 
     /* --- EVENTS --- */
 
@@ -37,16 +47,6 @@ contract Tge is Minter {
         _;
     }
 
-    modifier onlyInitialized() {
-        require(isInitialized());
-        _;
-    }
-
-    modifier onlyNotInitialized() {
-        require(!isInitialized());
-        _;
-    }
-
     modifier onlyValidAddress(address account) {
         require(account != 0x0);
         _;
@@ -56,14 +56,8 @@ contract Tge is Minter {
 
     constructor(
         CrowdfundableToken _token,
-        uint _saleEtherCap,
-        uint saleStartTime,
-        uint singleStateEtherCap
-    ) public Minter(_token, _saleEtherCap) {
-        require(saleStartTime >= now);
-        require(singleStateEtherCap > 0);
-        initStates(saleStartTime, singleStateEtherCap);
-    }
+        uint _saleEtherCap
+    ) public Minter(_token, _saleEtherCap) { }
 
     // initialize states start times and caps
     function initStates(uint saleStart, uint singleStateEtherCap) internal {
@@ -95,22 +89,27 @@ contract Tge is Minter {
         address _deferredKyc,
         address _referralManager,
         address _allocator,
-        address _airdropper
+        address _airdropper,
+        uint saleStartTime,
+        uint singleStateEtherCap
     )
     public
     onlyOwner
-    onlyNotInitialized // initialize only once
+    onlyInState(State.Presale)
     onlyValidAddress(_crowdsale)
     onlyValidAddress(_deferredKyc)
     onlyValidAddress(_referralManager)
     onlyValidAddress(_allocator)
     onlyValidAddress(_airdropper)
     {
+        require(saleStartTime >= now);
+        require(singleStateEtherCap > 0);
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
+        initStates(saleStartTime, singleStateEtherCap);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
@@ -129,14 +128,14 @@ contract Tge is Minter {
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
         uint tokenAmount = 0;
-        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(39553).div(10);
-        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(38189).div(10);
-        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(34609).div(10);
-        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(33559).div(10);
-        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(31641).div(10);
-        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(30762).div(10);
-        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(29143).div(10);
-        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(27686).div(10);
+        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(10);
+        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO2).div(10);
+        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO1).div(10);
+        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO2).div(10);
+        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO3).div(10);
+        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO4).div(10);
+        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO5).div(10);
+        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO6).div(10);
 
         // bonus
         if (etherAmount > 10 * 1e18) {

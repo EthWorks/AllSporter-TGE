@@ -11,7 +11,7 @@ const {BN} = web3.utils;
 chai.use(bnChai(BN));
 const duration = durationInit(web3);
 
-describe('Tge', () => {
+describe.only('Tge', () => {
   let tokenOwner;
   let tokenContract;
   let accounts;
@@ -51,18 +51,18 @@ describe('Tge', () => {
     saleStartTime = await latestTime(web3) + 100;
     tgeContract = await deployContract(web3, tgeJson, tgeOwner, [
       tokenContract.options.address,
-      saleEtherCap,
-      saleStartTime,
-      singleStateEtherCap
+      saleEtherCap
     ]);
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
 
-    tgeContract.methods.initialize(
+    await tgeContract.methods.initialize(
       tgeOwner,
       tgeOwner,
       tgeOwner,
       tgeOwner,
-      tgeOwner
+      tgeOwner,
+      saleStartTime,
+      singleStateEtherCap
     ).send({from: tgeOwner});
   });
 
@@ -122,20 +122,20 @@ describe('Tge', () => {
     beforeEach(async() => {
       uninitializedTgeContract = await deployContract(web3, tgeJson, tgeOwner, [
         tokenContract.options.address,
-        saleEtherCap,
-        saleStartTime,
-        singleStateEtherCap
+        saleEtherCap
       ]);
     });
 
     const isInitialized = async() => uninitializedTgeContract.methods.isInitialized().call();
 
-    const initialize = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, from) => uninitializedTgeContract.methods.initialize(
+    const initialize = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, saleStartTime, singleStateEtherCap, from) => uninitializedTgeContract.methods.initialize(
       crowdsale,
       deferredKyc,
       referralManager,
       allocator,
-      airdropper
+      airdropper,
+      saleStartTime,
+      singleStateEtherCap
     ).send({from});
 
     it('should be uninitialized initially', async() => {
@@ -143,38 +143,84 @@ describe('Tge', () => {
     });
 
     it('should allow to initialize by the owner', async() => {
-      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner);
       expect(await isInitialized()).to.be.true; 
     });
 
     it('should not allow to initialize by not the owner', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tokenOwner));
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tokenOwner));
       expect(await isInitialized()).to.be.false; 
     });
 
-    it('should not allow to initialize twice', async() => {
-      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    it('should allow to initialize twice', async() => {
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner);
+      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner);
+    });
+
+    it('should not initialize after presale', async () => {
+      await advanceToSaleStartTime();
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner));
     });
 
     it('should not allow to initialize without crowdsale', async() => {
-      await expectThrow(initialize(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(initialize(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner));
     });
 
     it('should not allow to initialize without deferredKyc', async() => {
-      await expectThrow(initialize(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(initialize(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner));
     });
 
     it('should not allow to initialize without referralManager', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(initialize(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner));
     });
 
     it('should not allow to initialize without allocator', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner));
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner));
     });
 
     it('should not allow to initialize without airdropper', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner));
+      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, saleStartTime, singleStateEtherCap, tgeOwner));
+    });
+
+    describe('overriding initialization', async () => {
+      beforeEach(async () => {
+        await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, tgeOwner);
+      });
+      
+      it('should override addresses', async () => {
+        await initialize(thirdParty, thirdParty, thirdParty, thirdParty, thirdParty, saleStartTime, singleStateEtherCap, tgeOwner);
+        expect(await uninitializedTgeContract.methods.crowdsale().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.deferredKyc().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.referralManager().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.allocator().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.airdropper().call()).to.be.equal(thirdParty);
+      });
+
+      it('should override state start times', async () => {
+        const newStartTime = new BN(saleStartTime + 10000000);
+        await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, newStartTime, singleStateEtherCap, tgeOwner);
+        expect(await uninitializedTgeContract.methods.startTimes(PREICO1).call()).to.be.eq.BN(newStartTime);
+        expect(await uninitializedTgeContract.methods.startTimes(PREICO2).call()).to.be.eq.BN(newStartTime.add(duration.days(5)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO1).call()).to.be.eq.BN(newStartTime.add(duration.days(13)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO2).call()).to.be.eq.BN(newStartTime.add(duration.days(18)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO3).call()).to.be.eq.BN(newStartTime.add(duration.days(23)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO4).call()).to.be.eq.BN(newStartTime.add(duration.days(28)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO5).call()).to.be.eq.BN(newStartTime.add(duration.days(33)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO6).call()).to.be.eq.BN(newStartTime.add(duration.days(38)));
+      });
+
+      it('should override state ether caps', async () => {
+        const newSingleEtherCap = 100;
+        await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, newSingleEtherCap, tgeOwner);
+        expect(await uninitializedTgeContract.methods.etherCaps(PREICO1).call()).to.be.eq.BN(newSingleEtherCap);
+        expect(await uninitializedTgeContract.methods.etherCaps(PREICO2).call()).to.be.eq.BN(newSingleEtherCap * 2);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO1).call()).to.be.eq.BN(newSingleEtherCap * 3);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO2).call()).to.be.eq.BN(newSingleEtherCap * 4);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO3).call()).to.be.eq.BN(newSingleEtherCap * 5);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO4).call()).to.be.eq.BN(newSingleEtherCap * 6);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO5).call()).to.be.eq.BN(newSingleEtherCap * 7);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO6).call()).to.be.eq.BN(newSingleEtherCap * 8);
+      });
     });
   });
 
