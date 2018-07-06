@@ -7,7 +7,7 @@
     "compile": "truffle compile --all",
     "test": "truffle compile --all && mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
     "test:nocompile": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
-    "deploy": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register scripts/deploy.js"
+    "deploy": "PRIVATE_KEY= babel-node deploy.js"
   },
   "author": "Przemek <przemek@ethworks.io>",
   "license": "MIT",
@@ -27,13 +27,13 @@
     "chai": "^4.1.2",
     "config": "^1.29.4",
     "ethereumjs-testrpc": "^6.0.2",
-    "ganache-core": "^2.0.2",
+    "ethworks-solidity": "ethworks/ethworks-solidity#8902c03ad415b2deab90759bff46a39d14170619",
+    "ganache-core": "^2.1.3",
     "mocha": "^4.0.1",
     "solc": "^0.4.24",
     "truffle": "^4.1.11",
     "web3": "^1.0.0-beta.29",
-    "zeppelin-solidity": "1.6.0",
-    "ethworks-solidity": "ethworks/ethworks-solidity#8902c03ad415b2deab90759bff46a39d14170619"
+    "zeppelin-solidity": "1.6.0"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
