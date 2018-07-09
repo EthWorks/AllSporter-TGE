@@ -132,9 +132,7 @@ describe('Integration', () => {
     // TGE
     tgeContract = await deployContract(web3, tgeJson, tgeOwner, [
       tokenContract.options.address,
-      saleEtherCap,
-      saleStartTime,
-      singleStateEtherCap
+      saleEtherCap
     ]);
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
     tgeContract.options.defaultGas = gas;
@@ -180,7 +178,9 @@ describe('Integration', () => {
       kycContract.options.address,
       referralManagerContract.options.address,
       allocatorContract.options.address,
-      airdropperContract.options.address
+      airdropperContract.options.address,
+      saleStartTime,
+      singleStateEtherCap
     ).send({from: tgeOwner});
   });
 
@@ -691,6 +691,12 @@ describe('Integration', () => {
 
       await transferTokenOwnership();
       expect(await tokenContract.methods.owner().call()).to.be.equal(tgeOwner);
+    });
+  });
+
+  describe('Private ico', async () => {
+    it.skip('should allow to initialize a private ico', async () => {
+      
     });
   });
 });

@@ -40,6 +40,13 @@ contract Tge is Minter {
     mapping(uint => uint) public startTimes;
     mapping(uint => uint) public etherCaps;
 
+    // private ico
+    uint public privateIcoCap = 0;
+    uint public privateIcoTokensForEther = 0;
+    uint public privateIcoStartTime = 0;
+    uint public privateIcoEndTime = 0;
+    uint public privateIcoMinimumContribution = 0;
+
     /* --- MODIFIERS --- */
 
     modifier onlyInState(State _state) {
@@ -128,7 +135,8 @@ contract Tge is Minter {
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
         uint tokenAmount = 0;
-        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(10);
+        if (isPrivateIcoActive()) tokenAmount = etherAmount.mul(privateIcoTokensForEther);
+        else if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(10);
         else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO2).div(10);
         else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO1).div(10);
         else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO2).div(10);
@@ -148,7 +156,31 @@ contract Tge is Minter {
     }
 
     function isSellingState() public view returns(bool) {
-        return(uint(currentState) >= uint(State.Preico1) && uint(currentState) <= uint(State.Ico6) && uint(currentState) != uint(State.Break));
+        if (currentState == State.Presale) return isPrivateIcoActive();
+        return (
+            uint(currentState) >= uint(State.Preico1) &&
+            uint(currentState) <= uint(State.Ico6) &&
+            uint(currentState) != uint(State.Break)
+        );
+    }
+
+    function isPrivateIcoActive() public view returns(bool) {
+        return now >= privateIcoStartTime && now < privateIcoEndTime;
+    }
+
+    function initPrivateIco(uint _cap, uint _tokensForEther, uint _startTime, uint _endTime, uint _minimumContribution) external onlyOwner {
+        require(_cap > privateIcoCap); // should increase the cap after previous private ico
+        require(_startTime > privateIcoEndTime); // should start after previous private ico
+        require(now >= privateIcoEndTime); // previous private ico should be finished
+        require(_tokensForEther > 0);
+        require(_endTime > _startTime);
+        require(_endTime < startTimes[uint(State.Preico1)]);
+
+        privateIcoCap = _cap;
+        privateIcoTokensForEther = _tokensForEther;
+        privateIcoStartTime = _startTime;
+        privateIcoEndTime = _endTime;
+        privateIcoMinimumContribution = _minimumContribution;
     }
 
     /* --- INTERNAL METHODS --- */
@@ -161,14 +193,17 @@ contract Tge is Minter {
         if (uint(currentState) >= uint(State.Ico1) && uint(currentState) <= uint(State.Ico6)) {
             return MIMIMUM_CONTRIBUTION_AMOUNT_ICO;
         }
+        if (isPrivateIcoActive()) {
+            return privateIcoMinimumContribution;
+        }
         return 0;
     }
 
     // override
     function canMint(address account) public view returns(bool) {
         if (currentState == State.Presale) {
-            // external sales
-            return account == crowdsale;
+            // external sales and private ico
+            return account == crowdsale || account == deferredKyc;
         }
         else if (isSellingState()) {
             // external sales
@@ -224,7 +259,11 @@ contract Tge is Minter {
             return;
         }
 
-        if (int(currentState) < int(State.Break)) {
+        if(isPrivateIcoActive()) {
+            // if private ico cap exceeded, revert transaction
+            require(totalEtherContributions <= privateIcoCap);
+        }
+        else if (int(currentState) < int(State.Break)) {
             // preico
             if (totalEtherContributions >= etherCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);
             else if (totalEtherContributions >= etherCaps[uint(State.Preico1)]) advanceStateIfNewer(State.Preico2);
