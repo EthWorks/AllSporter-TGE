@@ -47,6 +47,11 @@ describe('Integration', () => {
   let customer1;
   let team1;
   let gas;
+  let privateIcoStartTime;
+  let privateIcoEndTime;
+  const privateIcoTokensForEther = new BN('10020');
+  const privateIcoMinimumContribution = new BN('2');
+  const privateIcoCap = new BN('100');
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const etherAmount1 = new BN(web3.utils.toWei('1'));
@@ -110,6 +115,10 @@ describe('Integration', () => {
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const transferTokenOwnership = async() => tgeContract.methods.transferTokenOwnership().send({from: tgeOwner, gas});
+  const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
+  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution) =>
+    tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from: tgeOwner, gas});
+
   
   /* eslint-enable no-unused-vars */
 
@@ -122,7 +131,10 @@ describe('Integration', () => {
   });
 
   beforeEach(async () => {
-    saleStartTime = await latestTime(web3) + 100;
+    saleStartTime = new BN(await latestTime(web3)).add(duration.days(10));
+    // private ico start/end times 
+    privateIcoStartTime = new BN(await latestTime(web3)).add(duration.minutes(10));
+    privateIcoEndTime = privateIcoStartTime.add(duration.days(2));
 
     // TOKEN
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
@@ -695,8 +707,12 @@ describe('Integration', () => {
   });
 
   describe('Private ico', async () => {
-    it.skip('should allow to initialize a private ico', async () => {
-      
+    it('should not be active initially', async () => {
+      expect(await isPrivateIcoActive()).to.be.false;
+    });
+
+    it('should allow to initialize a private ico', async () => {
+      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
     });
   });
 });
