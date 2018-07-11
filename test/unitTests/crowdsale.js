@@ -1,4 +1,4 @@
-import {createWeb3, deployContract, expectThrow, latestTime} from 'ethworks-solidity';
+import {createWeb3, deployContract, expectThrow} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
@@ -6,13 +6,11 @@ import lockingContractJson from '../../build/contracts/LockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
-import web3jsChai from 'web3js-chai';
 
 const {expect} = chai;
 const web3 = createWeb3(Web3, 20);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
-chai.use(web3jsChai(web3));
 
 describe('Crowdsale', () => {
   let approver;
@@ -162,7 +160,7 @@ describe('Crowdsale', () => {
 
     it('should emit address of a locking contract in an event', async () => {
       const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
-      expect(tx.events.SaleLockedNoted.returnValues.lockingContract).to.be.an.address;
+      expect(web3.utils.isAddress(tx.events.SaleLockedNoted.returnValues.lockingContract)).to.be.true;
       expect(tx.events.SaleLockedNoted.returnValues.lockingPeriod).to.be.eq.BN(lockingPeriod);
     });
 

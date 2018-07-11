@@ -131,10 +131,10 @@ describe('Integration', () => {
   });
 
   beforeEach(async () => {
-    saleStartTime = new BN(await latestTime(web3)).add(duration.days(10));
+    saleStartTime = new BN(await latestTime(web3)).add(duration.days(1));
     // private ico start/end times 
     privateIcoStartTime = new BN(await latestTime(web3)).add(duration.minutes(10));
-    privateIcoEndTime = privateIcoStartTime.add(duration.days(2));
+    privateIcoEndTime = privateIcoStartTime.add(duration.hours(2));
 
     // TOKEN
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,

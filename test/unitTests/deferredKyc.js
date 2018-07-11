@@ -58,6 +58,8 @@ describe('DeferredKyc', () => {
   const addToKyc = async (account, etherAmount, from) => kycContract.methods.addToKyc(account).send({from, value: etherAmount});
   const approve = async(account, from) => kycContract.methods.approve(account).send({from});
   const reject = async(account, from) => kycContract.methods.reject(account).send({from});
+  const withdrawRejected = async(from) => kycContract.methods.withdrawRejected().send({from});
+  const forceWithdrawRejected = async(account, from) => kycContract.methods.forceWithdrawRejected(account).send({from});
 
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
@@ -227,6 +229,27 @@ describe('DeferredKyc', () => {
       await approve(investor1, approver);
 
       expect(await etherRejected(investor1)).to.eq.BN(initialEtherRejected);
+    });
+  });
+
+  describe('Withdrawing rejected', async() => {
+    const investmentAmount = new BN('10000000000000000000000000');
+
+    beforeEach(async() => {
+      await addToKyc(investor1, investmentAmount, kycOwner);
+      await reject(investor1, approver);
+    });
+
+    it('Should allow to withdraw rejected', async() => {
+      const initialBalance = new BN(await etherBalanceOf(investor1));
+      await withdrawRejected(investor1);
+      expect(await etherBalanceOf(investor1)).to.be.gt.BN(initialBalance);
+    });
+
+    it('Should allow to force withdraw rejected', async() => {
+      const initialBalance = new BN(await etherBalanceOf(investor1));
+      await forceWithdrawRejected(investor1, kycOwner);
+      expect(await etherBalanceOf(investor1)).to.be.gt.BN(initialBalance);
     });
   });
 });
