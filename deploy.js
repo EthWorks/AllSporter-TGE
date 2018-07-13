@@ -113,5 +113,18 @@ const sendTransaction = async (method, name, to, value = 0) => {
     10000000000000000000 // single state ether cap
   );
   await sendTransaction(initializeMethod, 'Initialize', tgeContract.options.address);
+
+  console.log(`
+export const constants = {  
+  Owner: '${from}',
+  AllSporterCoinContractAddress: '${allSporterCoinContract.options.address}',
+  TgeContractAddress: '${tgeContract.options.address}',
+  CrowdsaleContractAddress: '${crowdsaleContract.options.address}',
+  KycContractAddress: '${kycContract.options.address}',
+  ReferralManagerContractAddress: '${referralManagerContract.options.address}',
+  AllocatorContractAddress: '${allocatorContract.options.address}',
+  AirdropperContractAddress: '${airdropperContract.options.address}'
+};
+  `);
 })().catch(console.error);
 /* eslint-enable import/first */
