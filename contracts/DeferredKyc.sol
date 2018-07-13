@@ -14,6 +14,7 @@ contract DeferredKyc is Ownable {
     event Approved(address investor, uint etherAmount, uint tokenAmount);
     event Rejected(address investor, uint etherAmount, uint tokenAmount);
     event RejectedWithdrawn(address investor, uint etherAmount);
+    event ApproverTransferred(address newApprover);
 
     /* --- FIELDS --- */
 
@@ -92,5 +93,10 @@ contract DeferredKyc is Ownable {
         etherRejected[investor] = 0;
         (investor).transfer(value);
         emit RejectedWithdrawn(investor, value);
+    }
+
+    function transferApprover(address newApprover) external onlyApprover {
+        approver = newApprover;
+        emit ApproverTransferred(newApprover);
     }
 }

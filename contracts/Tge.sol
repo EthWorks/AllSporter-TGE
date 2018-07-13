@@ -145,13 +145,6 @@ contract Tge is Minter {
         else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO5).div(10);
         else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO6).div(10);
 
-        // bonus
-        if (etherAmount > 10 * 1e18) {
-            tokenAmount = tokenAmount.mul(105).div(100);
-        }
-        else if (etherAmount > 5 * 1e18) {
-            tokenAmount = tokenAmount.mul(103).div(100);
-        }
         return tokenAmount;
     }
 

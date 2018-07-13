@@ -449,7 +449,7 @@
         "id": 204,
         "nodeType": "ImportDirective",
         "scope": 223,
-        "sourceUnit": 3229,
+        "sourceUnit": 3215,
         "src": "25:60:1",
         "symbolAliases": [],
         "unitAlias": ""
@@ -463,10 +463,10 @@
               "id": 205,
               "name": "CrowdfundableToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3228,
+              "referencedDeclaration": 3214,
               "src": "114:18:1",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_CrowdfundableToken_$3228",
+                "typeIdentifier": "t_contract$_CrowdfundableToken_$3214",
                 "typeString": "contract CrowdfundableToken"
               }
             },
@@ -476,13 +476,13 @@
           }
         ],
         "contractDependencies": [
-          3228,
-          3697,
-          3793,
-          3836,
-          3868,
-          3963,
-          4271
+          3214,
+          3683,
+          3779,
+          3822,
+          3854,
+          3949,
+          4257
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -490,13 +490,13 @@
         "id": 222,
         "linearizedBaseContracts": [
           222,
-          3228,
-          3963,
-          3697,
-          4271,
-          3793,
-          3836,
-          3868
+          3214,
+          3949,
+          3683,
+          4257,
+          3779,
+          3822,
+          3854
         ],
         "name": "AllSporterCoin",
         "nodeType": "ContractDefinition",
@@ -687,10 +687,10 @@
                   "name": "CrowdfundableToken",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3228,
+                  "referencedDeclaration": 3214,
                   "src": "169:18:1",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_type$_t_contract$_CrowdfundableToken_$3228_$",
+                    "typeIdentifier": "t_type$_t_contract$_CrowdfundableToken_$3214_$",
                     "typeString": "type(contract CrowdfundableToken)"
                   }
                 },
@@ -753,7 +753,7 @@
         "id": 204,
         "nodeType": "ImportDirective",
         "scope": 223,
-        "sourceUnit": 3229,
+        "sourceUnit": 3215,
         "src": "25:60:1",
         "symbolAliases": [],
         "unitAlias": ""
@@ -767,10 +767,10 @@
               "id": 205,
               "name": "CrowdfundableToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3228,
+              "referencedDeclaration": 3214,
               "src": "114:18:1",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_CrowdfundableToken_$3228",
+                "typeIdentifier": "t_contract$_CrowdfundableToken_$3214",
                 "typeString": "contract CrowdfundableToken"
               }
             },
@@ -780,13 +780,13 @@
           }
         ],
         "contractDependencies": [
-          3228,
-          3697,
-          3793,
-          3836,
-          3868,
-          3963,
-          4271
+          3214,
+          3683,
+          3779,
+          3822,
+          3854,
+          3949,
+          4257
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -794,13 +794,13 @@
         "id": 222,
         "linearizedBaseContracts": [
           222,
-          3228,
-          3963,
-          3697,
-          4271,
-          3793,
-          3836,
-          3868
+          3214,
+          3949,
+          3683,
+          4257,
+          3779,
+          3822,
+          3854
         ],
         "name": "AllSporterCoin",
         "nodeType": "ContractDefinition",
@@ -991,10 +991,10 @@
                   "name": "CrowdfundableToken",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3228,
+                  "referencedDeclaration": 3214,
                   "src": "169:18:1",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_type$_t_contract$_CrowdfundableToken_$3228_$",
+                    "typeIdentifier": "t_type$_t_contract$_CrowdfundableToken_$3214_$",
                     "typeString": "type(contract CrowdfundableToken)"
                   }
                 },
@@ -1036,5 +1036,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-07-11T14:50:00.369Z"
+  "updatedAt": "2018-07-13T11:44:15.181Z"
 }

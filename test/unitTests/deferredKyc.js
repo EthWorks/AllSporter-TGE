@@ -25,13 +25,14 @@ describe('DeferredKyc', () => {
   let treasury;
   let investor1;
   let investor2;
+  let newApprover;
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10000');
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, minterOwner, firstStateMinter, secondStateMinter,
-      approver, treasury, kycOwner, investor1, investor2] = accounts;
+      approver, treasury, kycOwner, investor1, investor2, newApprover] = accounts;
   });
 
   beforeEach(async () => {
@@ -60,6 +61,7 @@ describe('DeferredKyc', () => {
   const reject = async(account, from) => kycContract.methods.reject(account).send({from});
   const withdrawRejected = async(from) => kycContract.methods.withdrawRejected().send({from});
   const forceWithdrawRejected = async(account, from) => kycContract.methods.forceWithdrawRejected(account).send({from});
+  const transferApprover = async(newApprover, from) => kycContract.methods.transferApprover(newApprover).send({from});
 
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
@@ -250,6 +252,19 @@ describe('DeferredKyc', () => {
       const initialBalance = new BN(await etherBalanceOf(investor1));
       await forceWithdrawRejected(investor1, kycOwner);
       expect(await etherBalanceOf(investor1)).to.be.gt.BN(initialBalance);
+    });
+  });
+
+  describe('Transferring approver', async() => {
+    it('should allow to transfer approver', async() => {
+      const approver = await kycContract.methods.approver().call();
+      await transferApprover(newApprover, approver);
+      expect(await kycContract.methods.approver().call()).to.be.equal(newApprover);
+    });
+
+    it('should not allow to transfer approver by not the current approver', async() => {
+      await expectThrow(transferApprover(newApprover, newApprover));
+      expect(await kycContract.methods.approver().call()).to.be.equal(approver);
     });
   });
 });
