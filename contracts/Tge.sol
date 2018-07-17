@@ -202,16 +202,15 @@ contract Tge is Minter {
             return account == crowdsale || account == deferredKyc;
         }
         else if (isSellingState()) {
-            // external sales
-            // approving kyc
-            // adding to kyc
-            // referral fees
+            // crowdsale: external sales
+            // deferredKyc: adding and approving kyc
+            // referralManager: referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Break || currentState == State.FinishingIco) {
-            // external sales
-            // approving kyc
-            // referral fees
+            // crowdsale: external sales
+            // deferredKyc: approving kyc
+            // referralManager: referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Allocating) {

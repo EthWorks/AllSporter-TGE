@@ -1,4 +1,4 @@
-import {createWeb3, deployContract, expectThrow} from 'ethworks-solidity';
+import {createWeb3, deployContract, expectThrow, defaultGas} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
@@ -132,6 +132,12 @@ describe('Crowdsale', () => {
     it('should allow to buy equal and above the minimum contribution amount', async() => {
       await testShouldBuy(minimumContributionAmount, investor1);
       await testShouldBuy(minimumContributionAmount.add(new BN('1')), investor1);
+    });
+
+    it('should allow to buy by sending to fallback function', async() => {
+      const initialBalance = await etherBalanceOf(kycContractAddress);
+      await web3.eth.sendTransaction({from: investor1, to: crowdsaleContract.options.address, value: minimumContributionAmount, gas: defaultGas});
+      expect(await etherBalanceOf(kycContractAddress)).to.eq.BN(initialBalance.add(minimumContributionAmount));
     });
   });
 

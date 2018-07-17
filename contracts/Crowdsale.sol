@@ -58,4 +58,8 @@ contract Crowdsale is Ownable {
         lockingContract.noteTokens(account, tokenAmount);
         emit SaleLockedNoted(account, etherAmount, tokenAmount, lockingPeriod, address(lockingContract));
     }
+
+    function() public payable {
+        buy();
+    }
 }
