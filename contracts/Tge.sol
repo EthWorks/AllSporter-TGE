@@ -42,6 +42,7 @@ contract Tge is Minter {
     mapping(uint => uint) public etherCaps;
 
     // private ico
+    bool public privateIcoFinalized = true;
     uint public privateIcoCap = 0;
     uint public privateIcoTokensForEther = 0;
     uint public privateIcoStartTime = 0;
@@ -69,6 +70,8 @@ contract Tge is Minter {
 
     // initialize states start times and caps
     function setupStates(uint saleStart, uint singleStateEtherCap, uint[] stateLengths) internal {
+        require(!isPrivateIcoActive());
+
         startTimes[uint(State.Preico1)] = saleStart;
         setStateLength(State.Preico1, stateLengths[0]);
         setStateLength(State.Preico2, stateLengths[1]);
@@ -82,14 +85,15 @@ contract Tge is Minter {
 
         // the total sale ether cap is distributed evenly over all selling states
         // the cap from previous states is accumulated in consequent states
-        etherCaps[uint(State.Preico1)] = singleStateEtherCap;
-        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2);
-        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3);
-        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4);
-        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5);
-        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6);
-        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7);
-        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
+        // adding confirmed sale ether from private ico
+        etherCaps[uint(State.Preico1)] = singleStateEtherCap.add(confirmedSaleEther);
+        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7).add(confirmedSaleEther);
+        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8).add(confirmedSaleEther);
     }
 
     function setup(
@@ -177,6 +181,15 @@ contract Tge is Minter {
         privateIcoStartTime = _startTime;
         privateIcoEndTime = _endTime;
         privateIcoMinimumContribution = _minimumContribution;
+        privateIcoFinalized = true;
+    }
+
+    function finalizePrivateIco() external onlyOwner {
+        require(!isPrivateIcoActive());
+        require(!privateIcoFinalized);
+        require(reservedSaleEther == 0); // kyc needs to be finished
+
+        privateIcoFinalized = true;
     }
 
     /* --- INTERNAL METHODS --- */
@@ -250,6 +263,10 @@ contract Tge is Minter {
     function updateStateBasedOnContributions() internal {
         // move to the next state, if the current one's cap has been reached
         uint totalEtherContributions = confirmedSaleEther.add(reservedSaleEther);
+        if (isPrivateIcoActive()) {
+            return;
+        }
+        
         if (!isSellingState()) {
             return;
         }
