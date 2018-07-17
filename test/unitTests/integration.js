@@ -72,6 +72,17 @@ describe('Integration', () => {
   const ALLOCATING = 11;
   const AIRDROPPING = 12;
   const FINISHED = 13;
+  const stateLengths = [
+    duration.days(5),
+    duration.days(5),
+    duration.days(3),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5)
+  ];
 
   const currentState = async() => {
     await updateState();
@@ -185,14 +196,15 @@ describe('Integration', () => {
     airdropperContract.options.defaultGas = gas;
 
     // TGE DEPENDENCIES
-    await tgeContract.methods.initialize(
+    await tgeContract.methods.setup(
       crowdsaleContract.options.address,
       kycContract.options.address,
       referralManagerContract.options.address,
       allocatorContract.options.address,
       airdropperContract.options.address,
       saleStartTime,
-      singleStateEtherCap
+      singleStateEtherCap,
+      stateLengths
     ).send({from: tgeOwner});
   });
 

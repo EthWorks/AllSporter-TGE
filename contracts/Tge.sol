@@ -8,18 +8,19 @@ contract Tge is Minter {
 
     /* --- CONSTANTS --- */
 
-    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 * 1e18;
-    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 2 * 1e17;
+    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 ether;
+    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 1 ether / 5;
     
-    uint constant public PRICE_MULTIPLIER_PREICO1 = 39553;
-    uint constant public PRICE_MULTIPLIER_PREICO2 = 38189;
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 3955300;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 3818900;
 
-    uint constant public PRICE_MULTIPLIER_ICO1 = 34609;
-    uint constant public PRICE_MULTIPLIER_ICO2 = 33559;
-    uint constant public PRICE_MULTIPLIER_ICO3 = 31641;
-    uint constant public PRICE_MULTIPLIER_ICO4 = 30762;
-    uint constant public PRICE_MULTIPLIER_ICO5 = 29143;
-    uint constant public PRICE_MULTIPLIER_ICO6 = 27686;
+    uint constant public PRICE_MULTIPLIER_ICO1 = 3460900;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 3355900;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 3164100;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 3076200;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 2914300;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 2768600;
+    uint constant public PRICE_DIVIDER = 1000;
 
     /* --- EVENTS --- */
 
@@ -67,17 +68,17 @@ contract Tge is Minter {
     ) public Minter(_token, _saleEtherCap) { }
 
     // initialize states start times and caps
-    function initStates(uint saleStart, uint singleStateEtherCap) internal {
+    function setupStates(uint saleStart, uint singleStateEtherCap, uint[] stateLengths) internal {
         startTimes[uint(State.Preico1)] = saleStart;
-        setStateLength(State.Preico1, 5 days);
-        setStateLength(State.Preico2, 5 days);
-        setStateLength(State.Break, 3 days);
-        setStateLength(State.Ico1, 5 days);
-        setStateLength(State.Ico2, 5 days);
-        setStateLength(State.Ico3, 5 days);
-        setStateLength(State.Ico4, 5 days);
-        setStateLength(State.Ico5, 5 days);
-        setStateLength(State.Ico6, 5 days);
+        setStateLength(State.Preico1, stateLengths[0]);
+        setStateLength(State.Preico2, stateLengths[1]);
+        setStateLength(State.Break, stateLengths[2]);
+        setStateLength(State.Ico1, stateLengths[3]);
+        setStateLength(State.Ico2, stateLengths[4]);
+        setStateLength(State.Ico3, stateLengths[5]);
+        setStateLength(State.Ico4, stateLengths[6]);
+        setStateLength(State.Ico5, stateLengths[7]);
+        setStateLength(State.Ico6, stateLengths[8]);
 
         // the total sale ether cap is distributed evenly over all selling states
         // the cap from previous states is accumulated in consequent states
@@ -91,14 +92,15 @@ contract Tge is Minter {
         etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
     }
 
-    function initialize(
+    function setup(
         address _crowdsale,
         address _deferredKyc,
         address _referralManager,
         address _allocator,
         address _airdropper,
         uint saleStartTime,
-        uint singleStateEtherCap
+        uint singleStateEtherCap,
+        uint[] stateLengths
     )
     public
     onlyOwner
@@ -109,6 +111,7 @@ contract Tge is Minter {
     onlyValidAddress(_allocator)
     onlyValidAddress(_airdropper)
     {
+        require(stateLengths.length == 9); // preico 1-2, break, ico 1-6
         require(saleStartTime >= now);
         require(singleStateEtherCap > 0);
         crowdsale = _crowdsale;
@@ -116,7 +119,7 @@ contract Tge is Minter {
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
-        initStates(saleStartTime, singleStateEtherCap);
+        setupStates(saleStartTime, singleStateEtherCap, stateLengths);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
@@ -135,15 +138,15 @@ contract Tge is Minter {
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
         uint tokenAmount = 0;
-        if (isPrivateIcoActive()) tokenAmount = etherAmount.mul(privateIcoTokensForEther);
-        else if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(10);
-        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO2).div(10);
-        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO1).div(10);
-        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO2).div(10);
-        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO3).div(10);
-        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO4).div(10);
-        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO5).div(10);
-        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO6).div(10);
+        if (isPrivateIcoActive()) tokenAmount = etherAmount.mul(privateIcoTokensForEther).div(PRICE_DIVIDER);
+        else if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(PRICE_DIVIDER);
+        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO2).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO1).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO2).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO3).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO4).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO5).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO6).div(PRICE_DIVIDER);
 
         return tokenAmount;
     }
