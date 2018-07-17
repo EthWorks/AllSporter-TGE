@@ -88,7 +88,7 @@ contract DeferredKyc is Ownable {
         emit RejectedWithdrawn(msg.sender, value);
     }
 
-    function forceWithdrawRejected(address investor) external onlyOwner {
+    function forceWithdrawRejected(address investor) external onlyApprover {
         uint value = etherRejected[investor];
         etherRejected[investor] = 0;
         (investor).transfer(value);

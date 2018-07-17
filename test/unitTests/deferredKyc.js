@@ -250,7 +250,7 @@ describe('DeferredKyc', () => {
 
     it('Should allow to force withdraw rejected', async() => {
       const initialBalance = new BN(await etherBalanceOf(investor1));
-      await forceWithdrawRejected(investor1, kycOwner);
+      await forceWithdrawRejected(investor1, approver);
       expect(await etherBalanceOf(investor1)).to.be.gt.BN(initialBalance);
     });
   });
