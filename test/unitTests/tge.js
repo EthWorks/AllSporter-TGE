@@ -22,7 +22,6 @@ describe('Tge', () => {
   let gas;
   let privateIcoStartTime;
   let privateIcoEndTime;
-  let investor1;
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const PRESALE = 0;
@@ -54,7 +53,7 @@ describe('Tge', () => {
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tgeOwner, tokenOwner, thirdParty, investor1] = accounts;
+    [tgeOwner, tokenOwner, thirdParty] = accounts;
     const block = await web3.eth.getBlock('latest');
     gas = block.gasLimit;
   });
@@ -139,7 +138,7 @@ describe('Tge', () => {
 
   const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
 
-  const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount, gas});
+  // const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount, gas});
 
   describe('initializing', async() => {
     let uninitializedTgeContract;
