@@ -7,7 +7,7 @@ import referralManagerJson from '../../build/contracts/ReferralManager.json';
 import allocatorJson from '../../build/contracts/Allocator.json';
 import airdropperJson from '../../build/contracts/Airdropper.json';
 import deferredKycJson from '../../build/contracts/DeferredKyc.json';
-import lockingContractJson from '../../build/contracts/LockingContract.json';
+import lockingContractJson from '../../build/contracts/SingleLockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -15,7 +15,7 @@ import bnChai from 'bn-chai';
 /* eslint-disable no-unused-vars */
 
 const {expect} = chai;
-const web3 = createWeb3(Web3, 20);
+const web3 = createWeb3(Web3, 30);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
 const duration = durationInit(web3);
@@ -35,29 +35,35 @@ describe('Integration', () => {
   let referralManagerOwner;
   let allocatorContract;
   let allocatorOwner;
-  let lockingContract;
   let airdropperContract;
   let airdropperOwner;
   let kycContract;
   let investor1;
   let investor2;
+  let investor3;
+  let investor4;
+  let investor5;
+  let investor6;
   let referring1;
   let community1;
   let advisor1;
   let customer1;
   let team1;
+  let team2;
   let gas;
   let privateIcoStartTime;
   let privateIcoEndTime;
+  let priceDivider;
+  const lockingPeriod = 10000;
   const privateIcoTokensForEther = new BN('10020');
-  const privateIcoMinimumContribution = new BN('3');
-  const privateIcoCap = new BN('100');
+  const privateIcoMinimumContribution = new BN(web3.utils.toWei('1'));
+  const privateIcoCap = new BN(web3.utils.toWei('100'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const etherAmount1 = new BN(web3.utils.toWei('1'));
   const etherAmount2 = new BN(web3.utils.toWei('10'));
-  const tokenAmount1 = new BN(web3.utils.toWei('4'));
-  const tokenAmount2 = new BN(web3.utils.toWei('40'));
+  const tokenAmount1 = new BN(web3.utils.toWei('100'));
+  const tokenAmount2 = new BN(web3.utils.toWei('1'));
   const PRESALE = 0;
   const PREICO1 = 1;
   const PREICO2 = 2;
@@ -95,13 +101,27 @@ describe('Integration', () => {
     await updateState();
   };
 
+  const increaseTimeToAfterUnlockTime = async(state) => {
+    const unlockTime = await allocatorContract.methods.LOCKING_UNLOCK_TIME().call();
+    await increaseTimeTo(web3, unlockTime + 100);
+    await updateState();
+  };
+
   const updateState = async() => tgeContract.methods.updateState().send({from: tgeOwner, gas});
   const moveState = async (fromState, toState) => tgeContract.methods.moveState(fromState, toState).send({from: tgeOwner, gas});
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
   const buy = async(etherAmount, from) => crowdsaleContract.methods.buy().send({from, value: etherAmount, gas});
   const noteSale = async(account, etherAmount, tokenAmount) =>
     crowdsaleContract.methods.noteSale(account, etherAmount, tokenAmount).send({from: crowdsaleOwner, gas});
-  const lockedBalanceOf = async(account) => lockingContract.methods.balanceOf(account).call();
+  
+  const noteSaleLocked = async(account, etherAmount, tokenAmount, lockingPeriod) =>
+    crowdsaleContract.methods.noteSaleLocked(account, etherAmount, tokenAmount, lockingPeriod).send({from: crowdsaleOwner, gas});
+  
+  const lockedBalanceOf = async(account) => {
+    const lockingContract = await createContract(web3, lockingContractJson, await allocatorContract.methods.lockingContracts(account).call());
+    return await lockingContract.methods.balanceOf().call();
+  };
+
   const tokenBalanceOf = async (client) => new BN(await tokenContract.methods.balanceOf(client).call());
 
   const vestedBalanceOf = async(account) => {
@@ -126,9 +146,15 @@ describe('Integration', () => {
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const transferTokenOwnership = async() => tgeContract.methods.transferTokenOwnership().send({from: tgeOwner, gas});
+  const finishMinting = async() => tokenContract.methods.finishMinting().send({from: tgeOwner, gas});
   const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
-  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution) =>
-    tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from: tgeOwner, gas});
+  const releaseVested = async(account) => allocatorContract.methods.releaseVested(account).send({from: account});
+  const releaseLocked = async(account) => allocatorContract.methods.releaseLocked(account).send({from: account});
+
+  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution) => {
+    const multipliesTokensForEther = tokensForEther * priceDivider;
+    await tgeContract.methods.initPrivateIco(cap, multipliesTokensForEther, startTime, endTime, minimumContribution).send({from: tgeOwner, gas});
+  };
 
   const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
   const finalizePrivateIco = async(from) => tgeContract.methods.finalizePrivateIco().send({from});
@@ -139,7 +165,8 @@ describe('Integration', () => {
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, tgeOwner, crowdsaleOwner, approver, treasury, referralManagerOwner, allocatorOwner, airdropperOwner,
-      investor1, investor2, referring1, community1, advisor1, customer1, team1] = accounts;
+      investor1, investor2, investor3, investor4, investor5, investor6,
+      referring1, community1, advisor1, customer1, team1, team2] = accounts;
     const block = await web3.eth.getBlock('latest');
     gas = block.gasLimit;
   });
@@ -160,6 +187,7 @@ describe('Integration', () => {
       tokenContract.options.address,
       saleEtherCap
     ]);
+    priceDivider = await tgeContract.methods.PRICE_DIVIDER().call();
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
     tgeContract.options.defaultGas = gas;
 
@@ -187,10 +215,6 @@ describe('Integration', () => {
       tgeContract.options.address
     ]);
     allocatorContract.options.defaultGas = gas;
-
-    // LOCKING CONTRACT
-    const lockingContractAddress = await allocatorContract.methods.lockingContract().call();
-    lockingContract = await createContract(web3, lockingContractJson, lockingContractAddress);
 
     // AIRDROPPER
     airdropperContract = await deployContract(web3, airdropperJson, airdropperOwner, [
@@ -586,12 +610,12 @@ describe('Integration', () => {
     });
 
     it('should allow to allocate for Community', async() => {
-      await allocateCommunity(community1, tokenAmount1);
+      await allocateCommunity(community1, new BN('1000'));
     });
 
     it('should allocate for Community directly', async() => {
-      await allocateCommunity(community1, tokenAmount1);
-      expect(await tokenBalanceOf(community1)).to.eq.BN(tokenAmount1);
+      await allocateCommunity(community1, new BN('1000'));
+      expect(await tokenBalanceOf(community1)).to.eq.BN(1000);
     });
 
     it('should allow to allocate for Advisors', async() => {
@@ -766,20 +790,125 @@ describe('Integration', () => {
     const anotherMinimum = minimumContribution.sub(new BN('1'));
     const anotherTokensForEther = tokensForEther.sub(new BN('1'));
 
+    const getAmountAirdropped = (events, account) => new BN(events.filter((ev) => ev.returnValues.account === account)[0].returnValues.tokenAmount);
+
     beforeEach(async() => {
       secondPrivateIcoStartTime = privateIcoEndTime.add(duration.minutes(5));
       secondPrivateIcoEndTime = secondPrivateIcoStartTime.add(duration.minutes(3));
     });
 
     it('should allow to carry out the sale from start to end', async() => {
+      // first private ico
       await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
+      await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
+      await buy(privateIcoMinimumContribution, investor1);
       await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+      await approve(investor1);
       await finalizePrivateIco(tgeOwner);
+      
+      // second private ico
       await initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner);
+      await increaseTimeTo(web3, secondPrivateIcoStartTime.add(duration.minutes(1)));
+      await buy(anotherMinimum, investor2);
       await increaseTimeTo(web3, secondPrivateIcoEndTime.add(duration.minutes(1)));
+      await approve(investor2);
       await finalizePrivateIco(tgeOwner);
+
+      // presale
+      await noteSale(investor3, etherAmount1, tokenAmount1);
+
+      // preico1
       await increaseTimeToState(PREICO1);
+      await buy(etherAmount1, investor4);
+      
+      // ico1
+      await increaseTimeToState(ICO1);
+      await buy(etherAmount1, investor5);
+      await approve(investor5);
+      const noteSaleLockedTx = await noteSaleLocked(investor6, etherAmount1, tokenAmount1, lockingPeriod);
+      const saleNotedLockedContractAddress = noteSaleLockedTx.events.SaleLockedNoted.returnValues.lockingContract;
+      
+      // finishing
       await increaseTimeToState(FINISHING_ICO);
-    });
+      await reject(investor4);
+      
+      // allocating
+      await moveState(FINISHING_ICO, ALLOCATING);
+      await allocateCommunity(community1, tokenAmount2);
+      await allocateAdvisors(advisor1, tokenAmount2);
+      await allocateCustomer(customer1, tokenAmount2);
+      await allocateTeam(team1, tokenAmount2);
+      await allocateTeam(team2, tokenAmount2);
+      
+      // airdropping
+      await moveState(ALLOCATING, AIRDROPPING);
+      const addressesToDrop = [
+        investor1,
+        investor2,
+        investor3,
+        // investor4, rejected
+        investor5,
+        // investor6, on locking contract
+        saleNotedLockedContractAddress,
+        community1,
+        advisor1,
+        await allocatorContract.methods.lockingContracts(team1).call(),
+        await allocatorContract.methods.lockingContracts(team2).call(),
+        await allocatorContract.methods.vestingContracts(customer1).call()
+      ];
+      const dropTx = await dropMultiple(addressesToDrop);
+      const dropEvents = dropTx.events.Airdropped;
+      addressesToDrop.forEach((address) => expect(getAmountAirdropped(dropEvents, address)).to.not.eq.BN(0));
+      
+      // finishing
+      await moveState(AIRDROPPING, FINISHED);
+      await transferTokenOwnership();
+      await finishMinting();
+      await increaseTimeToAfterUnlockTime();
+      await releaseLocked(team1);
+      await releaseLocked(team2);
+      await releaseVested(customer1);
+      const investor6LockingContract = await createContract(web3, lockingContractJson, saleNotedLockedContractAddress);
+      await investor6LockingContract.methods.releaseTokens().send({from: investor6});
+      
+      // checking token balances
+      const investor1ExpectedToken = privateIcoMinimumContribution.mul(privateIcoTokensForEther).add(getAmountAirdropped(dropEvents, investor1));
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(investor1ExpectedToken);
+
+      const investor2ExpectedToken = anotherMinimum.mul(anotherTokensForEther).add(getAmountAirdropped(dropEvents, investor2));
+      expect(await tokenBalanceOf(investor2)).to.eq.BN(investor2ExpectedToken);
+
+      const investor3ExpectedToken = tokenAmount1.add(getAmountAirdropped(dropEvents, investor3));
+      expect(await tokenBalanceOf(investor3)).to.eq.BN(investor3ExpectedToken);
+
+      expect(await tokenBalanceOf(investor4)).to.eq.BN(0);
+
+      const investor5ExpectedToken = etherAmount1.mul(new BN('3460900')).div(new BN('1000'))
+        .add(getAmountAirdropped(dropEvents, investor5));
+      expect(await tokenBalanceOf(investor5)).to.eq.BN(investor5ExpectedToken);
+
+      const investor6ExpectedToken = tokenAmount1.add(getAmountAirdropped(dropEvents, saleNotedLockedContractAddress));
+      expect(await tokenBalanceOf(investor6)).to.eq.BN(investor6ExpectedToken);
+
+      const community1ExpectedToken = tokenAmount2.add(getAmountAirdropped(dropEvents, community1));
+      expect(await tokenBalanceOf(community1)).to.eq.BN(community1ExpectedToken);
+
+      const advisor1ExpectedToken = tokenAmount2.add(getAmountAirdropped(dropEvents, advisor1));
+      expect(await tokenBalanceOf(advisor1)).to.eq.BN(advisor1ExpectedToken);
+
+      const team1ExpectedToken = tokenAmount2.add(getAmountAirdropped(dropEvents, await allocatorContract.methods.lockingContracts(team1).call()));
+      expect(await tokenBalanceOf(team1)).to.eq.BN(team1ExpectedToken);
+
+      const team2ExpectedToken = tokenAmount2.add(getAmountAirdropped(dropEvents, await allocatorContract.methods.lockingContracts(team2).call()));
+      expect(await tokenBalanceOf(team2)).to.eq.BN(team2ExpectedToken);
+
+      const customer1ExpectedToken = tokenAmount2.add(getAmountAirdropped(dropEvents, await allocatorContract.methods.vestingContracts(customer1).call()));
+      expect(await tokenBalanceOf(customer1)).to.eq.BN(customer1ExpectedToken);
+      
+      // should airdrop up to the cap
+      const tokenCap = new BN(await tokenContract.methods.cap().call());
+      const totalSupply = new BN(await tokenContract.methods.totalSupply().call());
+      expect(tokenCap.sub(totalSupply)).to.be.lt.BN(5);
+    }).timeout(5000);
   });
 });

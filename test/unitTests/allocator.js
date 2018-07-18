@@ -2,7 +2,7 @@ import {createWeb3, deployContract, expectThrow, increaseTimeTo, createContract}
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import allocatorJson from '../../build/contracts/Allocator.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
-import lockingContractJson from '../../build/contracts/LockingContract.json';
+import lockingContractJson from '../../build/contracts/SingleLockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -24,7 +24,6 @@ describe('Allocator', () => {
   let secondStateMinter;
   let investor1;
   let investor2;
-  let lockingContract;
   const COMMUNITY_PERCENTAGE = new BN('5');
   const ADVISORS_PERCENTAGE = new BN('8');
   const CUSTOMER_PERCENTAGE = new BN('15');
@@ -62,12 +61,13 @@ describe('Allocator', () => {
       minterContract.options.address
     ]);
     minterContract.methods.addAllStateMinter(allocatorContract.options.address).send({from: minterOwner});
-    const lockingContractAddress = await allocatorContract.methods.lockingContract().call();
-    lockingContract = await createContract(web3, lockingContractJson, lockingContractAddress);
   });
 
   const tokenBalanceOf = async(account) => tokenContract.methods.balanceOf(account).call();
-  const lockedBalanceOf = async(account) => lockingContract.methods.balanceOf(account).call();
+  const lockedBalanceOf = async(account) => {
+    const lockingContract = await createContract(web3, lockingContractJson, await allocatorContract.methods.lockingContracts(account).call());
+    return await lockingContract.methods.balanceOf().call();
+  };
 
   const vestedBalanceOf = async(account) => {
     const vestingContractAddress = await allocatorContract.methods.vestingContracts(account).call();

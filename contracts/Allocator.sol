@@ -2,12 +2,12 @@ pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "zeppelin-solidity/contracts/token/ERC20/TokenVesting.sol";
-import "ethworks-solidity/contracts/LockingContract.sol";
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "ethworks-solidity/contracts/CrowdfundableToken.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
+import "./SingleLockingContract.sol";
 
 contract Allocator is Ownable {
     using SafeMath for uint;
@@ -38,13 +38,14 @@ contract Allocator is Ownable {
     event AllocatedAdvisors(address account, uint tokenAmount);
     event AllocatedCustomer(address account, uint tokenAmount);
     event AllocatedTeam(address account, uint tokenAmount);
+    event LockingOwnershipTransferred(address newOwner);
 
     /* --- FIELDS --- */
 
     Minter public minter;
-    LockingContract public lockingContract;
     bool public isInitialized = false;
     mapping(address => TokenVesting) public vestingContracts; // one customer => one TokenVesting contract
+    mapping(address => SingleLockingContract) public lockingContracts; // one team => one SingleLockingContract
 
     // pools
     uint public communityPool;
@@ -76,7 +77,6 @@ contract Allocator is Ownable {
 
     constructor(Minter _minter) public onlyValidAddress(_minter) {
         minter = _minter;
-        lockingContract = new LockingContract(_minter.token(), LOCKING_UNLOCK_TIME);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
@@ -87,7 +87,8 @@ contract Allocator is Ownable {
     }
 
     function releaseLocked(address account) external initialized {
-        lockingContract.releaseTokens(account);
+        SingleLockingContract locking = lockingContracts[account];
+        locking.releaseTokens();
     }
 
     function allocateCommunity(address account, uint tokenAmount) external initialized onlyOwner {
@@ -115,8 +116,10 @@ contract Allocator is Ownable {
     // locking
     function allocateTeam(address account, uint tokenAmount) external initialized onlyOwner {
         teamPool = teamPool.sub(tokenAmount);
-        minter.mint(lockingContract, ETHER_AMOUNT, tokenAmount);
-        lockingContract.noteTokens(account, tokenAmount);
+        if (address(lockingContracts[account]) == 0x0) {
+            lockingContracts[account] = new SingleLockingContract(minter.token(), LOCKING_UNLOCK_TIME, account);
+        }
+        minter.mint(lockingContracts[account], ETHER_AMOUNT, tokenAmount);
         emit AllocatedTeam(account, tokenAmount);
     }
 

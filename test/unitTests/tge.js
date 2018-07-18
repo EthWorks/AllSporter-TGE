@@ -23,6 +23,7 @@ describe('Tge', () => {
   let privateIcoStartTime;
   let privateIcoEndTime;
   let investor1;
+  let priceDivider;
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10');
@@ -69,6 +70,7 @@ describe('Tge', () => {
       tokenContract.options.address,
       saleEtherCap
     ]);
+    priceDivider = await tgeContract.methods.PRICE_DIVIDER().call();
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
 
     await tgeContract.methods.setup(
@@ -136,8 +138,10 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
-  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution, from) =>
-    tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from, gas});
+  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution, from) => {
+    const multipliesTokensForEther = tokensForEther * priceDivider;
+    await tgeContract.methods.initPrivateIco(cap, multipliesTokensForEther, startTime, endTime, minimumContribution).send({from, gas});
+  };
 
   const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
   const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
@@ -889,7 +893,7 @@ describe('Tge', () => {
       it('should set up fields correctly', async () => {
         await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
         expect(await tgeContract.methods.privateIcoCap().call()).to.eq.BN(cap);
-        expect(await tgeContract.methods.privateIcoTokensForEther().call()).to.eq.BN(tokensForEther);
+        expect(await tgeContract.methods.privateIcoTokensForEther().call()).to.eq.BN(tokensForEther * priceDivider);
         expect(await tgeContract.methods.privateIcoStartTime().call()).to.eq.BN(privateIcoStartTime);
         expect(await tgeContract.methods.privateIcoEndTime().call()).to.eq.BN(privateIcoEndTime);
         expect(await tgeContract.methods.privateIcoMinimumContribution().call()).to.eq.BN(minimumContribution);

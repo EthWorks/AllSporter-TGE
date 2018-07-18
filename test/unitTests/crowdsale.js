@@ -2,7 +2,7 @@ import {createWeb3, deployContract, expectThrow, defaultGas} from 'ethworks-soli
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
-import lockingContractJson from '../../build/contracts/LockingContract.json';
+import lockingContractJson from '../../build/contracts/SingleLockingContract.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -173,7 +173,7 @@ describe('Crowdsale', () => {
     it('should lock proper amount of tokens on the locking contract', async () => {
       const tx = await noteSaleLocked(investor1, etherAmount1, tokenAmount1, lockingPeriod, crowdsaleOwner);
       const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
-      const balance = await lockingContract.methods.balanceOf(investor1).call();
+      const balance = await lockingContract.methods.balanceOf().call();
       expect(balance).to.be.eq.BN(tokenAmount1);
     });
 
