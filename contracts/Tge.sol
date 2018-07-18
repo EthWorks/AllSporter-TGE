@@ -169,9 +169,9 @@ contract Tge is Minter {
     }
 
     function initPrivateIco(uint _cap, uint _tokensForEther, uint _startTime, uint _endTime, uint _minimumContribution) external onlyOwner {
-        require(_cap > privateIcoCap); // should increase the cap after previous private ico
         require(_startTime > privateIcoEndTime); // should start after previous private ico
         require(now >= privateIcoEndTime); // previous private ico should be finished
+        require(privateIcoFinalized); // previous private ico should be finalized
         require(_tokensForEther > 0);
         require(_endTime > _startTime);
         require(_endTime < startTimes[uint(State.Preico1)]);
@@ -265,18 +265,16 @@ contract Tge is Minter {
     function updateStateBasedOnContributions() internal {
         // move to the next state, if the current one's cap has been reached
         uint totalEtherContributions = confirmedSaleEther.add(reservedSaleEther);
-        if (isPrivateIcoActive()) {
+        if(isPrivateIcoActive()) {
+            // if private ico cap exceeded, revert transaction
+            require(totalEtherContributions <= privateIcoCap);
             return;
         }
         
         if (!isSellingState()) {
             return;
         }
-
-        if(isPrivateIcoActive()) {
-            // if private ico cap exceeded, revert transaction
-            require(totalEtherContributions <= privateIcoCap);
-        }
+        
         else if (int(currentState) < int(State.Break)) {
             // preico
             if (totalEtherContributions >= etherCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);

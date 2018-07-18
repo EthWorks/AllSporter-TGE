@@ -141,7 +141,6 @@ describe('Tge', () => {
 
   const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
   const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
-
   const finalizePrivateIco = async(from) => tgeContract.methods.finalizePrivateIco().send({from});
 
   const reserve = async (etherAmount) => tgeContract.methods.reserve(etherAmount).send({from: tgeOwner});
@@ -919,11 +918,17 @@ describe('Tge', () => {
         expect(await isPrivateIcoActive()).to.be.false;
         await expectThrow(initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner));
       });
+
+      it('should not allow to start second ico if previous one ended, but not finalized', async() => {
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await expectThrow(initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner));
+      });
   
-      it('should allow to start a private ico after previous one is finished', async () => {
+      it('should allow to start a private ico after previous one is finished and finalized', async () => {
         await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
         expect(await isPrivateIcoActive()).to.be.false;
-  
+        await finalizePrivateIco(tgeOwner);
+
         await initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner);
         await increaseTimeTo(web3, secondPrivateIcoStartTime.add(duration.minutes(1)));
         expect(await isPrivateIcoActive()).to.be.true;

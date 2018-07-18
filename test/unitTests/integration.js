@@ -130,6 +130,9 @@ describe('Integration', () => {
   const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution) =>
     tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from: tgeOwner, gas});
 
+  const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
+  const finalizePrivateIco = async(from) => tgeContract.methods.finalizePrivateIco().send({from});
+
   
   /* eslint-enable no-unused-vars */
 
@@ -142,7 +145,7 @@ describe('Integration', () => {
   });
 
   beforeEach(async () => {
-    saleStartTime = new BN(await latestTime(web3)).add(duration.days(1));
+    saleStartTime = new BN(await latestTime(web3)).add(duration.days(2));
     // private ico start/end times 
     privateIcoStartTime = new BN(await latestTime(web3)).add(duration.minutes(10));
     privateIcoEndTime = privateIcoStartTime.add(duration.hours(2));
@@ -750,6 +753,33 @@ describe('Integration', () => {
       await expectThrow(setup());
       await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
       await setup();
+    });
+  });
+
+  describe('end to end sale with private icos', async() => {
+    const cap = new BN('10');
+    const tokensForEther = new BN('2000000');
+    const minimumContribution = new BN('2');
+    let secondPrivateIcoStartTime;
+    let secondPrivateIcoEndTime;
+    const anotherCap = cap.add(new BN('2'));
+    const anotherMinimum = minimumContribution.sub(new BN('1'));
+    const anotherTokensForEther = tokensForEther.sub(new BN('1'));
+
+    beforeEach(async() => {
+      secondPrivateIcoStartTime = privateIcoEndTime.add(duration.minutes(5));
+      secondPrivateIcoEndTime = secondPrivateIcoStartTime.add(duration.minutes(3));
+    });
+
+    it('should allow to carry out the sale from start to end', async() => {
+      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
+      await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+      await finalizePrivateIco(tgeOwner);
+      await initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner);
+      await increaseTimeTo(web3, secondPrivateIcoEndTime.add(duration.minutes(1)));
+      await finalizePrivateIco(tgeOwner);
+      await increaseTimeToState(PREICO1);
+      await increaseTimeToState(FINISHING_ICO);
     });
   });
 });
