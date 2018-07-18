@@ -81,9 +81,8 @@ const sendTransaction = async (method, name, to, value = 0) => {
 
   const tgeArguments = [
     allSporterCoinContract.options.address,
-    100000000000000000000,
-    1577840461,
-    10000000000000000000
+    100000000000000000000 // total ether cap
+    
   ];
   const tgeContract = await deployContract(tgeJson, tgeArguments, 'Tge');
 
@@ -109,8 +108,23 @@ const sendTransaction = async (method, name, to, value = 0) => {
     kycContract.options.address,
     referralManagerContract.options.address,
     allocatorContract.options.address,
-    airdropperContract.options.address
+    airdropperContract.options.address,
+    1577840461, // sale start time 
+    10000000000000000000 // single state ether cap
   );
   await sendTransaction(initializeMethod, 'Initialize', tgeContract.options.address);
+
+  console.log(`
+export const constants = {  
+  Owner: '${from}',
+  AllSporterCoinContractAddress: '${allSporterCoinContract.options.address}',
+  TgeContractAddress: '${tgeContract.options.address}',
+  CrowdsaleContractAddress: '${crowdsaleContract.options.address}',
+  KycContractAddress: '${kycContract.options.address}',
+  ReferralManagerContractAddress: '${referralManagerContract.options.address}',
+  AllocatorContractAddress: '${allocatorContract.options.address}',
+  AirdropperContractAddress: '${airdropperContract.options.address}'
+};
+  `);
 })().catch(console.error);
 /* eslint-enable import/first */

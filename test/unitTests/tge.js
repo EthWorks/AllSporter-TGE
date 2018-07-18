@@ -20,8 +20,13 @@ describe('Tge', () => {
   let saleStartTime;
   let thirdParty;
   let gas;
+  let privateIcoStartTime;
+  let privateIcoEndTime;
+  let investor1;
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
+  const etherAmount1 = new BN('10');
+  const tokenAmount1 = new BN('40');
   const PRESALE = 0;
   const PREICO1 = 1;
   const PREICO2 = 2;
@@ -37,10 +42,21 @@ describe('Tge', () => {
   const AIRDROPPING = 12;
   const FINISHED = 13;
   const tokenCap = new BN(web3.utils.toWei('260000000'));
+  const stateLengths = [
+    duration.days(5),
+    duration.days(5),
+    duration.days(3),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5)
+  ];
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
-    [tgeOwner, tokenOwner, thirdParty] = accounts;
+    [tgeOwner, tokenOwner, thirdParty, investor1] = accounts;
     const block = await web3.eth.getBlock('latest');
     gas = block.gasLimit;
   });
@@ -48,22 +64,27 @@ describe('Tge', () => {
   beforeEach(async () => {
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner, []);
 
-    saleStartTime = await latestTime(web3) + 100;
+    saleStartTime = new BN(await latestTime(web3)).add(duration.days(10));
     tgeContract = await deployContract(web3, tgeJson, tgeOwner, [
       tokenContract.options.address,
-      saleEtherCap,
-      saleStartTime,
-      singleStateEtherCap
+      saleEtherCap
     ]);
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
 
-    tgeContract.methods.initialize(
+    await tgeContract.methods.setup(
       tgeOwner,
       tgeOwner,
       tgeOwner,
       tgeOwner,
-      tgeOwner
+      tgeOwner,
+      saleStartTime,
+      singleStateEtherCap,
+      stateLengths
     ).send({from: tgeOwner});
+
+    // private ico start/end times 
+    privateIcoStartTime = new BN(await latestTime(web3)).add(duration.minutes(10));
+    privateIcoEndTime = privateIcoStartTime.add(duration.days(2));
   });
 
   const isSellingState = async() => {
@@ -103,7 +124,7 @@ describe('Tge', () => {
   };
   
   const advanceToSaleStartTime = async() => {
-    const destination = saleStartTime + 100;
+    const destination = saleStartTime.add(new BN('100'));
     await increaseTimeTo(web3, destination);
     await updateState();
   };
@@ -115,6 +136,19 @@ describe('Tge', () => {
 
   const transferTokenOwnership = async(from) => tgeContract.methods.transferTokenOwnership().send({from, gas});
 
+  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution, from) =>
+    tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from, gas});
+
+  const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
+  const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
+
+  const finalizePrivateIco = async(from) => tgeContract.methods.finalizePrivateIco().send({from});
+
+  const reserve = async (etherAmount) => tgeContract.methods.reserve(etherAmount).send({from: tgeOwner});
+  const mintReserved = async (account, etherAmount, tokenAmount) => tgeContract.methods.mintReserved(account, etherAmount, tokenAmount).send({from: tgeOwner});
+  const unreserve = async (etherAmount) => tgeContract.methods.unreserve(etherAmount).send({from: tgeOwner});
+  // const mint = async (account, etherAmount, tokenAmount) => tgeContract.methods.mint(account, etherAmount, tokenAmount).send({from: tgeOwner});
+
   describe('initializing', async() => {
     let uninitializedTgeContract;
     const zeroAddress = '0x0';
@@ -122,20 +156,21 @@ describe('Tge', () => {
     beforeEach(async() => {
       uninitializedTgeContract = await deployContract(web3, tgeJson, tgeOwner, [
         tokenContract.options.address,
-        saleEtherCap,
-        saleStartTime,
-        singleStateEtherCap
+        saleEtherCap
       ]);
     });
 
     const isInitialized = async() => uninitializedTgeContract.methods.isInitialized().call();
 
-    const initialize = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, from) => uninitializedTgeContract.methods.initialize(
+    const setup = async(crowdsale, deferredKyc, referralManager, allocator, airdropper, saleStartTime, singleStateEtherCap, stateLengths, from) => uninitializedTgeContract.methods.setup(
       crowdsale,
       deferredKyc,
       referralManager,
       allocator,
-      airdropper
+      airdropper,
+      saleStartTime,
+      singleStateEtherCap,
+      stateLengths
     ).send({from});
 
     it('should be uninitialized initially', async() => {
@@ -143,38 +178,84 @@ describe('Tge', () => {
     });
 
     it('should allow to initialize by the owner', async() => {
-      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
+      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
       expect(await isInitialized()).to.be.true; 
     });
 
     it('should not allow to initialize by not the owner', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tokenOwner));
+      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tokenOwner));
       expect(await isInitialized()).to.be.false; 
     });
 
-    it('should not allow to initialize twice', async() => {
-      await initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner);
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+    it('should allow to initialize twice', async() => {
+      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+    });
+
+    it('should not initialize after presale', async () => {
+      await advanceToSaleStartTime();
+      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
     it('should not allow to initialize without crowdsale', async() => {
-      await expectThrow(initialize(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(setup(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
     it('should not allow to initialize without deferredKyc', async() => {
-      await expectThrow(initialize(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(setup(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
     it('should not allow to initialize without referralManager', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner));
+      await expectThrow(setup(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
     it('should not allow to initialize without allocator', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner));
+      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
     it('should not allow to initialize without airdropper', async() => {
-      await expectThrow(initialize(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner));
+      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+    });
+
+    describe('overriding initialization', async () => {
+      beforeEach(async () => {
+        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+      });
+      
+      it('should override addresses', async () => {
+        await setup(thirdParty, thirdParty, thirdParty, thirdParty, thirdParty, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+        expect(await uninitializedTgeContract.methods.crowdsale().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.deferredKyc().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.referralManager().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.allocator().call()).to.be.equal(thirdParty);
+        expect(await uninitializedTgeContract.methods.airdropper().call()).to.be.equal(thirdParty);
+      });
+
+      it('should override state start times', async () => {
+        const newStartTime = new BN(saleStartTime + 10000000);
+        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, newStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+        expect(await uninitializedTgeContract.methods.startTimes(PREICO1).call()).to.be.eq.BN(newStartTime);
+        expect(await uninitializedTgeContract.methods.startTimes(PREICO2).call()).to.be.eq.BN(newStartTime.add(duration.days(5)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO1).call()).to.be.eq.BN(newStartTime.add(duration.days(13)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO2).call()).to.be.eq.BN(newStartTime.add(duration.days(18)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO3).call()).to.be.eq.BN(newStartTime.add(duration.days(23)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO4).call()).to.be.eq.BN(newStartTime.add(duration.days(28)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO5).call()).to.be.eq.BN(newStartTime.add(duration.days(33)));
+        expect(await uninitializedTgeContract.methods.startTimes(ICO6).call()).to.be.eq.BN(newStartTime.add(duration.days(38)));
+      });
+
+      it('should override state ether caps', async () => {
+        const newSingleEtherCap = 100;
+        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, newSingleEtherCap, stateLengths, tgeOwner);
+        expect(await uninitializedTgeContract.methods.etherCaps(PREICO1).call()).to.be.eq.BN(newSingleEtherCap);
+        expect(await uninitializedTgeContract.methods.etherCaps(PREICO2).call()).to.be.eq.BN(newSingleEtherCap * 2);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO1).call()).to.be.eq.BN(newSingleEtherCap * 3);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO2).call()).to.be.eq.BN(newSingleEtherCap * 4);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO3).call()).to.be.eq.BN(newSingleEtherCap * 5);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO4).call()).to.be.eq.BN(newSingleEtherCap * 6);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO5).call()).to.be.eq.BN(newSingleEtherCap * 7);
+        expect(await uninitializedTgeContract.methods.etherCaps(ICO6).call()).to.be.eq.BN(newSingleEtherCap * 8);
+      });
     });
   });
 
@@ -675,5 +756,183 @@ describe('Tge', () => {
       await expectThrow(transferTokenOwnership(thirdParty));
       expect(await getTokenOwner()).to.be.equal(tgeContract.options.address);
     });
+  });
+
+  describe('Private ico', async () => {
+    const cap = new BN('10');
+    const tokensForEther = new BN('2000000');
+    const minimumContribution = new BN('2');
+
+    it('should not be active initially', async () => {
+      expect(await isPrivateIcoActive()).to.be.false;
+    });
+
+    describe('Finalizing', async() => {
+      it('should be finalized initially', async() => {
+        expect(await isPrivateIcoFinalized()).to.be.true;
+      });
+
+      it('should not be finalized after starting', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        expect(await isPrivateIcoFinalized()).to.be.false;
+      });
+  
+      it('should not allow to finalize before start time reached', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await expectThrow(finalizePrivateIco(tgeOwner));
+        expect(await isPrivateIcoFinalized()).to.be.false;
+      });
+
+      it('should not allow to finalize when start time reached', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
+        await expectThrow(finalizePrivateIco(tgeOwner));
+        expect(await isPrivateIcoFinalized()).to.be.false;
+      });
+
+      it('should allow to finalize after end time', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await finalizePrivateIco(tgeOwner);
+        expect(await isPrivateIcoFinalized()).to.be.true;
+      });
+
+      it('should allow to finalize even if preico1 start time reached', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await advanceToSaleStartTime();
+        await finalizePrivateIco(tgeOwner);
+        expect(await isPrivateIcoFinalized()).to.be.true;
+      });
+
+      it('should not allow third party to finalize', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await expectThrow(finalizePrivateIco(thirdParty));
+        expect(await isPrivateIcoFinalized()).to.be.false;
+      });
+
+      it('should not allow to finalize twice', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await finalizePrivateIco(tgeOwner);
+        await expectThrow(finalizePrivateIco(tgeOwner));
+      });
+
+      it('should not allow to finalize if not started', async() => {
+        await expectThrow(finalizePrivateIco(tgeOwner));
+      });
+
+      it('should not allow to finalize if there are funds reserved', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await reserve(etherAmount1);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await expectThrow(finalizePrivateIco(tgeOwner));
+      });
+
+      it('should allow to finalize if reserved funds are approved', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await reserve(etherAmount1);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await mintReserved(investor1, etherAmount1, tokenAmount1);
+
+        await finalizePrivateIco(tgeOwner);
+        expect(await isPrivateIcoFinalized()).to.be.true;
+      });
+
+      it('should allow to finalize if reserved funds are rejected', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await reserve(etherAmount1);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await unreserve(etherAmount1);
+        
+        await finalizePrivateIco(tgeOwner);
+        expect(await isPrivateIcoFinalized()).to.be.true;
+      });
+
+      it('should clear confirmed funds after finalizing', async() => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        await reserve(etherAmount1);
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await mintReserved(investor1, etherAmount1, tokenAmount1);
+
+        expect(await tgeContract.methods.confirmedSaleEther().call()).to.eq.BN(etherAmount1);
+        await finalizePrivateIco(tgeOwner);
+        expect(await tgeContract.methods.confirmedSaleEther().call()).to.eq.BN(0);
+      });
+    });
+
+    describe('Starting', async() => {
+      it('should allow to start a private ico by the owner', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        expect(await isPrivateIcoActive()).to.be.false;
+        await increaseTimeTo(web3, privateIcoStartTime);
+        expect(await isPrivateIcoActive()).to.be.true;
+      });
+
+      it('should not allow to start a private ico by not the owner', async () => {
+        await expectThrow(initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, thirdParty));
+        expect(await isPrivateIcoActive()).to.be.false;
+        await increaseTimeTo(web3, privateIcoStartTime);
+        expect(await isPrivateIcoActive()).to.be.false;
+      });
+  
+      it('should not allow to start a private ico after presale', async () => {
+        await increaseTimeToState(PREICO1);
+        await expectThrow(initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, thirdParty));
+        expect(await isPrivateIcoActive()).to.be.false;
+      });
+  
+      it('should not allow to start a private ico with end date after presale end date', async () => {
+        const preicoStart = await tgeContract.methods.startTimes(PREICO1).call();
+        await expectThrow(initPrivateIco(cap, tokensForEther, privateIcoStartTime, preicoStart, minimumContribution, tgeOwner));
+      });
+
+      it('should set up fields correctly', async () => {
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+        expect(await tgeContract.methods.privateIcoCap().call()).to.eq.BN(cap);
+        expect(await tgeContract.methods.privateIcoTokensForEther().call()).to.eq.BN(tokensForEther);
+        expect(await tgeContract.methods.privateIcoStartTime().call()).to.eq.BN(privateIcoStartTime);
+        expect(await tgeContract.methods.privateIcoEndTime().call()).to.eq.BN(privateIcoEndTime);
+        expect(await tgeContract.methods.privateIcoMinimumContribution().call()).to.eq.BN(minimumContribution);
+      });
+    });
+
+    describe('Starting second private ico', async () => {
+      let secondPrivateIcoStartTime;
+      let secondPrivateIcoEndTime;
+      const anotherCap = cap.add(new BN('2'));
+      const anotherMinimum = minimumContribution.sub(new BN('1'));
+      const anotherTokensForEther = tokensForEther.sub(new BN('1'));
+
+      beforeEach(async() => {
+        secondPrivateIcoStartTime = privateIcoEndTime.add(duration.days(2));
+        secondPrivateIcoEndTime = secondPrivateIcoStartTime.add(duration.days(2));
+        await initPrivateIco(cap, tokensForEther, privateIcoStartTime, privateIcoEndTime, minimumContribution, tgeOwner);
+      });
+
+      it('should not allow to start a private ico after one is already started', async () => {
+        await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
+        await expectThrow(initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner));
+      });
+  
+      it('should not allow to start a private ico after one is already initiated (but not started yet)', async () => {
+        expect(await isPrivateIcoActive()).to.be.false;
+        await expectThrow(initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner));
+      });
+  
+      it('should allow to start a private ico after previous one is finished', async () => {
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        expect(await isPrivateIcoActive()).to.be.false;
+  
+        await initPrivateIco(anotherCap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner);
+        await increaseTimeTo(web3, secondPrivateIcoStartTime.add(duration.minutes(1)));
+        expect(await isPrivateIcoActive()).to.be.true;
+      });
+
+      it('should not allow to start a second private ico without bigger cap', async () => {
+        await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+        await expectThrow(initPrivateIco(cap, anotherTokensForEther, secondPrivateIcoStartTime, secondPrivateIcoEndTime, anotherMinimum, tgeOwner));
+      });
+    });    
   });
 });

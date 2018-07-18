@@ -8,8 +8,19 @@ contract Tge is Minter {
 
     /* --- CONSTANTS --- */
 
-    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 * 1e18;
-    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 2 * 1e17;
+    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 ether;
+    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 1 ether / 5;
+    
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 3955300;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 3818900;
+
+    uint constant public PRICE_MULTIPLIER_ICO1 = 3460900;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 3355900;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 3164100;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 3076200;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 2914300;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 2768600;
+    uint constant public PRICE_DIVIDER = 1000;
 
     /* --- EVENTS --- */
 
@@ -30,20 +41,18 @@ contract Tge is Minter {
     mapping(uint => uint) public startTimes;
     mapping(uint => uint) public etherCaps;
 
+    // private ico
+    bool public privateIcoFinalized = true;
+    uint public privateIcoCap = 0;
+    uint public privateIcoTokensForEther = 0;
+    uint public privateIcoStartTime = 0;
+    uint public privateIcoEndTime = 0;
+    uint public privateIcoMinimumContribution = 0;
+
     /* --- MODIFIERS --- */
 
     modifier onlyInState(State _state) {
         require(_state == currentState);
-        _;
-    }
-
-    modifier onlyInitialized() {
-        require(isInitialized());
-        _;
-    }
-
-    modifier onlyNotInitialized() {
-        require(!isInitialized());
         _;
     }
 
@@ -56,30 +65,27 @@ contract Tge is Minter {
 
     constructor(
         CrowdfundableToken _token,
-        uint _saleEtherCap,
-        uint saleStartTime,
-        uint singleStateEtherCap
-    ) public Minter(_token, _saleEtherCap) {
-        require(saleStartTime >= now);
-        require(singleStateEtherCap > 0);
-        initStates(saleStartTime, singleStateEtherCap);
-    }
+        uint _saleEtherCap
+    ) public Minter(_token, _saleEtherCap) { }
 
     // initialize states start times and caps
-    function initStates(uint saleStart, uint singleStateEtherCap) internal {
+    function setupStates(uint saleStart, uint singleStateEtherCap, uint[] stateLengths) internal {
+        require(!isPrivateIcoActive());
+
         startTimes[uint(State.Preico1)] = saleStart;
-        setStateLength(State.Preico1, 5 days);
-        setStateLength(State.Preico2, 5 days);
-        setStateLength(State.Break, 3 days);
-        setStateLength(State.Ico1, 5 days);
-        setStateLength(State.Ico2, 5 days);
-        setStateLength(State.Ico3, 5 days);
-        setStateLength(State.Ico4, 5 days);
-        setStateLength(State.Ico5, 5 days);
-        setStateLength(State.Ico6, 5 days);
+        setStateLength(State.Preico1, stateLengths[0]);
+        setStateLength(State.Preico2, stateLengths[1]);
+        setStateLength(State.Break, stateLengths[2]);
+        setStateLength(State.Ico1, stateLengths[3]);
+        setStateLength(State.Ico2, stateLengths[4]);
+        setStateLength(State.Ico3, stateLengths[5]);
+        setStateLength(State.Ico4, stateLengths[6]);
+        setStateLength(State.Ico5, stateLengths[7]);
+        setStateLength(State.Ico6, stateLengths[8]);
 
         // the total sale ether cap is distributed evenly over all selling states
         // the cap from previous states is accumulated in consequent states
+        // adding confirmed sale ether from private ico
         etherCaps[uint(State.Preico1)] = singleStateEtherCap;
         etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2);
         etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3);
@@ -90,27 +96,34 @@ contract Tge is Minter {
         etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
     }
 
-    function initialize(
+    function setup(
         address _crowdsale,
         address _deferredKyc,
         address _referralManager,
         address _allocator,
-        address _airdropper
+        address _airdropper,
+        uint saleStartTime,
+        uint singleStateEtherCap,
+        uint[] stateLengths
     )
     public
     onlyOwner
-    onlyNotInitialized // initialize only once
+    onlyInState(State.Presale)
     onlyValidAddress(_crowdsale)
     onlyValidAddress(_deferredKyc)
     onlyValidAddress(_referralManager)
     onlyValidAddress(_allocator)
     onlyValidAddress(_airdropper)
     {
+        require(stateLengths.length == 9); // preico 1-2, break, ico 1-6
+        require(saleStartTime >= now);
+        require(singleStateEtherCap > 0);
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
         allocator = _allocator;
         airdropper = _airdropper;
+        setupStates(saleStartTime, singleStateEtherCap, stateLengths);
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
@@ -129,27 +142,56 @@ contract Tge is Minter {
     // override
     function getTokensForEther(uint etherAmount) public view returns(uint) {
         uint tokenAmount = 0;
-        if (currentState == State.Preico1) tokenAmount = etherAmount.mul(39553).div(10);
-        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(38189).div(10);
-        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(34609).div(10);
-        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(33559).div(10);
-        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(31641).div(10);
-        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(30762).div(10);
-        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(29143).div(10);
-        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(27686).div(10);
+        if (isPrivateIcoActive()) tokenAmount = etherAmount.mul(privateIcoTokensForEther).div(PRICE_DIVIDER);
+        else if (currentState == State.Preico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO1).div(PRICE_DIVIDER);
+        else if (currentState == State.Preico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_PREICO2).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico1) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO1).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico2) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO2).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico3) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO3).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico4) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO4).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico5) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO5).div(PRICE_DIVIDER);
+        else if (currentState == State.Ico6) tokenAmount = etherAmount.mul(PRICE_MULTIPLIER_ICO6).div(PRICE_DIVIDER);
 
-        // bonus
-        if (etherAmount > 10 * 1e18) {
-            tokenAmount = tokenAmount.mul(105).div(100);
-        }
-        else if (etherAmount > 5 * 1e18) {
-            tokenAmount = tokenAmount.mul(103).div(100);
-        }
         return tokenAmount;
     }
 
     function isSellingState() public view returns(bool) {
-        return(uint(currentState) >= uint(State.Preico1) && uint(currentState) <= uint(State.Ico6) && uint(currentState) != uint(State.Break));
+        if (currentState == State.Presale) return isPrivateIcoActive();
+        return (
+            uint(currentState) >= uint(State.Preico1) &&
+            uint(currentState) <= uint(State.Ico6) &&
+            uint(currentState) != uint(State.Break)
+        );
+    }
+
+    function isPrivateIcoActive() public view returns(bool) {
+        return now >= privateIcoStartTime && now < privateIcoEndTime;
+    }
+
+    function initPrivateIco(uint _cap, uint _tokensForEther, uint _startTime, uint _endTime, uint _minimumContribution) external onlyOwner {
+        require(_cap > privateIcoCap); // should increase the cap after previous private ico
+        require(_startTime > privateIcoEndTime); // should start after previous private ico
+        require(now >= privateIcoEndTime); // previous private ico should be finished
+        require(_tokensForEther > 0);
+        require(_endTime > _startTime);
+        require(_endTime < startTimes[uint(State.Preico1)]);
+
+        privateIcoCap = _cap;
+        privateIcoTokensForEther = _tokensForEther;
+        privateIcoStartTime = _startTime;
+        privateIcoEndTime = _endTime;
+        privateIcoMinimumContribution = _minimumContribution;
+        privateIcoFinalized = false;
+    }
+
+    function finalizePrivateIco() external onlyOwner {
+        require(!isPrivateIcoActive());
+        require(now >= privateIcoEndTime); // previous private ico should be finished
+        require(!privateIcoFinalized);
+        require(reservedSaleEther == 0); // kyc needs to be finished
+
+        privateIcoFinalized = true;
+        confirmedSaleEther = 0;
     }
 
     /* --- INTERNAL METHODS --- */
@@ -162,26 +204,28 @@ contract Tge is Minter {
         if (uint(currentState) >= uint(State.Ico1) && uint(currentState) <= uint(State.Ico6)) {
             return MIMIMUM_CONTRIBUTION_AMOUNT_ICO;
         }
+        if (isPrivateIcoActive()) {
+            return privateIcoMinimumContribution;
+        }
         return 0;
     }
 
     // override
     function canMint(address account) public view returns(bool) {
         if (currentState == State.Presale) {
-            // external sales
-            return account == crowdsale;
+            // external sales and private ico
+            return account == crowdsale || account == deferredKyc;
         }
         else if (isSellingState()) {
-            // external sales
-            // approving kyc
-            // adding to kyc
-            // referral fees
+            // crowdsale: external sales
+            // deferredKyc: adding and approving kyc
+            // referralManager: referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Break || currentState == State.FinishingIco) {
-            // external sales
-            // approving kyc
-            // referral fees
+            // crowdsale: external sales
+            // deferredKyc: approving kyc
+            // referralManager: referral fees
             return account == crowdsale || account == deferredKyc || account == referralManager;
         }
         else if (currentState == State.Allocating) {
@@ -221,11 +265,19 @@ contract Tge is Minter {
     function updateStateBasedOnContributions() internal {
         // move to the next state, if the current one's cap has been reached
         uint totalEtherContributions = confirmedSaleEther.add(reservedSaleEther);
+        if (isPrivateIcoActive()) {
+            return;
+        }
+        
         if (!isSellingState()) {
             return;
         }
 
-        if (int(currentState) < int(State.Break)) {
+        if(isPrivateIcoActive()) {
+            // if private ico cap exceeded, revert transaction
+            require(totalEtherContributions <= privateIcoCap);
+        }
+        else if (int(currentState) < int(State.Break)) {
             // preico
             if (totalEtherContributions >= etherCaps[uint(State.Preico2)]) advanceStateIfNewer(State.Break);
             else if (totalEtherContributions >= etherCaps[uint(State.Preico1)]) advanceStateIfNewer(State.Preico2);

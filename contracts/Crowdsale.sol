@@ -14,6 +14,7 @@ contract Crowdsale is Ownable {
 
     event Bought(address indexed account, uint etherAmount);
     event SaleNoted(address indexed account, uint etherAmount, uint tokenAmount);
+    event SaleLockedNoted(address indexed account, uint etherAmount, uint tokenAmount, uint lockingPeriod, address lockingContract);
 
     /* --- FIELDS --- */
 
@@ -49,5 +50,16 @@ contract Crowdsale is Ownable {
     function noteSale(address account, uint etherAmount, uint tokenAmount) public onlyOwner {
         minter.mint(account, etherAmount, tokenAmount);
         emit SaleNoted(account, etherAmount, tokenAmount);
+    }
+
+    function noteSaleLocked(address account, uint etherAmount, uint tokenAmount, uint lockingPeriod) public onlyOwner {
+        LockingContract lockingContract = new LockingContract(ERC20(minter.token()), now.add(lockingPeriod));
+        minter.mint(address(lockingContract), etherAmount, tokenAmount);
+        lockingContract.noteTokens(account, tokenAmount);
+        emit SaleLockedNoted(account, etherAmount, tokenAmount, lockingPeriod, address(lockingContract));
+    }
+
+    function() public payable {
+        buy();
     }
 }

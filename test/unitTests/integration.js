@@ -47,6 +47,11 @@ describe('Integration', () => {
   let customer1;
   let team1;
   let gas;
+  let privateIcoStartTime;
+  let privateIcoEndTime;
+  const privateIcoTokensForEther = new BN('10020');
+  const privateIcoMinimumContribution = new BN('3');
+  const privateIcoCap = new BN('100');
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const etherAmount1 = new BN(web3.utils.toWei('1'));
@@ -67,6 +72,17 @@ describe('Integration', () => {
   const ALLOCATING = 11;
   const AIRDROPPING = 12;
   const FINISHED = 13;
+  const stateLengths = [
+    duration.days(5),
+    duration.days(5),
+    duration.days(3),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5)
+  ];
 
   const currentState = async() => {
     await updateState();
@@ -110,6 +126,10 @@ describe('Integration', () => {
   const tokenInProgress = async(account) => kycContract.methods.tokenInProgress(account).call();
   const etherInProgress = async(account) => kycContract.methods.etherInProgress(account).call();
   const transferTokenOwnership = async() => tgeContract.methods.transferTokenOwnership().send({from: tgeOwner, gas});
+  const isPrivateIcoActive = async() => tgeContract.methods.isPrivateIcoActive().call();
+  const initPrivateIco = async(cap, tokensForEther, startTime, endTime, minimumContribution) =>
+    tgeContract.methods.initPrivateIco(cap, tokensForEther, startTime, endTime, minimumContribution).send({from: tgeOwner, gas});
+
   
   /* eslint-enable no-unused-vars */
 
@@ -122,7 +142,10 @@ describe('Integration', () => {
   });
 
   beforeEach(async () => {
-    saleStartTime = await latestTime(web3) + 100;
+    saleStartTime = new BN(await latestTime(web3)).add(duration.days(1));
+    // private ico start/end times 
+    privateIcoStartTime = new BN(await latestTime(web3)).add(duration.minutes(10));
+    privateIcoEndTime = privateIcoStartTime.add(duration.hours(2));
 
     // TOKEN
     tokenContract = await deployContract(web3, allSporterCoinJson, tokenOwner,
@@ -132,9 +155,7 @@ describe('Integration', () => {
     // TGE
     tgeContract = await deployContract(web3, tgeJson, tgeOwner, [
       tokenContract.options.address,
-      saleEtherCap,
-      saleStartTime,
-      singleStateEtherCap
+      saleEtherCap
     ]);
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
     tgeContract.options.defaultGas = gas;
@@ -175,12 +196,15 @@ describe('Integration', () => {
     airdropperContract.options.defaultGas = gas;
 
     // TGE DEPENDENCIES
-    await tgeContract.methods.initialize(
+    await tgeContract.methods.setup(
       crowdsaleContract.options.address,
       kycContract.options.address,
       referralManagerContract.options.address,
       allocatorContract.options.address,
-      airdropperContract.options.address
+      airdropperContract.options.address,
+      saleStartTime,
+      singleStateEtherCap,
+      stateLengths
     ).send({from: tgeOwner});
   });
 
@@ -691,6 +715,41 @@ describe('Integration', () => {
 
       await transferTokenOwnership();
       expect(await tokenContract.methods.owner().call()).to.be.equal(tgeOwner);
+    });
+  });
+
+  describe('Private ico', async () => {
+    const setup = async () => tgeContract.methods.setup(
+      crowdsaleContract.options.address,
+      kycContract.options.address,
+      referralManagerContract.options.address,
+      allocatorContract.options.address,
+      airdropperContract.options.address,
+      saleStartTime,
+      singleStateEtherCap,
+      stateLengths
+    ).send({from: tgeOwner});
+
+    it('should not be active initially', async () => {
+      expect(await isPrivateIcoActive()).to.be.false;
+    });
+
+    it('should allow to initialize a private ico', async () => {
+      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
+    });
+
+    it('should not allow to setup tge when private ico is running', async() => {
+      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
+      await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
+      await expectThrow(setup());
+    });
+
+    it('should allow to setup tge after private ico ends', async() => {
+      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
+      await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
+      await expectThrow(setup());
+      await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
+      await setup();
     });
   });
 });
