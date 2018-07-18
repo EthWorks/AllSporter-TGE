@@ -1,11 +1,12 @@
 pragma solidity ^0.4.24;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "ethworks-solidity/contracts/LockingContract.sol";
+
 import "ethworks-solidity/contracts/Whitelist.sol";
 import "./Tge.sol";
 import "./Minter.sol";
 import "./DeferredKyc.sol";
+import "./SingleLockingContract.sol";
 
 contract Crowdsale is Ownable {
     using SafeMath for uint;
@@ -53,9 +54,8 @@ contract Crowdsale is Ownable {
     }
 
     function noteSaleLocked(address account, uint etherAmount, uint tokenAmount, uint lockingPeriod) public onlyOwner {
-        LockingContract lockingContract = new LockingContract(ERC20(minter.token()), now.add(lockingPeriod));
+        SingleLockingContract lockingContract = new SingleLockingContract(ERC20(minter.token()), now.add(lockingPeriod), account);
         minter.mint(address(lockingContract), etherAmount, tokenAmount);
-        lockingContract.noteTokens(account, tokenAmount);
         emit SaleLockedNoted(account, etherAmount, tokenAmount, lockingPeriod, address(lockingContract));
     }
 
