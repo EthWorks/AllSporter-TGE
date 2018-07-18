@@ -751,29 +751,5 @@ describe('Integration', () => {
       await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
       await setup();
     });
-
-    it('should include ether cap raised in private ico in states', async () => {
-      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
-      await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
-      await buy(privateIcoMinimumContribution, investor1);
-      await approve(investor1);
-      await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
-      await setup();
-      const etherCapIco6 = new BN(await tgeContract.methods.etherCaps(ICO6).call());
-      expect(etherCapIco6).to.eq.BN(singleStateEtherCap.mul(new BN('8')).add(privateIcoMinimumContribution));
-    });
-
-    it('should calculate state caps correctly when calling setup multiple times', async() => {
-      await initPrivateIco(privateIcoCap, privateIcoTokensForEther, privateIcoStartTime, privateIcoEndTime, privateIcoMinimumContribution);
-      await increaseTimeTo(web3, privateIcoStartTime.add(duration.minutes(1)));
-      await buy(privateIcoMinimumContribution, investor1);
-      await approve(investor1);
-      await increaseTimeTo(web3, privateIcoEndTime.add(duration.minutes(1)));
-      await setup();
-      await setup();
-      await setup();
-      const etherCapIco6 = new BN(await tgeContract.methods.etherCaps(ICO6).call());
-      expect(etherCapIco6).to.eq.BN(singleStateEtherCap.mul(new BN('8')).add(privateIcoMinimumContribution));
-    });
   });
 });

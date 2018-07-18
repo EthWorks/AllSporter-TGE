@@ -86,14 +86,14 @@ contract Tge is Minter {
         // the total sale ether cap is distributed evenly over all selling states
         // the cap from previous states is accumulated in consequent states
         // adding confirmed sale ether from private ico
-        etherCaps[uint(State.Preico1)] = singleStateEtherCap.add(confirmedSaleEther);
-        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7).add(confirmedSaleEther);
-        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8).add(confirmedSaleEther);
+        etherCaps[uint(State.Preico1)] = singleStateEtherCap;
+        etherCaps[uint(State.Preico2)] = singleStateEtherCap.mul(2);
+        etherCaps[uint(State.Ico1)] = singleStateEtherCap.mul(3);
+        etherCaps[uint(State.Ico2)] = singleStateEtherCap.mul(4);
+        etherCaps[uint(State.Ico3)] = singleStateEtherCap.mul(5);
+        etherCaps[uint(State.Ico4)] = singleStateEtherCap.mul(6);
+        etherCaps[uint(State.Ico5)] = singleStateEtherCap.mul(7);
+        etherCaps[uint(State.Ico6)] = singleStateEtherCap.mul(8);
     }
 
     function setup(
@@ -181,15 +181,17 @@ contract Tge is Minter {
         privateIcoStartTime = _startTime;
         privateIcoEndTime = _endTime;
         privateIcoMinimumContribution = _minimumContribution;
-        privateIcoFinalized = true;
+        privateIcoFinalized = false;
     }
 
     function finalizePrivateIco() external onlyOwner {
         require(!isPrivateIcoActive());
+        require(now >= privateIcoEndTime); // previous private ico should be finished
         require(!privateIcoFinalized);
         require(reservedSaleEther == 0); // kyc needs to be finished
 
         privateIcoFinalized = true;
+        confirmedSaleEther = 0;
     }
 
     /* --- INTERNAL METHODS --- */
