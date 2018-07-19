@@ -38,7 +38,8 @@ contract Allocator is Ownable {
     event AllocatedAdvisors(address account, uint tokenAmount);
     event AllocatedCustomer(address account, uint tokenAmount);
     event AllocatedTeam(address account, uint tokenAmount);
-    event LockingOwnershipTransferred(address newOwner);
+    event LockedTokensReleased(address account);
+    event VestedTokensReleased(address account);
 
     /* --- FIELDS --- */
 
@@ -84,11 +85,13 @@ contract Allocator is Ownable {
     function releaseVested(address account) external initialized {
         TokenVesting vesting = vestingContracts[account];
         vesting.release(minter.token());
+        emit VestedTokensReleased(account);
     }
 
     function releaseLocked(address account) external initialized {
         SingleLockingContract locking = lockingContracts[account];
         locking.releaseTokens();
+        emit LockedTokensReleased(account);
     }
 
     function allocateCommunity(address account, uint tokenAmount) external initialized onlyOwner {

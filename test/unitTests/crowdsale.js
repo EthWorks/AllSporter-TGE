@@ -148,6 +148,13 @@ describe('Crowdsale', () => {
       expect(await tokenBalanceOf(investor1)).to.eq.BN(initialTokenBalance.add(tokenAmount1));
     });
 
+    it('should allow the owner to note the sale twice in presale', async () => {
+      const initialTokenBalance = new BN(await tokenBalanceOf(investor1));
+      await noteSale(investor1, web3.utils.toWei('100'), web3.utils.toWei('100'), crowdsaleOwner);
+      await noteSale(investor1, web3.utils.toWei('100'), web3.utils.toWei('100'), crowdsaleOwner);
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(initialTokenBalance.add(new BN(web3.utils.toWei('200'))));
+    });
+
     it('should not allow third party to note the sale', async () => {
       const initialTokenBalance = new BN(await tokenBalanceOf(investor1));
       await expectThrow(noteSale(investor1, etherAmount1, tokenAmount1, investor1));

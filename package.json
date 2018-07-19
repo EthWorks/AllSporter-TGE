@@ -7,7 +7,9 @@
     "compile": "truffle compile --all",
     "test": "truffle compile --all && mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
     "test:nocompile": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
-    "deploy": "PRIVATE_KEY= babel-node deploy.js"
+    "deploy": "PRIVATE_KEY= GANACHE_PORT= babel-node scripts/deploy.js",
+    "transfer-ownership": "PRIVATE_KEY= babel-node scripts/transferOwnership.js",
+    "run-ganache": "PRIVATE_KEY= GANACHE_PORT= babel-node scripts/runGanache.js"
   },
   "author": "Przemek <przemek@ethworks.io>",
   "license": "MIT",

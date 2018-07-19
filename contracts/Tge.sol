@@ -11,20 +11,22 @@ contract Tge is Minter {
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 ether;
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 1 ether / 5;
     
-    uint constant public PRICE_MULTIPLIER_PREICO1 = 3955300;
-    uint constant public PRICE_MULTIPLIER_PREICO2 = 3818900;
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 2600500;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 2510800;
 
-    uint constant public PRICE_MULTIPLIER_ICO1 = 3460900;
-    uint constant public PRICE_MULTIPLIER_ICO2 = 3355900;
-    uint constant public PRICE_MULTIPLIER_ICO3 = 3164100;
-    uint constant public PRICE_MULTIPLIER_ICO4 = 3076200;
-    uint constant public PRICE_MULTIPLIER_ICO5 = 2914300;
-    uint constant public PRICE_MULTIPLIER_ICO6 = 2768600;
+    uint constant public PRICE_MULTIPLIER_ICO1 = 2275400;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 2206400;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 2080300;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 2022500;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 1916000;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 1820200;
     uint constant public PRICE_DIVIDER = 1000;
 
     /* --- EVENTS --- */
 
     event StateChanged(uint from, uint to);
+    event PrivateIcoInitialized(uint _cap, uint _tokensForEther, uint _startTime, uint _endTime, uint _minimumContribution);
+    event PrivateIcoFinalized();
 
     /* --- FIELDS --- */
 
@@ -182,6 +184,7 @@ contract Tge is Minter {
         privateIcoEndTime = _endTime;
         privateIcoMinimumContribution = _minimumContribution;
         privateIcoFinalized = false;
+        emit PrivateIcoInitialized(_cap, _tokensForEther, _startTime, _endTime, _minimumContribution);
     }
 
     function finalizePrivateIco() external onlyOwner {
@@ -192,6 +195,7 @@ contract Tge is Minter {
 
         privateIcoFinalized = true;
         confirmedSaleEther = 0;
+        emit PrivateIcoFinalized();
     }
 
     /* --- INTERNAL METHODS --- */

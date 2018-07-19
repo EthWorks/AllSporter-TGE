@@ -57,7 +57,6 @@ describe('SingleLockingContract', () => {
   });
 
   it('should not allow to be deployed with past unlock time', async () => {
-    console.log(await latestTime(web3));
     const args = [tokenContract.options.address, '1', client1];
     await expectThrow(deployContract(web3, lockingJson, lockingOwner, args));
   });

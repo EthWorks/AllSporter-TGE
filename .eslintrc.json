@@ -75,7 +75,7 @@
     "keyword-spacing": 2,
     "space-infix-ops": 2,
     "eol-last": 2,
-    "newline-per-chained-call": 2,
+    // "newline-per-chained-call": 2,
     "padded-blocks": [2, "never"],
     "space-in-parens": 2,
     "array-bracket-spacing": 2,

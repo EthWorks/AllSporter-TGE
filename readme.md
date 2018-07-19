@@ -4,7 +4,7 @@
 
 ## AllSporter ICO details
 
-The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. 
+The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. Additionally, there is an optional private ICO (or multiple private ICOs).
 
 ## Security
 
@@ -14,15 +14,15 @@ The codebase have been audited, confirming security of the Smart Contracts. The 
 
 | Tier | Duration | Token quantity for 1 ETH |
 | --- | --- | --- |
-| Pre ICO 1 | 5 days | 3955,3 |
-| Pre ICO 2 | 5 days | 3818,9 |
-| Break | 3 days | Investments not possible |
-| ICO 1 | 5 days | 3460,9 |
-| ICO 2 | 5 days | 3355,9 |
-| ICO 3 | 5 days | 3164,1 |
-| ICO 4 | 5 days | 3076,2 |
-| ICO 5 | 5 days | 2914,3 |
-| ICO 6 | 5 days | 2768,6 |
+| Presale | TBD | 4764,9 |
+| Pre ICO 1 | 5 days | 2600,5 |
+| Pre ICO 2 | 5 days | 2510,8 |
+| ICO 1 | 5 days | 2275,4 |
+| ICO 2 | 5 days | 2206,4 |
+| ICO 3 | 5 days | 2080,3 |
+| ICO 4 | 5 days | 2022,5 |
+| ICO 5 | 5 days | 1916 |
+| ICO 6 | 5 days | 1820,2 |
 
 ### Token split
 
@@ -38,8 +38,20 @@ The codebase have been audited, confirming security of the Smart Contracts. The 
 
 | Group | Period |
 | --- | --- |
-| Team | Locked for 24M |
-| Customer Rewards | Unlocking over 15M (first 3M frozen) |
+| Team | Locked for 24 months |
+| Customer Rewards | Unlocking over 15 months (first 3 months frozen) |
+
+### Private ICO
+
+The owner can conduct a private ICO in presale (before pre iCO 1 tier starts). The private ICO is customized with the following parameters:
+
+* total ether cap
+* token quantity for 1 ETH
+* start time
+* end time
+* minimum contribution
+
+After one private ICO ends and is finalized by the owner, it's possible to create another one if there is still time before pre ICO 1 tier.
 
 ## AllSporter Coin
 
@@ -94,6 +106,8 @@ The Smart Contracts emit the following events on the blockchain:
 | Event  | Description |
 | ------------- | ------------- |
 | StateChanged | The state of the TGE has changed |
+| PrivateIcoInitialized | Private ICO has been initialized |
+| PrivateIcoFinalized | Private ICO has been finalized by the owner |
 
 #### Crowdsale events
 
@@ -101,6 +115,7 @@ The Smart Contracts emit the following events on the blockchain:
 | ------------- | ------------- |
 | Bought | Tokens have been bought by an investor |
 | SaleNoted | External sale has been noted |
+| SaleLockedNoted | External sale has been noted and locked |
 
 #### DeferredKyc events
 
@@ -109,6 +124,8 @@ The Smart Contracts emit the following events on the blockchain:
 | AddedToKyc | An investment has been placed under KYC |
 | Approved | An investment under KYC has been approved |
 | Rejected | An investment under KYC has been rejected |
+| RejectedWithdrawn | Investment that did not pass KYC has been withdrawn |
+| ApproverTransferred | The approver of the KYC has been changed |
 
 
 #### ReferralManager events
@@ -126,12 +143,14 @@ The Smart Contracts emit the following events on the blockchain:
 | AllocatedAdvisors | Tokens have been allocated for group: Advisors, Developers, Ambassadors and Partners |
 | AllocatedCustomer | Tokens have been allocated for group: Customer Rewards |
 | AllocatedTeam | Tokens have been allocated for group: Team |
+| LockedTokensReleased | Locked tokens are unlocked after locking period |
+| VestedTokensReleased | A portion of vested tokens is released |
 
 #### Airdropper events
 
 | Event  | Description |
 | ------------- | ------------- |
-| Initialized | The contract has been initialized |
+| Initialized | The contract has been initialized with the current state of token total supply |
 | Airdropped | The tokens have been minted for an account |
 
 

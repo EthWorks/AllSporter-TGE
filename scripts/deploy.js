@@ -1,12 +1,35 @@
 /* eslint-disable import/first */
 import Web3 from 'web3';
-import allSporterCoinJson from './build/contracts/AllSporterCoin.json';
-import tgeJson from './build/contracts/Tge.json';
-import crowdsaleJson from './build/contracts/Crowdsale.json';
-import deferredKycJson from './build/contracts/DeferredKyc.json';
-import referralManagerJson from './build/contracts/ReferralManager.json';
-import allocatorJson from './build/contracts/Allocator.json';
-import airdropperJson from './build/contracts/Airdropper.json';
+import allSporterCoinJson from '../build/contracts/AllSporterCoin.json';
+import tgeJson from '../build/contracts/Tge.json';
+import crowdsaleJson from '../build/contracts/Crowdsale.json';
+import deferredKycJson from '../build/contracts/DeferredKyc.json';
+import referralManagerJson from '../build/contracts/ReferralManager.json';
+import allocatorJson from '../build/contracts/Allocator.json';
+import airdropperJson from '../build/contracts/Airdropper.json';
+
+const durationInit = function(web3) {
+  return {
+    seconds (val) {
+      return (new web3.utils.BN(val)); 
+    },
+    minutes (val) {
+      return (new web3.utils.BN(val)).mul(this.seconds(60)); 
+    },
+    hours (val) {
+      return (new web3.utils.BN(val)).mul(this.minutes(60)); 
+    },
+    days (val) {
+      return (new web3.utils.BN(val)).mul(this.hours(24)); 
+    },
+    weeks (val) {
+      return (new web3.utils.BN(val)).mul(this.days(7)); 
+    },
+    years (val) {
+      return (new web3.utils.BN(val)).mul(this.days(365)); 
+    }
+  };
+};
 
 const createWeb3 = (Web3, numberOfAccounts = 10) => {
   const web3 = new Web3();
@@ -65,23 +88,29 @@ const sendTransaction = async (method, name, to, value = 0) => {
 };
 
 (async () => {
-  if (process.env.PRIVATE_KEY) {
+  if (process.env.GANACHE_PORT) {
+    console.log(`Connecting to ganache server on port ${process.env.GANACHE_PORT}`);
+    web3 = new Web3(new Web3.providers.HttpProvider(`http://localhost:${process.env.GANACHE_PORT}`));
+    [from] = await web3.eth.getAccounts();
+  } else if (process.env.PRIVATE_KEY) {
     usingInfura = true;
     web3 = new Web3(new Web3.providers.HttpProvider('https://kovan.infura.io/8Mj2LsONZFcI5LKNbRiF'));
     account = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
     from = account.address;
     console.log(`Using infura with account: ${from}`);
   } else {
+    console.log('Using ganache core');
     web3 = createWeb3(Web3);
     [from] = await web3.eth.getAccounts();
     console.log('Using ganache');
   }
+  const duration = durationInit(web3);
 
   const allSporterCoinContract = await deployContract(allSporterCoinJson, [], 'AllSporterCoin');
 
   const tgeArguments = [
     allSporterCoinContract.options.address,
-    100000000000000000000 // total ether cap
+    web3.utils.toWei('100000') // total ether cap
     
   ];
   const tgeContract = await deployContract(tgeJson, tgeArguments, 'Tge');
@@ -103,16 +132,29 @@ const sendTransaction = async (method, name, to, value = 0) => {
   const allocatorContract = await deployContract(allocatorJson, [tgeContract.options.address], 'Allocator');
   const airdropperContract = await deployContract(airdropperJson, [tgeContract.options.address], 'Airdropper');
 
-  const initializeMethod = tgeContract.methods.initialize(
+  const stateLengths = [
+    duration.days(5),
+    duration.days(5),
+    duration.days(3),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5),
+    duration.days(5)
+  ];
+
+  const setupMethod = tgeContract.methods.setup(
     crowdsaleContract.options.address,
     kycContract.options.address,
     referralManagerContract.options.address,
     allocatorContract.options.address,
     airdropperContract.options.address,
     1577840461, // sale start time 
-    10000000000000000000 // single state ether cap
+    web3.utils.toWei('1000'), // single state ether cap
+    stateLengths
   );
-  await sendTransaction(initializeMethod, 'Initialize', tgeContract.options.address);
+  await sendTransaction(setupMethod, 'setup', tgeContract.options.address);
 
   console.log(`
 export const constants = {  
