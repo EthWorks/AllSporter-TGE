@@ -6,6 +6,10 @@
 
 The AllSporter ICO sports 8 different price tiers. All investments have to pass KYC before bought tokens are minted. 
 
+## Security
+
+The codebase have been audited, confirming security of the Smart Contracts. The report can be found in the **audit** folder.
+
 ### Price tiers
 
 | Tier | Duration | Token quantity for 1 ETH |
