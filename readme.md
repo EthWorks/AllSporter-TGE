@@ -156,7 +156,7 @@ The Smart Contracts emit the following events on the blockchain:
 
 ## ABI
 
-ABI (Application binary interface) files are located in the **abi** folder.
+ABI (Application binary interface) can be found in the **build/contracts** folder.
 
 ## Testing
 
