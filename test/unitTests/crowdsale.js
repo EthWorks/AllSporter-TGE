@@ -1,8 +1,9 @@
-import {createWeb3, deployContract, expectThrow, defaultGas} from 'ethworks-solidity';
+import {createWeb3, deployContract, expectThrow, defaultGas, createContract} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import crowdsaleJson from '../../build/contracts/Crowdsale.json';
 import tgeMockJson from '../../build/contracts/TgeMock.json';
 import lockingContractJson from '../../build/contracts/SingleLockingContract.json';
+import deferredKycJson from '../../build/contracts/DeferredKyc.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -27,6 +28,8 @@ describe('Crowdsale', () => {
   let investor1;
   let treasury;
   let minimumContributionAmount;
+  let alternativeTreasury;
+  let kycContract;
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN(web3.utils.toWei('1000'));
   const tokenAmount1 = new BN(web3.utils.toWei('4000'));
@@ -35,7 +38,7 @@ describe('Crowdsale', () => {
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, minterOwner, firstStateMinter, secondStateMinter,
-      approver, treasury, crowdsaleOwner, investor1] = accounts;
+      approver, treasury, crowdsaleOwner, investor1, alternativeTreasury] = accounts;
   });
 
   beforeEach(async () => {
@@ -59,6 +62,8 @@ describe('Crowdsale', () => {
     kycContractAddress = await crowdsaleContract.methods.deferredKyc().call();
     minterContract.methods.addAllStateMinter(crowdsaleContract.options.address).send({from: minterOwner});
     minterContract.methods.addAllStateMinter(kycContractAddress).send({from: minterOwner});
+
+    kycContract = await createContract(web3, deferredKycJson, kycContractAddress);
   });
 
   const etherBalanceOf = async (client) => new BN(await web3.eth.getBalance(client));
@@ -189,6 +194,20 @@ describe('Crowdsale', () => {
       const lockingContract = new web3.eth.Contract(lockingContractJson.abi, tx.events.SaleLockedNoted.returnValues.lockingContract);
       const blockTime = (await web3.eth.getBlock(tx.blockNumber)).timestamp;
       expect(await lockingContract.methods.unlockTime().call()).to.be.eq.BN(blockTime + lockingPeriod);
+    });
+  });
+
+  describe('updating treasury', async() => {
+    it('should allow to update the treasury by the owner', async() => {
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
+      await crowdsaleContract.methods.updateTreasury(alternativeTreasury).send({from: crowdsaleOwner});
+      expect(await kycContract.methods.treasury().call()).to.be.equal(alternativeTreasury);
+    });
+
+    it('should not allow to update the treasury by not the owner', async() => {
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
+      await expectThrow(kycContract.methods.updateTreasury(alternativeTreasury).send({from: approver}));
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
     });
   });
 });

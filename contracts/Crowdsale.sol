@@ -31,6 +31,10 @@ contract Crowdsale is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
+    function updateTreasury(address newTreasury) external onlyOwner {
+        deferredKyc.updateTreasury(newTreasury);
+    }
+
     constructor(Minter _minter, address _approver, address _treasury)
         public
         onlyValidAddress(address(_minter))
