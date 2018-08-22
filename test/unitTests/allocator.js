@@ -247,15 +247,15 @@ describe('Allocator', () => {
       await tokenContract.methods.finishMinting().send({from: minterOwner});
     });
 
-    it('should allow to release locked and vested by anyone', async () => {
+    it('should not allow to release locked and vested by anyone', async () => {
       expect(await tokenBalanceOf(investor1)).to.eq.BN(0);
       expect(await tokenBalanceOf(investor2)).to.eq.BN(0);
       
-      await releaseLocked(investor1, investor2);
-      await releaseVested(investor2, investor1);
+      await expectThrow(releaseLocked(investor1, investor2));
+      await expectThrow(releaseVested(investor2, investor1));
 
-      expect(await tokenBalanceOf(investor1)).to.eq.BN(tokenAmount1);
-      expect(await tokenBalanceOf(investor2)).to.eq.BN(tokenAmount2);
+      expect(await tokenBalanceOf(investor1)).to.eq.BN(0);
+      expect(await tokenBalanceOf(investor2)).to.eq.BN(0);
     });
   });
 });

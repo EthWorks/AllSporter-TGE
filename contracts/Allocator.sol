@@ -83,12 +83,14 @@ contract Allocator is Ownable {
     /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function releaseVested(address account) external initialized {
+        require(msg.sender == account || msg.sender == owner);
         TokenVesting vesting = vestingContracts[account];
         vesting.release(minter.token());
         emit VestedTokensReleased(account);
     }
 
     function releaseLocked(address account) external initialized {
+        require(msg.sender == account || msg.sender == owner);
         SingleLockingContract locking = lockingContracts[account];
         locking.releaseTokens();
         emit LockedTokensReleased(account);
