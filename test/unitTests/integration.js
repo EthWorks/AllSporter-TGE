@@ -58,6 +58,7 @@ describe('Integration', () => {
   let privateIcoStartTime;
   let privateIcoEndTime;
   let priceDivider;
+  let snapshotId;
   const lockingPeriod = 10000;
   const privateIcoTokensForEther = new BN('10020');
   const privateIcoMinimumContribution = new BN(web3.utils.toWei('1'));
@@ -130,7 +131,7 @@ describe('Integration', () => {
     });
   });
 
-  const increaseTimeToAfterUnlockTime = async (state) => {
+  const increaseTimeToAfterUnlockTime = async () => {
     const unlockTime = await allocatorContract.methods.LOCKING_UNLOCK_TIME().call();
     await increaseTimeTo(web3, unlockTime + 100);
     await updateState();
@@ -263,6 +264,8 @@ describe('Integration', () => {
       singleStateEtherCap,
       stateLengths
     ).send({from: tgeOwner});
+
+    snapshotId = await takeSnapshot();
   });
 
   describe('initialization', async () => {
@@ -819,11 +822,11 @@ describe('Integration', () => {
     const anotherCap = cap.add(new BN('2'));
     const anotherMinimum = minimumContribution.sub(new BN('1'));
     const anotherTokensForEther = tokensForEther.sub(new BN('1'));
-    let snapshotId;
 
     const getAmountAirdropped = (events, account) => new BN(events.filter((ev) => ev.returnValues.account === account)[0].returnValues.tokenAmount);
 
     beforeEach(async () => {
+      await revertToSnapshot(snapshotId);
       secondPrivateIcoStartTime = privateIcoEndTime.add(duration.minutes(5));
       secondPrivateIcoEndTime = secondPrivateIcoStartTime.add(duration.minutes(3));
       snapshotId = await takeSnapshot();

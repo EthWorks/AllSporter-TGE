@@ -24,7 +24,7 @@ contract Allocator is Ownable {
     uint constant public SALE_PERCENTAGE = 55;
     
     // locking
-    uint constant public LOCKING_UNLOCK_TIME = 1590710400;
+    uint constant public LOCKING_UNLOCK_TIME = 15907104000;
 
     // vesting
     uint constant public VESTING_START_TIME = 1590710400;

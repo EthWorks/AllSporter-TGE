@@ -9,7 +9,8 @@
     "test:nocompile": "mocha --require test/testPolyfill.js --require babel-polyfill --require babel-register --recursive test/unitTests/",
     "deploy": "PRIVATE_KEY= GANACHE_PORT= babel-node scripts/deploy.js",
     "transfer-ownership": "PRIVATE_KEY= babel-node scripts/transferOwnership.js",
-    "run-ganache": "PRIVATE_KEY= GANACHE_PORT= babel-node scripts/runGanache.js"
+    "run-ganache": "PRIVATE_KEY= GANACHE_PORT= babel-node scripts/runGanache.js",
+    "run-ganache-cli": "yarn ganache-cli -p 8545 -m 1"
   },
   "author": "Przemek <przemek@ethworks.io>",
   "license": "MIT",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "babel-eslint": "^8.2.1",
     "eslint": "^4.18.0",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.8.0",
+    "ganache-cli": "^6.1.6"
   }
 }
