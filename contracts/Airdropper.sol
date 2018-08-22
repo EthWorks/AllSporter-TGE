@@ -14,7 +14,7 @@ contract Airdropper is Ownable {
     /* --- CONSTANTS --- */
 
     uint constant public ETHER_AMOUNT = 0;
-    uint constant public MAXIMUM_LOOP_BOUND = 10;
+    uint constant public MAXIMUM_LOOP_BOUND = 15;
 
     /* --- EVENTS --- */
 
