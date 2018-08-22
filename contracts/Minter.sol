@@ -81,7 +81,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.sub(etherAmount);
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit MintedReserved(account, etherAmount, tokenAmount);
     }
@@ -101,7 +101,7 @@ contract Minter is Ownable {
         upToSaleEtherCap(etherAmount)
     {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit Minted(account, etherAmount, tokenAmount);
     }
