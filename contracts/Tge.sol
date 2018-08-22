@@ -3,6 +3,10 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Minter.sol";
 
+contract ExternalMinter {
+    Minter public minter;
+}
+
 contract Tge is Minter {
     using SafeMath for uint;
 
@@ -58,8 +62,12 @@ contract Tge is Minter {
         _;
     }
 
-    modifier onlyValidAddress(address account) {
-        require(account != 0x0);
+    modifier onlyProperExternalMinters(address minter1, address minter2, address minter3, address minter4, address minter5) {
+        require(ExternalMinter(minter1).minter() == address(this));
+        require(ExternalMinter(minter2).minter() == address(this));
+        require(ExternalMinter(minter3).minter() == address(this));
+        require(ExternalMinter(minter4).minter() == address(this));
+        require(ExternalMinter(minter5).minter() == address(this));
         _;
     }
 
@@ -111,11 +119,7 @@ contract Tge is Minter {
     public
     onlyOwner
     onlyInState(State.Presale)
-    onlyValidAddress(_crowdsale)
-    onlyValidAddress(_deferredKyc)
-    onlyValidAddress(_referralManager)
-    onlyValidAddress(_allocator)
-    onlyValidAddress(_airdropper)
+    onlyProperExternalMinters(_crowdsale, _deferredKyc, _referralManager, _allocator, _airdropper)
     {
         require(stateLengths.length == 9); // preico 1-2, break, ico 1-6
         require(saleStartTime >= now);
