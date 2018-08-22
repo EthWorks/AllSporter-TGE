@@ -1,6 +1,7 @@
 import {createWeb3, deployContract, latestTime, expectThrow, increaseTime, increaseTimeTo, durationInit} from 'ethworks-solidity';
 import allSporterCoinJson from '../../build/contracts/AllSporterCoin.json';
 import tgeJson from '../../build/contracts/Tge.json';
+import externalMinterMockJson from '../../build/contracts/ExternalMinterMock.json';
 import Web3 from 'web3';
 import chai from 'chai';
 import bnChai from 'bn-chai';
@@ -24,6 +25,9 @@ describe('Tge', () => {
   let privateIcoEndTime;
   let investor1;
   let priceDivider;
+  let properExternalMinter;
+  let anotherProperExternalMinter;
+  let improperExternalMinter;
   const singleStateEtherCap = new BN(web3.utils.toWei('10000'));
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10');
@@ -73,12 +77,19 @@ describe('Tge', () => {
     priceDivider = await tgeContract.methods.PRICE_DIVIDER().call();
     await tokenContract.methods.transferOwnership(tgeContract.options.address).send({from: tokenOwner});
 
+    properExternalMinter = await deployContract(web3, externalMinterMockJson, tokenOwner, []);
+    anotherProperExternalMinter = await deployContract(web3, externalMinterMockJson, tokenOwner, []);
+    improperExternalMinter = await deployContract(web3, externalMinterMockJson, tokenOwner, []);
+    await properExternalMinter.methods.setup(tgeContract.options.address).send({from: tokenOwner});
+    await anotherProperExternalMinter.methods.setup(tgeContract.options.address).send({from: tokenOwner});
+    await improperExternalMinter.methods.setup(tokenContract.options.address).send({from: tokenOwner});
+
     await tgeContract.methods.setup(
-      tgeOwner,
-      tgeOwner,
-      tgeOwner,
-      tgeOwner,
-      tgeOwner,
+      properExternalMinter.options.address,
+      properExternalMinter.options.address,
+      properExternalMinter.options.address,
+      properExternalMinter.options.address,
+      properExternalMinter.options.address,
       saleStartTime,
       singleStateEtherCap,
       stateLengths
@@ -106,7 +117,7 @@ describe('Tge', () => {
     const reserved = new BN(await tgeContract.methods.reservedSaleEther().call());
     const total = confirmed.add(reserved);
     if (total < cap) {
-      await tgeContract.methods.reserve(cap.sub(total)).send({from: tgeOwner});
+      await properExternalMinter.methods.reserve(cap.sub(total)).send({from: tgeOwner});
     }
   };
 
@@ -147,13 +158,16 @@ describe('Tge', () => {
   const isPrivateIcoFinalized = async() => tgeContract.methods.privateIcoFinalized().call();
   const finalizePrivateIco = async(from) => tgeContract.methods.finalizePrivateIco().send({from});
 
-  const reserve = async (etherAmount) => tgeContract.methods.reserve(etherAmount).send({from: tgeOwner});
-  const mintReserved = async (account, etherAmount, tokenAmount) => tgeContract.methods.mintReserved(account, etherAmount, tokenAmount).send({from: tgeOwner});
-  const unreserve = async (etherAmount) => tgeContract.methods.unreserve(etherAmount).send({from: tgeOwner});
+  const reserve = async (etherAmount) => properExternalMinter.methods.reserve(etherAmount).send({from: tgeOwner});
+  const mintReserved = async (account, etherAmount, tokenAmount) => properExternalMinter.methods.mintReserved(account, etherAmount, tokenAmount).send({from: tgeOwner});
+  const unreserve = async (etherAmount) => properExternalMinter.methods.unreserve(etherAmount).send({from: tgeOwner});
   // const mint = async (account, etherAmount, tokenAmount) => tgeContract.methods.mint(account, etherAmount, tokenAmount).send({from: tgeOwner});
 
   describe('initializing', async() => {
     let uninitializedTgeContract;
+    let properMinterAddress;
+    let improperMinterAddress;
+    let anotherMinterAddress;
     const zeroAddress = '0x0';
 
     beforeEach(async() => {
@@ -161,6 +175,12 @@ describe('Tge', () => {
         tokenContract.options.address,
         saleEtherCap
       ]);
+
+      properMinterAddress = properExternalMinter.options.address;
+      improperMinterAddress = improperExternalMinter.options.address;
+      anotherMinterAddress = anotherProperExternalMinter.options.address;
+      await properExternalMinter.methods.setup(uninitializedTgeContract.options.address).send({from: tokenOwner});
+      await anotherProperExternalMinter.methods.setup(uninitializedTgeContract.options.address).send({from: tokenOwner});
     });
 
     const isInitialized = async() => uninitializedTgeContract.methods.isInitialized().call();
@@ -181,62 +201,86 @@ describe('Tge', () => {
     });
 
     it('should allow to initialize by the owner', async() => {
-      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+      await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
       expect(await isInitialized()).to.be.true; 
     });
 
     it('should not allow to initialize by not the owner', async() => {
-      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tokenOwner));
+      await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tokenOwner));
       expect(await isInitialized()).to.be.false; 
     });
 
     it('should allow to initialize twice', async() => {
-      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
-      await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+      await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+      await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
     });
 
     it('should not initialize after presale', async () => {
       await advanceToSaleStartTime();
-      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
     });
 
-    it('should not allow to initialize without crowdsale', async() => {
-      await expectThrow(setup(zeroAddress, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+    describe('initializing without external minters', async() => {
+      it('should not allow to initialize without crowdsale', async() => {
+        await expectThrow(setup(zeroAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize without deferredKyc', async() => {
+        await expectThrow(setup(properMinterAddress, zeroAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize without referralManager', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, zeroAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize without allocator', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, zeroAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize without airdropper', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, zeroAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
     });
 
-    it('should not allow to initialize without deferredKyc', async() => {
-      await expectThrow(setup(tgeOwner, zeroAddress, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
-    });
-
-    it('should not allow to initialize without referralManager', async() => {
-      await expectThrow(setup(tgeOwner, tgeOwner, zeroAddress, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
-    });
-
-    it('should not allow to initialize without allocator', async() => {
-      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, zeroAddress, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
-    });
-
-    it('should not allow to initialize without airdropper', async() => {
-      await expectThrow(setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, zeroAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+    describe('initializing with improper external minters', async() => {
+      it('should not allow to initialize with improper crowdsale', async() => {
+        await expectThrow(setup(improperMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize with improper deferredKyc', async() => {
+        await expectThrow(setup(properMinterAddress, improperMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize with improper referralManager', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, improperMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize with improper allocator', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, improperMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
+  
+      it('should not allow to initialize with improper airdropper', async() => {
+        await expectThrow(setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, improperMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner));
+      });
     });
 
     describe('overriding initialization', async () => {
       beforeEach(async () => {
-        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+        await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
       });
       
       it('should override addresses', async () => {
-        await setup(thirdParty, thirdParty, thirdParty, thirdParty, thirdParty, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
-        expect(await uninitializedTgeContract.methods.crowdsale().call()).to.be.equal(thirdParty);
-        expect(await uninitializedTgeContract.methods.deferredKyc().call()).to.be.equal(thirdParty);
-        expect(await uninitializedTgeContract.methods.referralManager().call()).to.be.equal(thirdParty);
-        expect(await uninitializedTgeContract.methods.allocator().call()).to.be.equal(thirdParty);
-        expect(await uninitializedTgeContract.methods.airdropper().call()).to.be.equal(thirdParty);
+        await setup(anotherMinterAddress, anotherMinterAddress, anotherMinterAddress, anotherMinterAddress, anotherMinterAddress, saleStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+        expect(await uninitializedTgeContract.methods.crowdsale().call()).to.be.equal(anotherMinterAddress);
+        expect(await uninitializedTgeContract.methods.deferredKyc().call()).to.be.equal(anotherMinterAddress);
+        expect(await uninitializedTgeContract.methods.referralManager().call()).to.be.equal(anotherMinterAddress);
+        expect(await uninitializedTgeContract.methods.allocator().call()).to.be.equal(anotherMinterAddress);
+        expect(await uninitializedTgeContract.methods.airdropper().call()).to.be.equal(anotherMinterAddress);
       });
 
       it('should override state start times', async () => {
         const newStartTime = new BN(saleStartTime + 10000000);
-        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, newStartTime, singleStateEtherCap, stateLengths, tgeOwner);
+        await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, newStartTime, singleStateEtherCap, stateLengths, tgeOwner);
         expect(await uninitializedTgeContract.methods.startTimes(PREICO1).call()).to.be.eq.BN(newStartTime);
         expect(await uninitializedTgeContract.methods.startTimes(PREICO2).call()).to.be.eq.BN(newStartTime.add(duration.days(5)));
         expect(await uninitializedTgeContract.methods.startTimes(ICO1).call()).to.be.eq.BN(newStartTime.add(duration.days(13)));
@@ -249,7 +293,7 @@ describe('Tge', () => {
 
       it('should override state ether caps', async () => {
         const newSingleEtherCap = 100;
-        await setup(tgeOwner, tgeOwner, tgeOwner, tgeOwner, tgeOwner, saleStartTime, newSingleEtherCap, stateLengths, tgeOwner);
+        await setup(properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, properMinterAddress, saleStartTime, newSingleEtherCap, stateLengths, tgeOwner);
         expect(await uninitializedTgeContract.methods.etherCaps(PREICO1).call()).to.be.eq.BN(newSingleEtherCap);
         expect(await uninitializedTgeContract.methods.etherCaps(PREICO2).call()).to.be.eq.BN(newSingleEtherCap * 2);
         expect(await uninitializedTgeContract.methods.etherCaps(ICO1).call()).to.be.eq.BN(newSingleEtherCap * 3);
