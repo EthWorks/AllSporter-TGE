@@ -14,6 +14,7 @@ contract Airdropper is Ownable {
     /* --- CONSTANTS --- */
 
     uint constant public ETHER_AMOUNT = 0;
+    uint constant public MAXIMUM_LOOP_BOUND = 10;
 
     /* --- EVENTS --- */
 
@@ -56,6 +57,7 @@ contract Airdropper is Ownable {
     /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function dropMultiple(address[] accounts) external onlyOwner initialized {
+        require(accounts.length <= MAXIMUM_LOOP_BOUND);
         for (uint i = 0; i < accounts.length; i++) {
             drop(accounts[i]);
         }
