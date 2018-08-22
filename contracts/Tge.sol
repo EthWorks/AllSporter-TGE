@@ -76,7 +76,10 @@ contract Tge is Minter {
     constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap
-    ) public Minter(_token, _saleEtherCap) { }
+    ) public Minter(_token, _saleEtherCap) {
+        require(keccak256(_token.symbol()) == keccak256("ALL"));
+        require(_token.totalSupply() == 0);
+    }
 
     // initialize states start times and caps
     function setupStates(uint saleStart, uint singleStateEtherCap, uint[] stateLengths) internal {
