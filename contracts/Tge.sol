@@ -127,7 +127,7 @@ contract Tge is Minter {
         require(stateLengths.length == 9); // preico 1-2, break, ico 1-6
         require(saleStartTime >= now);
         require(singleStateEtherCap > 0);
-        require(singleStateEtherCap.mul(8) <= minter.saleEtherCap());
+        require(singleStateEtherCap.mul(8) <= saleEtherCap);
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;

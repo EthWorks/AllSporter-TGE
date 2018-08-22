@@ -36,8 +36,8 @@ contract Allocator is Ownable {
     event Initialized();
     event AllocatedCommunity(address indexed account, uint tokenAmount);
     event AllocatedAdvisors(address indexed account, uint tokenAmount);
-    event AllocatedCustomer(address indexed account, uint tokenAmount);
-    event AllocatedTeam(address indexed account, uint tokenAmount);
+    event AllocatedCustomer(address indexed account, uint tokenAmount, address contractAddress);
+    event AllocatedTeam(address indexed account, uint tokenAmount, address contractAddress);
     event LockedTokensReleased(address indexed account);
     event VestedTokensReleased(address indexed account);
 
@@ -124,7 +124,7 @@ contract Allocator is Ownable {
             vestingContracts[account] = new TokenVesting(account, VESTING_START_TIME, VESTING_CLIFF_DURATION, VESTING_PERIOD, false);
         }
         minter.mint(address(vestingContracts[account]), ETHER_AMOUNT, tokenAmount);
-        emit AllocatedCustomer(account, tokenAmount);
+        emit AllocatedCustomer(account, tokenAmount, address(vestingContracts[account]));
     }
 
     // locking
@@ -134,7 +134,7 @@ contract Allocator is Ownable {
             lockingContracts[account] = new SingleLockingContract(minter.token(), LOCKING_UNLOCK_TIME, account);
         }
         minter.mint(lockingContracts[account], ETHER_AMOUNT, tokenAmount);
-        emit AllocatedTeam(account, tokenAmount);
+        emit AllocatedTeam(account, tokenAmount, address(lockingContracts[account]));
     }
 
     /* --- INTERNAL METHODS --- */
