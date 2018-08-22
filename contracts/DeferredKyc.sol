@@ -10,10 +10,10 @@ contract DeferredKyc is Ownable {
 
     /* --- EVENTS --- */
 
-    event AddedToKyc(address investor, uint etherAmount, uint tokenAmount);
-    event Approved(address investor, uint etherAmount, uint tokenAmount);
-    event Rejected(address investor, uint etherAmount, uint tokenAmount);
-    event RejectedWithdrawn(address investor, uint etherAmount);
+    event AddedToKyc(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Approved(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Rejected(address indexed investor, uint etherAmount, uint tokenAmount);
+    event RejectedWithdrawn(address indexed investor, uint etherAmount);
     event ApproverTransferred(address newApprover);
 
     /* --- FIELDS --- */

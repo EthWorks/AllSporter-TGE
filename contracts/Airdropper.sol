@@ -18,7 +18,7 @@ contract Airdropper is Ownable {
     /* --- EVENTS --- */
 
     event Initialized();
-    event Airdropped(address account, uint tokenAmount);
+    event Airdropped(address indexed account, uint tokenAmount);
 
     /* --- FIELDS --- */
 

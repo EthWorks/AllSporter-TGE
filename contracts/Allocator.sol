@@ -34,12 +34,12 @@ contract Allocator is Ownable {
     /* --- EVENTS --- */
 
     event Initialized();
-    event AllocatedCommunity(address account, uint tokenAmount);
-    event AllocatedAdvisors(address account, uint tokenAmount);
-    event AllocatedCustomer(address account, uint tokenAmount);
-    event AllocatedTeam(address account, uint tokenAmount);
-    event LockedTokensReleased(address account);
-    event VestedTokensReleased(address account);
+    event AllocatedCommunity(address indexed account, uint tokenAmount);
+    event AllocatedAdvisors(address indexed account, uint tokenAmount);
+    event AllocatedCustomer(address indexed account, uint tokenAmount);
+    event AllocatedTeam(address indexed account, uint tokenAmount);
+    event LockedTokensReleased(address indexed account);
+    event VestedTokensReleased(address indexed account);
 
     /* --- FIELDS --- */
 
