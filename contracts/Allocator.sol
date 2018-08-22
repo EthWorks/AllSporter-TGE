@@ -76,7 +76,16 @@ contract Allocator is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    constructor(Minter _minter) public onlyValidAddress(_minter) {
+    constructor(Minter _minter)
+    public
+    validPercentage(COMMUNITY_PERCENTAGE)
+    validPercentage(ADVISORS_PERCENTAGE)
+    validPercentage(CUSTOMER_PERCENTAGE)
+    validPercentage(TEAM_PERCENTAGE)
+    validPercentage(SALE_PERCENTAGE)
+    onlyValidAddress(_minter)
+    {
+        require(COMMUNITY_PERCENTAGE.add(ADVISORS_PERCENTAGE).add(CUSTOMER_PERCENTAGE).add(TEAM_PERCENTAGE).add(SALE_PERCENTAGE) == 100);
         minter = _minter;
     }
 
