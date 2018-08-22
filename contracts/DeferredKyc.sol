@@ -15,6 +15,7 @@ contract DeferredKyc is Ownable {
     event Rejected(address indexed investor, uint etherAmount, uint tokenAmount);
     event RejectedWithdrawn(address indexed investor, uint etherAmount);
     event ApproverTransferred(address newApprover);
+    event TreasuryUpdated(address newTreasury);
 
     /* --- FIELDS --- */
 
@@ -51,6 +52,11 @@ contract DeferredKyc is Ownable {
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
+
+    function updateTreasury(address newTreasury) external onlyOwner {
+        treasury = newTreasury;
+        emit TreasuryUpdated(newTreasury);
+    }
 
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);

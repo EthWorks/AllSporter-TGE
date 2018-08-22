@@ -7,7 +7,7 @@ import chai from 'chai';
 import bnChai from 'bn-chai';
 
 const {expect} = chai;
-const web3 = createWeb3(Web3);
+const web3 = createWeb3(Web3, 20);
 const {BN} = web3.utils;
 chai.use(bnChai(BN));
 
@@ -26,13 +26,14 @@ describe('DeferredKyc', () => {
   let investor1;
   let investor2;
   let newApprover;
+  let alternativeTreasury;
   const saleEtherCap = new BN(web3.utils.toWei('100000000'));
   const etherAmount1 = new BN('10000');
 
   before(async () => {
     accounts = await web3.eth.getAccounts();
     [tokenOwner, minterOwner, firstStateMinter, secondStateMinter,
-      approver, treasury, kycOwner, investor1, investor2, newApprover] = accounts;
+      approver, treasury, kycOwner, investor1, investor2, newApprover, alternativeTreasury] = accounts;
   });
 
   beforeEach(async () => {
@@ -265,6 +266,20 @@ describe('DeferredKyc', () => {
     it('should not allow to transfer approver by not the current approver', async() => {
       await expectThrow(transferApprover(newApprover, newApprover));
       expect(await kycContract.methods.approver().call()).to.be.equal(approver);
+    });
+  });
+
+  describe('updating treasury', async() => {
+    it('should allow to update the treasury by the owner', async() => {
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
+      await kycContract.methods.updateTreasury(alternativeTreasury).send({from: kycOwner});
+      expect(await kycContract.methods.treasury().call()).to.be.equal(alternativeTreasury);
+    });
+
+    it('should not allow to update the treasury by not the owner', async() => {
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
+      await expectThrow(kycContract.methods.updateTreasury(alternativeTreasury).send({from: approver}));
+      expect(await kycContract.methods.treasury().call()).to.be.equal(treasury);
     });
   });
 });
