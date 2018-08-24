@@ -30,7 +30,7 @@ contract Crowdsale is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    function updateTreasury(address newTreasury) external onlyOwner {
+    function updateTreasury(address newTreasury) external onlyOwner onlyValidAddress(newTreasury) {
         deferredKyc.updateTreasury(newTreasury);
     }
 
