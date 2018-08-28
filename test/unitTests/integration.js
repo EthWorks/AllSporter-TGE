@@ -819,6 +819,7 @@ describe('Integration', () => {
     const minimumContribution = new BN('2');
     let secondPrivateIcoStartTime;
     let secondPrivateIcoEndTime;
+    let ico1Price;
     const anotherCap = cap.add(new BN('2'));
     const anotherMinimum = minimumContribution.sub(new BN('1'));
     const anotherTokensForEther = tokensForEther.sub(new BN('1'));
@@ -830,6 +831,7 @@ describe('Integration', () => {
       secondPrivateIcoStartTime = privateIcoEndTime.add(duration.minutes(5));
       secondPrivateIcoEndTime = secondPrivateIcoStartTime.add(duration.minutes(3));
       snapshotId = await takeSnapshot();
+      ico1Price = (await tgeContract.methods.PRICE_MULTIPLIER_ICO1().call());
     });
 
     afterEach(async() => {
@@ -923,7 +925,7 @@ describe('Integration', () => {
 
       expect(await tokenBalanceOf(investor4)).to.eq.BN(0);
 
-      const investor5ExpectedToken = etherAmount1.mul(new BN('2275400')).div(new BN('1000'))
+      const investor5ExpectedToken = etherAmount1.mul(new BN(ico1Price.toString())).div(new BN('1000'))
         .add(getAmountAirdropped(dropEvents, investor5));
       expect(await tokenBalanceOf(investor5)).to.eq.BN(investor5ExpectedToken);
 
@@ -948,7 +950,7 @@ describe('Integration', () => {
       // should airdrop up to the cap
       const tokenCap = new BN(await tokenContract.methods.cap().call());
       const totalSupply = new BN(await tokenContract.methods.totalSupply().call());
-      expect(tokenCap.sub(totalSupply)).to.be.lt.BN(5);
+      expect(tokenCap.sub(totalSupply)).to.be.lt.BN(10);
     }).timeout(5000);
 
     it('should allow to carry out the sale with referral fees', async () => {
@@ -1044,7 +1046,7 @@ describe('Integration', () => {
 
       expect(await tokenBalanceOf(investor4)).to.eq.BN(0);
 
-      const investor5ExpectedToken = etherAmount1.mul(new BN('2275400')).div(new BN('1000'))
+      const investor5ExpectedToken = etherAmount1.mul(new BN(ico1Price.toString())).div(new BN('1000'))
         .mul(new BN('110')).div(new BN('100'))
         .add(getAmountAirdropped(dropEvents, investor5));
       expect(await tokenBalanceOf(investor5)).to.eq.BN(investor5ExpectedToken);

@@ -15,15 +15,15 @@ contract Tge is Minter {
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 ether;
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 1 ether / 5;
     
-    uint constant public PRICE_MULTIPLIER_PREICO1 = 2600500;
-    uint constant public PRICE_MULTIPLIER_PREICO2 = 2510800;
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 1450000;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 1422000;
 
-    uint constant public PRICE_MULTIPLIER_ICO1 = 2275400;
-    uint constant public PRICE_MULTIPLIER_ICO2 = 2206400;
-    uint constant public PRICE_MULTIPLIER_ICO3 = 2080300;
-    uint constant public PRICE_MULTIPLIER_ICO4 = 2022500;
-    uint constant public PRICE_MULTIPLIER_ICO5 = 1916000;
-    uint constant public PRICE_MULTIPLIER_ICO6 = 1820200;
+    uint constant public PRICE_MULTIPLIER_ICO1 = 1339000;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 1311000;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 1255000;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 1227000;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 1171000;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 1116000;
     uint constant public PRICE_DIVIDER = 1000;
 
     /* --- EVENTS --- */
