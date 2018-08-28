@@ -8,21 +8,21 @@ The AllSporter ICO sports 8 different price tiers. All investments have to pass 
 
 ## Security
 
-The codebase have been audited, confirming security of the Smart Contracts. The report can be found in the **audit** folder.
+The codebase have been audited, confirming security of the Smart Contracts. The reports can be found in the **audit** folder.
 
 ### Price tiers
 
 | Tier | Duration | Token quantity for 1 ETH |
 | --- | --- | --- |
-| Presale | TBD | 4764,9 |
-| Pre ICO 1 | 5 days | 2600,5 |
-| Pre ICO 2 | 5 days | 2510,8 |
-| ICO 1 | 5 days | 2275,4 |
-| ICO 2 | 5 days | 2206,4 |
-| ICO 3 | 5 days | 2080,3 |
-| ICO 4 | 5 days | 2022,5 |
-| ICO 5 | 5 days | 1916 |
-| ICO 6 | 5 days | 1820,2 |
+| Presale | * | * |
+| Pre ICO 1 | 5 days | 1450 |
+| Pre ICO 2 | 5 days | 1422 |
+| ICO 1 | 5 days | 1339 |
+| ICO 2 | 5 days | 1311 |
+| ICO 3 | 5 days | 1255 |
+| ICO 4 | 5 days | 1227 |
+| ICO 5 | 5 days | 1171 |
+| ICO 6 | 5 days | 1116 |
 
 ### Token split
 

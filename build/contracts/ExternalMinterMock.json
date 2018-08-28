@@ -90,14 +90,14 @@
     "absolutePath": "/Users/przemek/Projects/allsporter/contracts/ExternalMinterMock.sol",
     "exportedSymbols": {
       "ExternalMinterMock": [
-        1397
+        1400
       ]
     },
-    "id": 1398,
+    "id": 1401,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1339,
+        "id": 1342,
         "literals": [
           "solidity",
           "^",
@@ -110,10 +110,10 @@
       {
         "absolutePath": "/Users/przemek/Projects/allsporter/contracts/Minter.sol",
         "file": "./Minter.sol",
-        "id": 1340,
+        "id": 1343,
         "nodeType": "ImportDirective",
-        "scope": 1398,
-        "sourceUnit": 1708,
+        "scope": 1401,
+        "sourceUnit": 1711,
         "src": "25:22:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -124,35 +124,35 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1397,
+        "id": 1400,
         "linearizedBaseContracts": [
-          1397
+          1400
         ],
         "name": "ExternalMinterMock",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1342,
+            "id": 1345,
             "name": "minter",
             "nodeType": "VariableDeclaration",
-            "scope": 1397,
+            "scope": 1400,
             "src": "123:20:5",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_Minter_$1707",
+              "typeIdentifier": "t_contract$_Minter_$1710",
               "typeString": "contract Minter"
             },
             "typeName": {
               "contractScope": null,
-              "id": 1341,
+              "id": 1344,
               "name": "Minter",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1707,
+              "referencedDeclaration": 1710,
               "src": "123:6:5",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Minter_$1707",
+                "typeIdentifier": "t_contract$_Minter_$1710",
                 "typeString": "contract Minter"
               }
             },
@@ -161,28 +161,28 @@
           },
           {
             "body": {
-              "id": 1353,
+              "id": 1356,
               "nodeType": "Block",
               "src": "191:41:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1351,
+                    "id": 1354,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 1347,
+                      "id": 1350,
                       "name": "minter",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1342,
+                      "referencedDeclaration": 1345,
                       "src": "201:6:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1707",
+                        "typeIdentifier": "t_contract$_Minter_$1710",
                         "typeString": "contract Minter"
                       }
                     },
@@ -193,11 +193,11 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 1349,
+                          "id": 1352,
                           "name": "_minter",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1344,
+                          "referencedDeclaration": 1347,
                           "src": "217:7:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
@@ -212,18 +212,18 @@
                             "typeString": "address"
                           }
                         ],
-                        "id": 1348,
+                        "id": 1351,
                         "name": "Minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1707,
+                        "referencedDeclaration": 1710,
                         "src": "210:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_Minter_$1707_$",
+                          "typeIdentifier": "t_type$_t_contract$_Minter_$1710_$",
                           "typeString": "type(contract Minter)"
                         }
                       },
-                      "id": 1350,
+                      "id": 1353,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -233,24 +233,24 @@
                       "nodeType": "FunctionCall",
                       "src": "210:15:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1707",
+                        "typeIdentifier": "t_contract$_Minter_$1710",
                         "typeString": "contract Minter"
                       }
                     },
                     "src": "201:24:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1707",
+                      "typeIdentifier": "t_contract$_Minter_$1710",
                       "typeString": "contract Minter"
                     }
                   },
-                  "id": 1352,
+                  "id": 1355,
                   "nodeType": "ExpressionStatement",
                   "src": "201:24:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1354,
+            "id": 1357,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -258,15 +258,15 @@
             "name": "setup",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1345,
+              "id": 1348,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1344,
+                  "id": 1347,
                   "name": "_minter",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1354,
+                  "scope": 1357,
                   "src": "165:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -275,7 +275,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1343,
+                    "id": 1346,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "165:7:5",
@@ -292,12 +292,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1346,
+              "id": 1349,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "191:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "150:82:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -305,7 +305,7 @@
           },
           {
             "body": {
-              "id": 1365,
+              "id": 1368,
               "nodeType": "Block",
               "src": "282:44:5",
               "statements": [
@@ -315,11 +315,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1362,
+                        "id": 1365,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1356,
+                        "referencedDeclaration": 1359,
                         "src": "307:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -336,32 +336,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1359,
+                        "id": 1362,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "292:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1361,
+                      "id": 1364,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "reserve",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1574,
+                      "referencedDeclaration": 1577,
                       "src": "292:14:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256) external"
                       }
                     },
-                    "id": 1363,
+                    "id": 1366,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -375,14 +375,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1364,
+                  "id": 1367,
                   "nodeType": "ExpressionStatement",
                   "src": "292:27:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1366,
+            "id": 1369,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -390,15 +390,15 @@
             "name": "reserve",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1357,
+              "id": 1360,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1356,
+                  "id": 1359,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1366,
+                  "scope": 1369,
                   "src": "255:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -407,7 +407,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1355,
+                    "id": 1358,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "255:4:5",
@@ -424,12 +424,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1358,
+              "id": 1361,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "282:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "238:88:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -437,7 +437,7 @@
           },
           {
             "body": {
-              "id": 1383,
+              "id": 1386,
               "nodeType": "Block",
               "src": "416:71:5",
               "statements": [
@@ -447,11 +447,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1378,
+                        "id": 1381,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1368,
+                        "referencedDeclaration": 1371,
                         "src": "446:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -460,11 +460,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 1379,
+                        "id": 1382,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1370,
+                        "referencedDeclaration": 1373,
                         "src": "455:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -473,11 +473,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 1380,
+                        "id": 1383,
                         "name": "tokenAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1372,
+                        "referencedDeclaration": 1375,
                         "src": "468:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -502,32 +502,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1375,
+                        "id": 1378,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "426:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1377,
+                      "id": 1380,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "mintReserved",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1619,
+                      "referencedDeclaration": 1622,
                       "src": "426:19:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (address,uint256,uint256) external"
                       }
                     },
-                    "id": 1381,
+                    "id": 1384,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -541,14 +541,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1382,
+                  "id": 1385,
                   "nodeType": "ExpressionStatement",
                   "src": "426:54:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1384,
+            "id": 1387,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -556,15 +556,15 @@
             "name": "mintReserved",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1373,
+              "id": 1376,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1368,
+                  "id": 1371,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "354:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -573,7 +573,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1367,
+                    "id": 1370,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "354:7:5",
@@ -587,10 +587,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1370,
+                  "id": 1373,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "371:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -599,7 +599,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1369,
+                    "id": 1372,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "371:4:5",
@@ -613,10 +613,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1372,
+                  "id": 1375,
                   "name": "tokenAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "389:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -625,7 +625,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1371,
+                    "id": 1374,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "389:4:5",
@@ -642,12 +642,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1374,
+              "id": 1377,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "416:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "332:155:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -655,7 +655,7 @@
           },
           {
             "body": {
-              "id": 1395,
+              "id": 1398,
               "nodeType": "Block",
               "src": "539:46:5",
               "statements": [
@@ -665,11 +665,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1392,
+                        "id": 1395,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1386,
+                        "referencedDeclaration": 1389,
                         "src": "566:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -686,32 +686,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1389,
+                        "id": 1392,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "549:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1391,
+                      "id": 1394,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "unreserve",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1643,
+                      "referencedDeclaration": 1646,
                       "src": "549:16:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256) external"
                       }
                     },
-                    "id": 1393,
+                    "id": 1396,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -725,14 +725,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1394,
+                  "id": 1397,
                   "nodeType": "ExpressionStatement",
                   "src": "549:29:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1396,
+            "id": 1399,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -740,15 +740,15 @@
             "name": "unreserve",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1387,
+              "id": 1390,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1386,
+                  "id": 1389,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1396,
+                  "scope": 1399,
                   "src": "512:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -757,7 +757,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1385,
+                    "id": 1388,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "512:4:5",
@@ -774,19 +774,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1388,
+              "id": 1391,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "539:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "493:92:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1398,
+        "scope": 1401,
         "src": "89:498:5"
       }
     ],
@@ -796,14 +796,14 @@
     "absolutePath": "/Users/przemek/Projects/allsporter/contracts/ExternalMinterMock.sol",
     "exportedSymbols": {
       "ExternalMinterMock": [
-        1397
+        1400
       ]
     },
-    "id": 1398,
+    "id": 1401,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1339,
+        "id": 1342,
         "literals": [
           "solidity",
           "^",
@@ -816,10 +816,10 @@
       {
         "absolutePath": "/Users/przemek/Projects/allsporter/contracts/Minter.sol",
         "file": "./Minter.sol",
-        "id": 1340,
+        "id": 1343,
         "nodeType": "ImportDirective",
-        "scope": 1398,
-        "sourceUnit": 1708,
+        "scope": 1401,
+        "sourceUnit": 1711,
         "src": "25:22:5",
         "symbolAliases": [],
         "unitAlias": ""
@@ -830,35 +830,35 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1397,
+        "id": 1400,
         "linearizedBaseContracts": [
-          1397
+          1400
         ],
         "name": "ExternalMinterMock",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1342,
+            "id": 1345,
             "name": "minter",
             "nodeType": "VariableDeclaration",
-            "scope": 1397,
+            "scope": 1400,
             "src": "123:20:5",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_Minter_$1707",
+              "typeIdentifier": "t_contract$_Minter_$1710",
               "typeString": "contract Minter"
             },
             "typeName": {
               "contractScope": null,
-              "id": 1341,
+              "id": 1344,
               "name": "Minter",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 1707,
+              "referencedDeclaration": 1710,
               "src": "123:6:5",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Minter_$1707",
+                "typeIdentifier": "t_contract$_Minter_$1710",
                 "typeString": "contract Minter"
               }
             },
@@ -867,28 +867,28 @@
           },
           {
             "body": {
-              "id": 1353,
+              "id": 1356,
               "nodeType": "Block",
               "src": "191:41:5",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1351,
+                    "id": 1354,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 1347,
+                      "id": 1350,
                       "name": "minter",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1342,
+                      "referencedDeclaration": 1345,
                       "src": "201:6:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1707",
+                        "typeIdentifier": "t_contract$_Minter_$1710",
                         "typeString": "contract Minter"
                       }
                     },
@@ -899,11 +899,11 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 1349,
+                          "id": 1352,
                           "name": "_minter",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 1344,
+                          "referencedDeclaration": 1347,
                           "src": "217:7:5",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
@@ -918,18 +918,18 @@
                             "typeString": "address"
                           }
                         ],
-                        "id": 1348,
+                        "id": 1351,
                         "name": "Minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1707,
+                        "referencedDeclaration": 1710,
                         "src": "210:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_Minter_$1707_$",
+                          "typeIdentifier": "t_type$_t_contract$_Minter_$1710_$",
                           "typeString": "type(contract Minter)"
                         }
                       },
-                      "id": 1350,
+                      "id": 1353,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -939,24 +939,24 @@
                       "nodeType": "FunctionCall",
                       "src": "210:15:5",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Minter_$1707",
+                        "typeIdentifier": "t_contract$_Minter_$1710",
                         "typeString": "contract Minter"
                       }
                     },
                     "src": "201:24:5",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Minter_$1707",
+                      "typeIdentifier": "t_contract$_Minter_$1710",
                       "typeString": "contract Minter"
                     }
                   },
-                  "id": 1352,
+                  "id": 1355,
                   "nodeType": "ExpressionStatement",
                   "src": "201:24:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1354,
+            "id": 1357,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -964,15 +964,15 @@
             "name": "setup",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1345,
+              "id": 1348,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1344,
+                  "id": 1347,
                   "name": "_minter",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1354,
+                  "scope": 1357,
                   "src": "165:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -981,7 +981,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1343,
+                    "id": 1346,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "165:7:5",
@@ -998,12 +998,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1346,
+              "id": 1349,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "191:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "150:82:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1011,7 +1011,7 @@
           },
           {
             "body": {
-              "id": 1365,
+              "id": 1368,
               "nodeType": "Block",
               "src": "282:44:5",
               "statements": [
@@ -1021,11 +1021,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1362,
+                        "id": 1365,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1356,
+                        "referencedDeclaration": 1359,
                         "src": "307:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1042,32 +1042,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1359,
+                        "id": 1362,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "292:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1361,
+                      "id": 1364,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "reserve",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1574,
+                      "referencedDeclaration": 1577,
                       "src": "292:14:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256) external"
                       }
                     },
-                    "id": 1363,
+                    "id": 1366,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1081,14 +1081,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1364,
+                  "id": 1367,
                   "nodeType": "ExpressionStatement",
                   "src": "292:27:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1366,
+            "id": 1369,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1096,15 +1096,15 @@
             "name": "reserve",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1357,
+              "id": 1360,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1356,
+                  "id": 1359,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1366,
+                  "scope": 1369,
                   "src": "255:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1113,7 +1113,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1355,
+                    "id": 1358,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "255:4:5",
@@ -1130,12 +1130,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1358,
+              "id": 1361,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "282:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "238:88:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1143,7 +1143,7 @@
           },
           {
             "body": {
-              "id": 1383,
+              "id": 1386,
               "nodeType": "Block",
               "src": "416:71:5",
               "statements": [
@@ -1153,11 +1153,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1378,
+                        "id": 1381,
                         "name": "account",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1368,
+                        "referencedDeclaration": 1371,
                         "src": "446:7:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
@@ -1166,11 +1166,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 1379,
+                        "id": 1382,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1370,
+                        "referencedDeclaration": 1373,
                         "src": "455:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1179,11 +1179,11 @@
                       },
                       {
                         "argumentTypes": null,
-                        "id": 1380,
+                        "id": 1383,
                         "name": "tokenAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1372,
+                        "referencedDeclaration": 1375,
                         "src": "468:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1208,32 +1208,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1375,
+                        "id": 1378,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "426:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1377,
+                      "id": 1380,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "mintReserved",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1619,
+                      "referencedDeclaration": 1622,
                       "src": "426:19:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$_t_uint256_$returns$__$",
                         "typeString": "function (address,uint256,uint256) external"
                       }
                     },
-                    "id": 1381,
+                    "id": 1384,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1247,14 +1247,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1382,
+                  "id": 1385,
                   "nodeType": "ExpressionStatement",
                   "src": "426:54:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1384,
+            "id": 1387,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1262,15 +1262,15 @@
             "name": "mintReserved",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1373,
+              "id": 1376,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1368,
+                  "id": 1371,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "354:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1279,7 +1279,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1367,
+                    "id": 1370,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "354:7:5",
@@ -1293,10 +1293,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1370,
+                  "id": 1373,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "371:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1305,7 +1305,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1369,
+                    "id": 1372,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "371:4:5",
@@ -1319,10 +1319,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 1372,
+                  "id": 1375,
                   "name": "tokenAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1384,
+                  "scope": 1387,
                   "src": "389:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1331,7 +1331,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1371,
+                    "id": 1374,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "389:4:5",
@@ -1348,12 +1348,12 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1374,
+              "id": 1377,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "416:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "332:155:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1361,7 +1361,7 @@
           },
           {
             "body": {
-              "id": 1395,
+              "id": 1398,
               "nodeType": "Block",
               "src": "539:46:5",
               "statements": [
@@ -1371,11 +1371,11 @@
                     "arguments": [
                       {
                         "argumentTypes": null,
-                        "id": 1392,
+                        "id": 1395,
                         "name": "etherAmount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1386,
+                        "referencedDeclaration": 1389,
                         "src": "566:11:5",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1392,32 +1392,32 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 1389,
+                        "id": 1392,
                         "name": "minter",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1342,
+                        "referencedDeclaration": 1345,
                         "src": "549:6:5",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Minter_$1707",
+                          "typeIdentifier": "t_contract$_Minter_$1710",
                           "typeString": "contract Minter"
                         }
                       },
-                      "id": 1391,
+                      "id": 1394,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "unreserve",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1643,
+                      "referencedDeclaration": 1646,
                       "src": "549:16:5",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_uint256_$returns$__$",
                         "typeString": "function (uint256) external"
                       }
                     },
-                    "id": 1393,
+                    "id": 1396,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1431,14 +1431,14 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 1394,
+                  "id": 1397,
                   "nodeType": "ExpressionStatement",
                   "src": "549:29:5"
                 }
               ]
             },
             "documentation": null,
-            "id": 1396,
+            "id": 1399,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1446,15 +1446,15 @@
             "name": "unreserve",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1387,
+              "id": 1390,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1386,
+                  "id": 1389,
                   "name": "etherAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1396,
+                  "scope": 1399,
                   "src": "512:16:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1463,7 +1463,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1385,
+                    "id": 1388,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "512:4:5",
@@ -1480,19 +1480,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 1388,
+              "id": 1391,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "539:0:5"
             },
-            "scope": 1397,
+            "scope": 1400,
             "src": "493:92:5",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1398,
+        "scope": 1401,
         "src": "89:498:5"
       }
     ],
@@ -1504,5 +1504,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-08-22T15:06:19.126Z"
+  "updatedAt": "2018-08-28T08:11:18.616Z"
 }
