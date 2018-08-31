@@ -13,7 +13,7 @@ contract ReferralManager is Ownable {
     /* --- CONSTANTS --- */
 
     uint constant public ETHER_AMOUNT = 0;
-    uint constant public MAXIMUM_PERCENT = 20;
+    uint constant public MAXIMUM_PERCENT = 15;
 
     /* --- EVENTS --- */
 

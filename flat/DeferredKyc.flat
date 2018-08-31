@@ -525,7 +525,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.sub(etherAmount);
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit MintedReserved(account, etherAmount, tokenAmount);
     }
@@ -545,7 +545,7 @@ contract Minter is Ownable {
         upToSaleEtherCap(etherAmount)
     {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit Minted(account, etherAmount, tokenAmount);
     }
@@ -568,11 +568,12 @@ contract DeferredKyc is Ownable {
 
     /* --- EVENTS --- */
 
-    event AddedToKyc(address investor, uint etherAmount, uint tokenAmount);
-    event Approved(address investor, uint etherAmount, uint tokenAmount);
-    event Rejected(address investor, uint etherAmount, uint tokenAmount);
-    event RejectedWithdrawn(address investor, uint etherAmount);
+    event AddedToKyc(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Approved(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Rejected(address indexed investor, uint etherAmount, uint tokenAmount);
+    event RejectedWithdrawn(address indexed investor, uint etherAmount);
     event ApproverTransferred(address newApprover);
+    event TreasuryUpdated(address newTreasury);
 
     /* --- FIELDS --- */
 
@@ -609,6 +610,11 @@ contract DeferredKyc is Ownable {
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
+
+    function updateTreasury(address newTreasury) external onlyOwner {
+        treasury = newTreasury;
+        emit TreasuryUpdated(newTreasury);
+    }
 
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);

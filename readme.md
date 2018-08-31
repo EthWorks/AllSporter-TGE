@@ -15,14 +15,14 @@ The codebase have been audited, confirming security of the Smart Contracts. The 
 | Tier | Duration | Token quantity for 1 ETH |
 | --- | --- | --- |
 | Presale | * | * |
-| Pre ICO 1 | 5 days | 1450 |
-| Pre ICO 2 | 5 days | 1422 |
-| ICO 1 | 5 days | 1339 |
-| ICO 2 | 5 days | 1311 |
-| ICO 3 | 5 days | 1255 |
-| ICO 4 | 5 days | 1227 |
-| ICO 5 | 5 days | 1171 |
-| ICO 6 | 5 days | 1116 |
+| Pre ICO 1 | 10 days | 1443 |
+| Pre ICO 2 | 10 days | 1415 |
+| ICO 1 | 10 days | 1332 |
+| ICO 2 | 10 days | 1304 |
+| ICO 3 | 10 days | 1248 |
+| ICO 4 | 10 days | 1221 |
+| ICO 5 | 10 days | 1165 |
+| ICO 6 | 10 days | 1110 |
 
 ### Token split
 

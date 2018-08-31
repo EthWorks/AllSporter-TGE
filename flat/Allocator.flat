@@ -580,7 +580,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.sub(etherAmount);
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit MintedReserved(account, etherAmount, tokenAmount);
     }
@@ -600,7 +600,7 @@ contract Minter is Ownable {
         upToSaleEtherCap(etherAmount)
     {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit Minted(account, etherAmount, tokenAmount);
     }
@@ -623,11 +623,12 @@ contract DeferredKyc is Ownable {
 
     /* --- EVENTS --- */
 
-    event AddedToKyc(address investor, uint etherAmount, uint tokenAmount);
-    event Approved(address investor, uint etherAmount, uint tokenAmount);
-    event Rejected(address investor, uint etherAmount, uint tokenAmount);
-    event RejectedWithdrawn(address investor, uint etherAmount);
+    event AddedToKyc(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Approved(address indexed investor, uint etherAmount, uint tokenAmount);
+    event Rejected(address indexed investor, uint etherAmount, uint tokenAmount);
+    event RejectedWithdrawn(address indexed investor, uint etherAmount);
     event ApproverTransferred(address newApprover);
+    event TreasuryUpdated(address newTreasury);
 
     /* --- FIELDS --- */
 
@@ -664,6 +665,11 @@ contract DeferredKyc is Ownable {
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
+
+    function updateTreasury(address newTreasury) external onlyOwner {
+        treasury = newTreasury;
+        emit TreasuryUpdated(newTreasury);
+    }
 
     function addToKyc(address investor) external payable onlyOwner {
         minter.reserve(msg.value);
@@ -860,22 +866,22 @@ contract Allocator is Ownable {
     uint constant public SALE_PERCENTAGE = 55;
     
     // locking
-    uint constant public LOCKING_UNLOCK_TIME = 1590710400;
+    uint constant public LOCKING_UNLOCK_TIME = 1602324000;
 
     // vesting
-    uint constant public VESTING_START_TIME = 1590710400;
+    uint constant public VESTING_START_TIME = 1568109600;
     uint constant public VESTING_CLIFF_DURATION = 10000;
     uint constant public VESTING_PERIOD = 50000;
     
     /* --- EVENTS --- */
 
     event Initialized();
-    event AllocatedCommunity(address account, uint tokenAmount);
-    event AllocatedAdvisors(address account, uint tokenAmount);
-    event AllocatedCustomer(address account, uint tokenAmount);
-    event AllocatedTeam(address account, uint tokenAmount);
-    event LockedTokensReleased(address account);
-    event VestedTokensReleased(address account);
+    event AllocatedCommunity(address indexed account, uint tokenAmount);
+    event AllocatedAdvisors(address indexed account, uint tokenAmount);
+    event AllocatedCustomer(address indexed account, uint tokenAmount, address contractAddress);
+    event AllocatedTeam(address indexed account, uint tokenAmount, address contractAddress);
+    event LockedTokensReleased(address indexed account);
+    event VestedTokensReleased(address indexed account);
 
     /* --- FIELDS --- */
 
@@ -912,19 +918,30 @@ contract Allocator is Ownable {
 
     /* --- CONSTRUCTOR --- */
 
-    constructor(Minter _minter) public onlyValidAddress(_minter) {
+    constructor(Minter _minter)
+    public
+    validPercentage(COMMUNITY_PERCENTAGE)
+    validPercentage(ADVISORS_PERCENTAGE)
+    validPercentage(CUSTOMER_PERCENTAGE)
+    validPercentage(TEAM_PERCENTAGE)
+    validPercentage(SALE_PERCENTAGE)
+    onlyValidAddress(_minter)
+    {
+        require(COMMUNITY_PERCENTAGE.add(ADVISORS_PERCENTAGE).add(CUSTOMER_PERCENTAGE).add(TEAM_PERCENTAGE).add(SALE_PERCENTAGE) == 100);
         minter = _minter;
     }
 
     /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function releaseVested(address account) external initialized {
+        require(msg.sender == account || msg.sender == owner);
         TokenVesting vesting = vestingContracts[account];
         vesting.release(minter.token());
         emit VestedTokensReleased(account);
     }
 
     function releaseLocked(address account) external initialized {
+        require(msg.sender == account || msg.sender == owner);
         SingleLockingContract locking = lockingContracts[account];
         locking.releaseTokens();
         emit LockedTokensReleased(account);
@@ -949,7 +966,7 @@ contract Allocator is Ownable {
             vestingContracts[account] = new TokenVesting(account, VESTING_START_TIME, VESTING_CLIFF_DURATION, VESTING_PERIOD, false);
         }
         minter.mint(address(vestingContracts[account]), ETHER_AMOUNT, tokenAmount);
-        emit AllocatedCustomer(account, tokenAmount);
+        emit AllocatedCustomer(account, tokenAmount, address(vestingContracts[account]));
     }
 
     // locking
@@ -959,7 +976,7 @@ contract Allocator is Ownable {
             lockingContracts[account] = new SingleLockingContract(minter.token(), LOCKING_UNLOCK_TIME, account);
         }
         minter.mint(lockingContracts[account], ETHER_AMOUNT, tokenAmount);
-        emit AllocatedTeam(account, tokenAmount);
+        emit AllocatedTeam(account, tokenAmount, address(lockingContracts[account]));
     }
 
     /* --- INTERNAL METHODS --- */

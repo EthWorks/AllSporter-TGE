@@ -451,7 +451,7 @@ contract Minter is Ownable {
     {
         reservedSaleEther = reservedSaleEther.sub(etherAmount);
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit MintedReserved(account, etherAmount, tokenAmount);
     }
@@ -471,7 +471,7 @@ contract Minter is Ownable {
         upToSaleEtherCap(etherAmount)
     {
         confirmedSaleEther = confirmedSaleEther.add(etherAmount);
-        token.mint(account, tokenAmount);
+        require(token.mint(account, tokenAmount));
         updateState();
         emit Minted(account, etherAmount, tokenAmount);
     }
@@ -489,23 +489,27 @@ contract Minter is Ownable {
     function getTokensForEther(uint etherAmount) public view returns(uint);
 }
 
+contract ExternalMinter {
+    Minter public minter;
+}
+
 contract Tge is Minter {
     using SafeMath for uint;
 
     /* --- CONSTANTS --- */
 
-    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 1 ether;
+    uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_PREICO = 3 ether;
     uint constant public MIMIMUM_CONTRIBUTION_AMOUNT_ICO = 1 ether / 5;
     
-    uint constant public PRICE_MULTIPLIER_PREICO1 = 2600500;
-    uint constant public PRICE_MULTIPLIER_PREICO2 = 2510800;
+    uint constant public PRICE_MULTIPLIER_PREICO1 = 1443000;
+    uint constant public PRICE_MULTIPLIER_PREICO2 = 1415000;
 
-    uint constant public PRICE_MULTIPLIER_ICO1 = 2275400;
-    uint constant public PRICE_MULTIPLIER_ICO2 = 2206400;
-    uint constant public PRICE_MULTIPLIER_ICO3 = 2080300;
-    uint constant public PRICE_MULTIPLIER_ICO4 = 2022500;
-    uint constant public PRICE_MULTIPLIER_ICO5 = 1916000;
-    uint constant public PRICE_MULTIPLIER_ICO6 = 1820200;
+    uint constant public PRICE_MULTIPLIER_ICO1 = 1332000;
+    uint constant public PRICE_MULTIPLIER_ICO2 = 1304000;
+    uint constant public PRICE_MULTIPLIER_ICO3 = 1248000;
+    uint constant public PRICE_MULTIPLIER_ICO4 = 1221000;
+    uint constant public PRICE_MULTIPLIER_ICO5 = 1165000;
+    uint constant public PRICE_MULTIPLIER_ICO6 = 1110000;
     uint constant public PRICE_DIVIDER = 1000;
 
     /* --- EVENTS --- */
@@ -544,8 +548,12 @@ contract Tge is Minter {
         _;
     }
 
-    modifier onlyValidAddress(address account) {
-        require(account != 0x0);
+    modifier onlyProperExternalMinters(address minter1, address minter2, address minter3, address minter4, address minter5) {
+        require(ExternalMinter(minter1).minter() == address(this));
+        require(ExternalMinter(minter2).minter() == address(this));
+        require(ExternalMinter(minter3).minter() == address(this));
+        require(ExternalMinter(minter4).minter() == address(this));
+        require(ExternalMinter(minter5).minter() == address(this));
         _;
     }
 
@@ -554,7 +562,10 @@ contract Tge is Minter {
     constructor(
         CrowdfundableToken _token,
         uint _saleEtherCap
-    ) public Minter(_token, _saleEtherCap) { }
+    ) public Minter(_token, _saleEtherCap) {
+        require(keccak256(_token.symbol()) == keccak256("ALL"));
+        require(_token.totalSupply() == 0);
+    }
 
     // initialize states start times and caps
     function setupStates(uint saleStart, uint singleStateEtherCap, uint[] stateLengths) internal {
@@ -597,15 +608,12 @@ contract Tge is Minter {
     public
     onlyOwner
     onlyInState(State.Presale)
-    onlyValidAddress(_crowdsale)
-    onlyValidAddress(_deferredKyc)
-    onlyValidAddress(_referralManager)
-    onlyValidAddress(_allocator)
-    onlyValidAddress(_airdropper)
+    onlyProperExternalMinters(_crowdsale, _deferredKyc, _referralManager, _allocator, _airdropper)
     {
         require(stateLengths.length == 9); // preico 1-2, break, ico 1-6
         require(saleStartTime >= now);
         require(singleStateEtherCap > 0);
+        require(singleStateEtherCap.mul(8) <= saleEtherCap);
         crowdsale = _crowdsale;
         deferredKyc = _deferredKyc;
         referralManager = _referralManager;
@@ -805,11 +813,12 @@ contract Airdropper is Ownable {
     /* --- CONSTANTS --- */
 
     uint constant public ETHER_AMOUNT = 0;
+    uint constant public MAXIMUM_LOOP_BOUND = 15;
 
     /* --- EVENTS --- */
 
     event Initialized();
-    event Airdropped(address account, uint tokenAmount);
+    event Airdropped(address indexed account, uint tokenAmount);
 
     /* --- FIELDS --- */
 
@@ -847,6 +856,7 @@ contract Airdropper is Ownable {
     /* --- PUBLIC / EXTERNAL METHODS --- */
 
     function dropMultiple(address[] accounts) external onlyOwner initialized {
+        require(accounts.length <= MAXIMUM_LOOP_BOUND);
         for (uint i = 0; i < accounts.length; i++) {
             drop(accounts[i]);
         }
